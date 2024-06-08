@@ -35,7 +35,6 @@
 	"type": "module",
 	"dependencies": {
 		"dotenv": "^16.4.5",
-		"duckdb": "^0.9.2",
 		"glob": "^10.3.10",
 		"llamaindex": "^0.1.10",
 		"node-fetch": "^3.3.2",

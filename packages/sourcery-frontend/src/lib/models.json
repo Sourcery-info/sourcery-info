@@ -1,0 +1,81 @@
+[
+    {
+        "name": "all-MiniLM",
+        "value": "all-minilm:latest",
+        "type": "embed"
+    },
+    {
+        "name": "Snowflake Arctic Embed",
+        "value": "snowflake-arctic-embed",
+        "type": "embed"
+    },
+    {
+        "name": "MXBai Embed Large",
+        "value": "mxbai-embed-large",
+        "type": "embed"
+    },
+    {
+        "name": "Nomic Embed Text",
+        "value": "nomic-embed-text",
+        "type": "embed"
+    },
+    {
+        "name": "Llama3 8b",
+        "value": "llama3:8b",
+        "type": "chat"
+    },
+    {
+        "name": "Falcon",
+        "value": "falcon:7b",
+        "type": "chat"
+    },
+    {
+        "name": "Gemma 2b",
+        "value": "gemma:2b",
+        "size": "small",
+        "notes": "Gemma is created by Google. Requires 4GB RAM.",
+        "type": "chat"
+    },
+    {
+        "name": "Gemma 7b",
+        "value": "gemma:7b",
+        "size": "medium",
+        "notes": "Gemma is created by Google. Requires 8GB RAM.",
+        "type": "chat"
+    },
+    {
+        "name": "Llama2 7b",
+        "value": "llama2:7b",
+        "size": "medium",
+        "notes": "Llama2 is created by Meta (Facebook). Requires 8GB of RAM",
+        "type": "chat"
+    },
+    {
+        "name": "Llama2 13b",
+        "value": "llama2:13b",
+        "size": "large",
+        "notes": "Llama2 is created by Meta (Facebook). Requires 16GB of RAM",
+        "type": "chat"
+    },
+    {
+        "name": "Llama2 70b",
+        "value": "llama2:70b",
+        "size": "huge",
+        "notes": "Llama2 is created by Meta (Facebook). Requires 64GB of RAM",
+        "type": "chat"
+    },
+    {
+        "name": "Mistral",
+        "value": "mistral:7b",
+        "size": "large",
+        "notes": "Mistral is created by Mistral AI. Requires 12GB of RAM",
+        "type": "chat"
+    },
+    {
+        "name": "Mixtral",
+        "value": "mixtral",
+        "size": "huge",
+        "notes": "Mixtral is created by Mistral AI. Requires 46GB of RAM",
+        "type": "chat"
+    }
+]

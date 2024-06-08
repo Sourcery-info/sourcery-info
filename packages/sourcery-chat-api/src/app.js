@@ -1,0 +1,103 @@
+import restify from "restify"
+import restifyErrors from "restify-errors"
+import { Ollama } from "ollama";
+import bodyParser from 'body-parser';
+import { Qdrant } from "@sourcery/sourcery-db/src/qdrant";
+import { getManifest } from "@sourcery/common/src/manifest"
+import dotenv from "dotenv";
+dotenv.config();
+
+export const httpServer = restify.createServer();
+httpServer.use(bodyParser.json());
+const MODEL = "llama3:8b"
+const VECTOR_MODEL = "all-minilm"
+
+const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
+console.log({ host: process.env.OLLAMA_URL || "http://localhost:11434" })
+httpServer.get("/", async () => {
+    return { hello: "world" };
+});
+
+const rag_prompt_template = (context, question) => [
+    {
+        role: "system",
+        content: "You are an investigative journalist, able to find the most interesting facts and important information buried in boring documents. Using the information contained in the context, give a comprehensive answer to the question. Respond only to the question asked. The response should be concise and relevant to the question. Provide the filename of the source document when relevant. If the answer cannot be deduced from the context, politely decline to give an answer."
+    },
+    {
+        role: "user",
+        content: `Context:\n${context}\n---\nHere is the question you need to answer.\n\nQuestion: ${question}`
+    },
+];
+
+const get_rag_context = async (project_name, files, question, top_k = 5) => {
+    const vector = await ollama.embeddings({ model: VECTOR_MODEL, prompt: question });
+    // console.log({ files })
+    const file_query = {
+        key: "file_uid",
+        match: {
+            any: files.map(f => f.uid),
+        }
+    }
+
+    const query = {
+        top: top_k,
+        vectors: vector.embedding,
+        filters: {
+            must: [file_query],
+        }
+    }
+    console.log(JSON.stringify(query, null, 2))
+    const qdrant = new Qdrant({
+        url: "http://localhost:6333",
+    });
+    const results = await qdrant.search(project_name, query);
+    if (!results) {
+        return [];
+    }
+    const context = results.map(result => `Filename: ${result.payload.original_name}\n${result.payload.text}`).join("\n\n---\n\n");
+    return context;
+}
+
+httpServer.post("/chat/:project", async (req, res) => {
+    const project_name = req.params.project;
+    if (!project_name) {
+        throw new restifyErrors.BadRequestError("No project provided");
+    }
+    if (!req.body?.input) {
+        throw new restifyErrors.BadRequestError("No input provided");
+    }
+    const manifest = await getManifest(project_name);
+    if (!manifest) {
+        throw new restifyErrors.NotFoundError("Project not found");
+    }
+    const files = manifest.filter(f => f.status === "active" && f.stage === "done");
+    const { input } = req.body;
+    const context = await get_rag_context(project_name, files, input);
+    const messages = rag_prompt_template(context, input);
+    const chatStream = await ollama.chat({ model: MODEL, messages, stream: true })
+    const response_log = [];
+    try {
+        for await (const response of chatStream) {
+            // console.log(response);
+            res.write(response.message.content);
+            response_log.push(response.message.content);
+            if (response.done) {
+                return res.end();
+            }
+        }
+    } catch (error) {
+        console.error(error);
+        new restifyErrors.InternalServerError("Error processing chat");
+    }
+    // console.log(response_log);
+    res.end();
+})
+
+httpServer.get("/test", async (req, res) => {
+    res.send({ str: "Hello, World!" });
+});
+
+httpServer.listen({
+    port: 9101,
+    host: "localhost",
+})

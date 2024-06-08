@@ -1,0 +1,44 @@
+{
+  "name": "@sourcery/sourcery-llm-api",
+  "version": "0.1.0",
+  "description": "Use LlamaIndex to index, store and retrieve data in a RAG stack",
+  "main": "src/app.ts",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:http": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=tests/http",
+    "test:llamaindex": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=tests/llamaindex",
+    "test:dirreader": "tsx src/test.ts",
+    "cli": "tsx src/cli.ts",
+    "start": "tsx watch src/http.ts"
+  },
+  "author": "Jason Norwood-Young <jason@10layer.com>",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.20",
+    "@types/restify": "^8.5.12",
+    "@types/restify-errors": "^4.3.8",
+    "@types/ws": "^8.5.10",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4",
+    "superwstest": "^2.0.3",
+    "ts-jest": "^29.1.2",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.5",
+    "llamaindex": "^0.2.10",
+    "restify": "^11.1.0",
+    "restify-errors": "^8.0.2",
+    "fastify": "^4.26.2",
+    "ws": "^8.16.0"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8"
+  }
+}

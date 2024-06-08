@@ -1,0 +1,28 @@
+{
+  "name": "@sourcery/ws",
+  "version": "0.1.0",
+  "description": "All the websocket server and client stuff for Sourcery",
+  "main": "index.ts",
+  "scripts": {
+    "test": "node --experimental-vm-modules jest --detectOpenHandles",
+    "start": "tsx watch src/index.ts"
+  },
+  "author": "Jason Norwood-Young <jason@10layer.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bullmq": "^5.2.1",
+    "dotenv": "^16.4.4",
+    "socket.io": "4.7.5",
+    "socket.io-client": "4.7.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.19",
+    "@types/dotenv": "^8.2.0",
+    "@types/is-utf8": "^0.2.1",
+    "jest": "^29.7.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  },
+  "type": "module"
+}

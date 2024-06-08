@@ -1,0 +1,41 @@
+{
+  "name": "Sourcery.info",
+  "version": "0.1.0",
+  "private": "true",
+  "description": "Interview your documents",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "jest",
+    "test:pipeline": "jest packages/sourcery-pipeline",
+    "test:pipeline:watch": "jest --watch packages/sourcery-pipeline",
+    "test:db": "jest packages/sourcery-db",
+    "test:db:watch": "jest --watch packages/sourcery-db",
+    "start": "npm-run-all --parallel start:*",
+    "start:frontend": "cd packages/sourcery-frontend && npm run dev",
+    "start:chat": "tsx --watch packages/sourcery-chat-api/src/app.js",
+    "start:pipeline": "tsx --watch packages/sourcery-pipeline/src/index.ts",
+    "start-deprecated:llm-api": "cd packages/sourcery-llm-api && npm start"
+  },
+  "keywords": [
+    "AI"
+  ],
+  "author": "Jason Norwood-Young <jason@10layer.com>",
+  "license": "MIT",
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.24",
+    "jest": "^27.0.6",
+    "ts-jest": "^27.0.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.3.5",
+    "prettier": "^2.3.1"
+  }
+}

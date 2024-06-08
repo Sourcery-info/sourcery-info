@@ -1,0 +1,72 @@
+$body-bg: #f0f6f1;
+$nav-link-color: #444;
+$nav-link-hover-color: #666;
+$input-bg: #fff;
+$font-size-base: 0.9rem;
+
+body {
+    font-family: Roboto, Helvetica, sans-serif;
+    background-color: #f7dee3;;
+}
+
+.grid-main {
+    display: grid;
+    align-content: stretch;
+    padding: 5px;
+    height: 100vh;
+    grid-template-rows: [header] 60px [main] auto;
+}
+
+.main {
+    display: grid;
+    grid-template-columns: [sidebar] 200px [content] auto;
+
+    .content {
+        height: calc(100vh - 65px);}
+}
+
+.navbar-container {
+    background-color: rgba(137, 125, 125, 0.4);
+    color: #FFF;
+    height: 60px;
+    margin: 0px 5px 0px 5px;
+    border-radius: 3px;
+    box-shadow: 0px 2px 4px rgba(68, 53, 53, 0.1);
+}
+
+.sidebar {
+    a { 
+        color: #2e2e2e;
+
+        &:hover {
+            color: #90a8be;
+        }
+    }
+}
+
+.chat-window {
+    padding: 10px 10px 0px 10px;
+    display: grid;
+    grid-template-rows: auto 50px;
+    height: 100%;
+
+    .answer {
+        padding: 10px;
+        height: 100%;
+        background-color: #fff;
+        border-radius: 5px;
+        font-family: 'Courier New', Courier, monospace;
+        overflow-y: scroll;
+    }
+
+    .question {
+        margin-top: 0px;
+        padding: 10px 0px;
+    }
+}
+
+$card-bg: rgba(255, 255, 255, 0.8);
+$list-group-bg: none;
+
+@import "bootstrap/scss/bootstrap.scss";
+@import "bootstrap-icons/font/bootstrap-icons.css";

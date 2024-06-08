@@ -1,0 +1,30 @@
+{
+  "name": "@sourcery/pipeline",
+  "version": "0.1.0",
+  "description": "Manage the pipeline queue for files for Sourcery",
+  "main": "index.ts",
+  "scripts": {
+    "test": "node --experimental-vm-modules jest --detectOpenHandles",
+    "start": "tsx watch src/index.ts"
+  },
+  "author": "Jason Norwood-Young <jason@10layer.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bullmq": "^5.2.1",
+    "dotenv": "^16.4.4",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3",
+    "is-utf8": "^0.2.1",
+    "ollama": "^0.5.0",
+    "llm-chunk": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.19",
+    "@types/dotenv": "^8.2.0",
+    "@types/is-utf8": "^0.2.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2"
+  },
+  "type": "module"
+}

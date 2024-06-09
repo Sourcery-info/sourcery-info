@@ -1,5 +1,5 @@
 import { PipelineBase } from "./base"
-import { SourceryFile, FileTypes } from "@sourcery/common/types/SourceryFile.type";
+import { FileTypes } from "@sourcery/common/types/SourceryFile.type.ts";
 import { File } from "@sourcery/common/src/file";
 import * as fs from 'node:fs/promises';
 import isUft8 from "is-utf8";

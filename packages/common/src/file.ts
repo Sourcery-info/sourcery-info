@@ -1,9 +1,9 @@
-import type { SourceryFile, StageLog } from "@sourcery/common/types/SourceryFile.type"
-import { StageState, StageResult, FileTypes, FileStatus, FileStage } from "@sourcery/common/types/SourceryFile.type"
+import type { SourceryFile, StageLog } from "@sourcery/common/types/SourceryFile.type.ts"
+import { FileTypes, FileStatus, FileStage } from "@sourcery/common/types/SourceryFile.type.ts"
 import fs from 'fs';
 import { readFile } from 'fs/promises';
 import path from "path";
-import { ensureDir } from "@sourcery/common/src/utils";
+import { ensureDir } from "@sourcery/common/src/utils.ts";
 import crypto from 'crypto';
 
 export class File implements SourceryFile {

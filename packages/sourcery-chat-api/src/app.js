@@ -2,8 +2,8 @@ import restify from "restify"
 import restifyErrors from "restify-errors"
 import { Ollama } from "ollama";
 import bodyParser from 'body-parser';
-import { Qdrant } from "@sourcery/sourcery-db/src/qdrant";
-import { getManifest } from "@sourcery/common/src/manifest"
+import { Qdrant } from "@sourcery/sourcery-db/src/qdrant.ts";
+import { getManifest } from "@sourcery/common/src/manifest.js"
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -48,7 +48,7 @@ const get_rag_context = async (project_name, files, question, top_k = 5) => {
     }
     console.log(JSON.stringify(query, null, 2))
     const qdrant = new Qdrant({
-        url: "http://localhost:6333",
+        url: process.env.QDRANT_URL || "http://localhost:6333",
     });
     const results = await qdrant.search(project_name, query);
     if (!results) {
@@ -99,5 +99,5 @@ httpServer.get("/test", async (req, res) => {
 
 httpServer.listen({
     port: 9101,
-    host: "localhost",
+    host: "0.0.0.0",
 })

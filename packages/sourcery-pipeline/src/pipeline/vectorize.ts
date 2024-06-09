@@ -10,7 +10,7 @@ export class Vectorize extends PipelineBase {
     }
     
     async process() {
-        const ollama = new Ollama();
+        const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
         const text = fs.readFileSync(this.file.filename, 'utf8');
         const chunks = JSON.parse(text);
         const result = [];

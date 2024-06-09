@@ -2,7 +2,7 @@ import { writeFileSync, readFileSync } from "fs";
 import { glob } from "glob";
 import path from "path";
 import dotenv from "dotenv";
-import { FileStage, FileStatus, FileTypes } from "@sourcery/common/types/SourceryFile.type";
+import { FileStage, FileStatus, FileTypes } from "@sourcery/common/types/SourceryFile.type.ts";
 dotenv.config();
 
 const PROJECT_DIR = process.env.PROJECT_DIR;

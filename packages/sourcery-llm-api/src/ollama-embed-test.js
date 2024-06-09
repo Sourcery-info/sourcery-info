@@ -11,9 +11,9 @@ const serviceContext = new serviceContextFromDefaults({
     llm,
 });
 
-const vectorStore = new QdrantVectorStore({ 
+const vectorStore = new QdrantVectorStore({
     serviceContext,
-    url: "http://localhost:6333",
+    url: process.env.QDRANT_URL || "http://localhost:6333",
     collectionName: "ollama-embed-test",
 });
 

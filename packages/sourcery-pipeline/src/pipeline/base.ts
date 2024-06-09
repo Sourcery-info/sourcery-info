@@ -1,6 +1,6 @@
-import type { SourceryFile, StageLog } from "@sourcery/common/types/SourceryFile.type"
-import type { File } from "@sourcery/common/src/file"
-import { StageState, StageResult } from "@sourcery/common/types/SourceryFile.type"
+import type { SourceryFile, StageLog } from "@sourcery/common/types/SourceryFile.type.ts"
+import type { File } from "@sourcery/common/src/file.ts"
+import { StageState, StageResult } from "@sourcery/common/types/SourceryFile.type.ts"
 import * as dotenv from "dotenv";
 dotenv.config();
 

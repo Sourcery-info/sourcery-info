@@ -1,4 +1,4 @@
-import { Qdrant } from "@sourcery/sourcery-db/src/qdrant";
+import { Qdrant } from "@sourcery/sourcery-db/src/qdrant.ts";
 import { PipelineBase } from "./base"
 import { File } from "@sourcery/common/src/file";
 
@@ -7,7 +7,7 @@ export class Save extends PipelineBase {
 
     constructor(file: File) {
         super(file);
-        this.client = new Qdrant({});
+        this.client = new Qdrant({ url: process.env.QDRANT_URL || "http://localhost:6333", });
     }
     
     async process() {

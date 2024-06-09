@@ -53,7 +53,7 @@ export class SouceryLlamaIndex {
             embedModel: this.embedModel
         });
         this.vectorStore = new QdrantVectorStore({
-            url: "http://localhost:6333",
+            url: process.env.QDRANT_URL || "http://localhost:6333",
             collectionName: project + "-v1",
         });
     }

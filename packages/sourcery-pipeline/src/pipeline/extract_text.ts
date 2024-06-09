@@ -1,5 +1,5 @@
 import { PipelineBase } from "./base"
-import { FileTypes } from "@sourcery/common/types/SourceryFile.type";
+import { FileTypes } from "@sourcery/common/types/SourceryFile.type.ts";
 import { File } from "@sourcery/common/src/file";
 import * as fs from 'node:fs';
 import { spawn } from 'child_process';

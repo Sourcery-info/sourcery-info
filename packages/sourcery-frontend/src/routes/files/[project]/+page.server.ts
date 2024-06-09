@@ -6,10 +6,10 @@ import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error } from '@sveltejs/kit';
 import { WEBSOCKET_PORT } from '$lib/variables.js';
 
-const qdrant = new Qdrant({});
+const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
 
 export async function load({ params }) {
-	const qdrant = new Qdrant({});
+	const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
 	const project = params.project;
 	const manifest = getManifest(project);
 	const db_info = await qdrant.getInfo(project);

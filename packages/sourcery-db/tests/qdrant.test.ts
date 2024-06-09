@@ -1,6 +1,6 @@
 import { Qdrant } from "../src/qdrant";
 import type { SourceryDBRecord, SourceryDBRecordSearch } from "../src/soucery-db"
-const client = new Qdrant({ url: "http://localhost:6333" });
+const client = new Qdrant({ url: process.env.QDRANT_URL || "http://localhost:6333", });
 const collection_name = "test-collection";
 import fs from "fs/promises";
 let data: SourceryDBRecord[] = [];

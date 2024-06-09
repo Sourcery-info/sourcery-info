@@ -2,7 +2,7 @@ import { SourceryDB } from "./soucery-db"
 import type { SourceryDBRecord, SourceryDBRecordSearch } from "./soucery-db"
 import fetch from 'node-fetch';
 
-const url = 'http://127.0.0.1:6333';
+const url = process.env.QDRANT_URL || 'http://127.0.0.1:6333';
 
 export class Qdrant implements SourceryDB {
     private url: string;

@@ -1,0 +1,66 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    container_name: qdrant
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    ports:
+      - 6333:6333
+      - 6334:6334
+    volumes:
+      - ./data/qdrant_data:/qdrant/storage
+  keydb:
+    image: eqalpha/keydb:latest
+    restart: unless-stopped
+    container_name: keydb
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    ports:
+      - 6379:6379
+    volumes:
+      - ./data/keydb_data:/data
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    container_name: ollama
+    ports:
+      - 11435:11434
+    volumes:
+      - ./data/ollama:/root/.ollama
+    healthcheck:
+      test: ollama --version || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 5
+    privileged: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  sourcery:
+    build: 
+      context: ../.
+      dockerfile: docker/Dockerfile
+    tty: true
+    restart: unless-stopped
+    container_name: sourcery
+    ports:
+      - 9000:9000
+    volumes:
+      - ./data/projects:/app/projects
+    environment:
+      - PROJECT_DIR=/app/projects
+      - QDRANT_URL=http://qdrant:6333
+      - REDIS_HOST=keydb
+      - REDIS_PORT=6379

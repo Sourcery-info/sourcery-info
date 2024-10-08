@@ -4,4 +4,4 @@
 .env
 projects/*
 yarn.lock
-docker/data/*
+data/*

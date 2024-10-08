@@ -1,0 +1,67 @@
+services:
+  sourcery-qdrant:
+    image: qdrant/qdrant:latest
+    restart: unless-stopped
+    container_name: sourcery-qdrant
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    ports:
+      - 6333:6333
+      - 6334:6334
+    volumes:
+      - ./data/qdrant_data:/qdrant/storage
+  sourcery-keydb:
+    image: eqalpha/keydb:latest
+    restart: unless-stopped
+    container_name: sourcery-keydb
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    ports:
+      - 6379:6379
+    volumes:
+      - ./data/keydb_data:/data
+  sourcery-ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    container_name: sourcery-ollama
+    ports:
+      - 11435:11434
+    volumes:
+      - ./data/ollama:/root/.ollama
+    healthcheck:
+      test: ollama --version || exit 1
+      interval: 30s
+      timeout: 3s
+      retries: 5
+    privileged: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  sourcery:
+    build: 
+      dockerfile: Dockerfile
+    tty: true
+    restart: unless-stopped
+    container_name: sourcery
+    ports:
+      - 9000:9000
+    volumes:
+      - ./data/projects:/var/lib/sourcery/projects
+      - ./packages:/app/packages
+    environment:
+      - PROJECT_DIR=/var/lib/sourcery/projects
+      - OLLAMA_URL=http://sourcery-ollama:11434
+      - QDRANT_URL=http://sourcery-qdrant:6333
+      - REDIS_HOST=sourcery-keydb
+      - REDIS_PORT=6379

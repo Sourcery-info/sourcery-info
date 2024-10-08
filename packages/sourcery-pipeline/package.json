@@ -16,13 +16,17 @@
     "typescript": "^5.3.3",
     "is-utf8": "^0.2.1",
     "ollama": "^0.5.0",
-    "llm-chunk": "^0.0.1"
+    "llm-chunk": "^0.0.1",
+    "@hyzyla/pdfium": "^1.0.2",
+    "sharp": "^0.33.4",
+    "he": "^1.2.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.19",
     "@types/dotenv": "^8.2.0",
     "@types/is-utf8": "^0.2.1",
+    "@types/he": "^1.2.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.2"
   },

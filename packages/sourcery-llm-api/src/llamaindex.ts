@@ -34,7 +34,7 @@ export class SouceryLlamaIndex {
         // Set environment variable OPENAI_API_KEY
         // process.env.OPENAI_API_KEY = "blah";
         this.ollama = new Ollama({ 
-            model: "llama3:8b",
+            model: "llama3.2:latest",
             temperature: 0.2,
             baseURL: process.env.LLAMA_API_URL || "http://localhost:9100",
         });

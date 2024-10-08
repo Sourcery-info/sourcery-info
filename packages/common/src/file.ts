@@ -189,6 +189,14 @@ export class File implements SourceryFile {
         return await readFile(this.filename, 'utf-8');
     }
 
+    async readStream() {
+        return fs.createReadStream(this.filename);
+    }
+
+    async readBuffer() {
+        return fs.readFileSync(this.filename);
+    }
+
     async readJSON() {
         return JSON.parse(await this.read());
     }

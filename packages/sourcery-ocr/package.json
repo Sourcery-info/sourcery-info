@@ -1,0 +1,29 @@
+{
+  "name": "@sourcery/sourcery-ocr-api",
+  "version": "0.1.0",
+  "description": "Sourcery OCR API",
+  "main": "src/sourcery-ocr-api.js",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "start": "node --watch src/sourcery-ocr-api.js"
+  },
+  "author": "Jason Norwood-Young <jason@10layer.com>",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@babel/preset-env": "^7.24.7",
+    "@types/body-parser": "^1.19.5",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.20",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "fastify": "^4.26.2",
+    "fastify-multer": "^2.0.3"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.8"
+  }
+}

@@ -9,11 +9,22 @@ dotenv.config();
 
 export const httpServer = restify.createServer();
 httpServer.use(bodyParser.json());
-const MODEL = "llama3:8b"
-const VECTOR_MODEL = "all-minilm"
+const MODEL = "llama3.2:latest"
+const VECTOR_MODEL = "all-minilm:latest"
 
 const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
 console.log({ host: process.env.OLLAMA_URL || "http://localhost:11434" })
+
+const ensure_model = async (model) => {
+    const response = await ollama.list();
+    const models = response.models;
+    console.log(JSON.stringify(models, null, 2))
+    if (!models.map(m => m.model).includes(model)) {
+        console.log(`Pulling model ${model}`)
+        await ollama.pull({ model: model, force: true });
+    }
+}
+
 httpServer.get("/", async () => {
     return { hello: "world" };
 });
@@ -30,32 +41,38 @@ const rag_prompt_template = (context, question) => [
 ];
 
 const get_rag_context = async (project_name, files, question, top_k = 5) => {
-    const vector = await ollama.embeddings({ model: VECTOR_MODEL, prompt: question });
-    // console.log({ files })
-    const file_query = {
-        key: "file_uid",
-        match: {
-            any: files.map(f => f.uid),
-        }
-    }
+    try {
+        await ensure_model(VECTOR_MODEL);
+        const vector = await ollama.embeddings({ model: VECTOR_MODEL, prompt: question });
 
-    const query = {
-        top: top_k,
-        vectors: vector.embedding,
-        filters: {
-            must: [file_query],
+        // console.log({ files })
+        const file_query = {
+            key: "file_uid",
+            match: {
+                any: files.map(f => f.uid),
+            }
         }
+
+        const query = {
+            top: top_k,
+            vectors: vector.embedding,
+            filters: {
+                must: [file_query],
+            }
+        }
+        const qdrant = new Qdrant({
+            url: process.env.QDRANT_URL || "http://localhost:6333",
+        });
+        const results = await qdrant.search(project_name, query);
+        if (!results) {
+            return [];
+        }
+        const context = results.map(result => `Filename: ${result.payload.original_name}\n${result.payload.text}`).join("\n\n---\n\n");
+        return context;
+    } catch (err) {
+        console.error(err);
+        throw new restifyErrors.InternalServerError("Error processing chat");
     }
-    console.log(JSON.stringify(query, null, 2))
-    const qdrant = new Qdrant({
-        url: process.env.QDRANT_URL || "http://localhost:6333",
-    });
-    const results = await qdrant.search(project_name, query);
-    if (!results) {
-        return [];
-    }
-    const context = results.map(result => `Filename: ${result.payload.original_name}\n${result.payload.text}`).join("\n\n---\n\n");
-    return context;
 }
 
 httpServer.post("/chat/:project", async (req, res) => {
@@ -67,6 +84,7 @@ httpServer.post("/chat/:project", async (req, res) => {
         throw new restifyErrors.BadRequestError("No input provided");
     }
     const manifest = await getManifest(project_name);
+    console.log({ manifest })
     if (!manifest) {
         throw new restifyErrors.NotFoundError("Project not found");
     }
@@ -74,11 +92,19 @@ httpServer.post("/chat/:project", async (req, res) => {
     const { input } = req.body;
     const context = await get_rag_context(project_name, files, input);
     const messages = rag_prompt_template(context, input);
-    const chatStream = await ollama.chat({ model: MODEL, messages, stream: true })
+    try {
+        await ensure_model(MODEL);
+    } catch (err) {
+        console.error(err);
+        throw new restifyErrors.InternalServerError("Error processing chat");
+    }
+    const chatStream = await ollama.chat({ model: MODEL, messages, stream: true }).catch(err => {
+        console.error(err);
+        throw new restifyErrors.InternalServerError("Error processing chat");
+    });
     const response_log = [];
     try {
         for await (const response of chatStream) {
-            // console.log(response);
             res.write(response.message.content);
             response_log.push(response.message.content);
             if (response.done) {

@@ -87,7 +87,7 @@ export class Qdrant implements SourceryDB {
             body: JSON.stringify({points})
         });
         const result = await response.json();
-        console.log({ result });
+        // console.log({ result });
         return {} as any;
     }
 

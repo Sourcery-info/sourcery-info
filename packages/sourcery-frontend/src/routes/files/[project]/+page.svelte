@@ -38,7 +38,6 @@
 
 	onDestroy(() => {
 		try {
-			console.log('destroyed');
 			unsubscribe('files');
 		} catch (error) {
 			console.error(error);

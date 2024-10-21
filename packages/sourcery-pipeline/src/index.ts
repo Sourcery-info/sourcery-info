@@ -1,5 +1,5 @@
 import { SourceryQueue } from "./queue";
-import { File } from "@sourcery/common/src/file.ts";
+import { File } from "@sourcery/common/src/file";
 import { Validate } from "./pipeline/validate";
 import { ExtractText } from "./pipeline/extract_text";
 import { Chunk } from "./pipeline/chunk";

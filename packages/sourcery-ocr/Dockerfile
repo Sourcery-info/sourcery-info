@@ -10,6 +10,10 @@ RUN apt-get update && apt-get install -y \
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get install -y nodejs
+RUN npm install -g yarn
+
+# Install tsx globally
+RUN npm install -g tsx
 
 RUN apt-get update && apt-get install -y \
     python3 \
@@ -18,9 +22,13 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+COPY package.json .
+COPY packages ./packages
+COPY jest.config.js .
+COPY tsconfig.json .
 
-COPY . .
+RUN pip3 install --no-cache-dir -r packages/sourcery-ocr/requirements.txt
 
-CMD ["bash"]
+RUN yarn install
+
+CMD ["npm", "run", "sourcery-ocr"]

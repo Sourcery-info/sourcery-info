@@ -5,7 +5,7 @@
   "main": "src/sourcery-ocr-api.js",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "start": "node --watch src/sourcery-ocr-api.js"
+    "start": "tsx --watch src/sourcery-ocr-api.js"
   },
   "author": "Jason Norwood-Young <jason@10layer.com>",
   "license": "MIT",

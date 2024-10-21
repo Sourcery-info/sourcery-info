@@ -13,7 +13,7 @@ const MODEL = "llama3.2:latest"
 const VECTOR_MODEL = "all-minilm:latest"
 
 const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
-console.log({ host: process.env.OLLAMA_URL || "http://localhost:11434" })
+// console.log({ host: process.env.OLLAMA_URL || "http://localhost:11434" })
 
 const ensure_model = async (model) => {
     const response = await ollama.list();
@@ -84,7 +84,7 @@ httpServer.post("/chat/:project", async (req, res) => {
         throw new restifyErrors.BadRequestError("No input provided");
     }
     const manifest = await getManifest(project_name);
-    console.log({ manifest })
+    // console.log({ manifest })
     if (!manifest) {
         throw new restifyErrors.NotFoundError("Project not found");
     }

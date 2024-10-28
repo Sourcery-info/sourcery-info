@@ -8,6 +8,7 @@ const SETTINGS_DEFAULTS: SourcerySettings = {
     chat_model: 'llama3:8b',
     temperature: 0.1,
     security: SourcerySecurity.SECURE,
+    accounts: [],
 }
 
 export class Settings {
@@ -28,18 +29,22 @@ export class Settings {
         return JSON.parse(data);
     }
 
-    
-
     _save(settings: SourcerySettings) {
         fs.writeFileSync(`${PROJECT_DIR}/settings.json`, JSON.stringify(settings, null, 4));
     }
 
-    set(settings: SourcerySettings) {
-        this.settings = settings;
-        this._save(settings);
+    set(settings: Partial<SourcerySettings>) {
+        this.settings = { ...this.settings, ...settings };
+        this._save(this.settings);
     }
 
-    get() {
+    get(field: string | null = null) {
+        if (field) {
+            if (!(field in this.settings)) {
+                return null;
+            }
+            return this.settings[field as keyof SourcerySettings];
+        }
         return this.settings;
     }
 }

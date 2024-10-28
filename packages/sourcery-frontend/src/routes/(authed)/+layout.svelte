@@ -1,5 +1,4 @@
 <script>
-	
 	// @ts-nocheck
 	import '$lib/sass/global.scss';
 	import Navbar from '$lib/ui/navbar.svelte';
@@ -12,19 +11,16 @@
 		project: null
 	};
 
-	console.log(data.session);
-
 	// $: if (!$authStore.isAuthenticated && !['/login', '/create-account'].includes(window.location.pathname)) {
 	// 	goto('/login');
 	// }
 </script>
 
-<svelte:head>
-	<title>Sourcery.info</title>
-</svelte:head>
-<div class="grid-main">
-	<Navbar project={data.project} version={'0.0.1'} session={data.session} />
-	<div class="content container mt-3">
-		<slot />
+<div class="grid-main">	
+	<div class="main">
+		<Sidebar selected_project={data.project} projects={data.projects} />
+		<div class="content container">
+			<slot />
+		</div>
 	</div>
 </div>

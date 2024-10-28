@@ -80,6 +80,8 @@ services:
     volumes:
       - ./data/projects:/var/lib/sourcery/projects
       - ./packages:/app/packages
+    env_file:
+      - .env
     environment:
       - PROJECT_DIR=/var/lib/sourcery/projects
       - OLLAMA_URL=http://sourcery-ollama:11434

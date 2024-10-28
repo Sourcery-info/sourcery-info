@@ -1,6 +1,6 @@
 <script>
 // @ts-nocheck
-
+	
 	import {
 		Collapse,
 		NavbarToggler,
@@ -20,12 +20,16 @@
 
 	export let project;
 	export let version;
+	export let session;
 
 	let isOpen = false;
 
     function handleUpdate(event) {
 		isOpen = event?.detail?.isOpen;
 	}
+
+	// Check event.locals.session is not null
+	
 </script>
 <div class="navbar-container">
 <Navbar color="none" expand="sm" container="fluid">
@@ -55,6 +59,15 @@
 	<Nav class="mr-auto">
 		<NavItem>v{version}</NavItem>
 	</Nav>
+	{#if session}
+		<Nav>
+			<NavItem>
+				<NavLink href="/logout">
+					<Icon class="text-white" name="door-open-fill" />
+				</NavLink>
+			</NavItem>
+		</Nav>
+	{/if}
 </Navbar>
 </div>
 

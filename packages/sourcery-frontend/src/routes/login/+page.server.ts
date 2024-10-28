@@ -12,16 +12,15 @@ export const actions = {
         const formData = await request.formData();
         const username = formData.get('username') as string;
         const password = formData.get('password') as string;
-        const isValid = await checkUserCredentials(username, password);
-        console.log(isValid);
-        if (!isValid) {
+        const user_id = await checkUserCredentials(username, password);
+        if (!user_id) {
             return {
                 state: "error",
                 message: 'Invalid username or password'
             };
         }
         const token = generateSessionToken();
-        const session = await createSession(token, username);
+        const session = await createSession(token, user_id);
         setSessionTokenCookie(cookies, token, session.expiresAt);
         redirect(302, '/projects');
     }

@@ -1,5 +1,5 @@
 <script>
-    import { FormGroup, Label, Input, FormText } from '@sveltestrap/sveltestrap';
+    import { FormGroup, Label, Input, FormText, FormCheck } from '@sveltestrap/sveltestrap';
     
     export let form;
 
@@ -7,6 +7,7 @@
     export let tags = "";
     export let description = "";
     export let notes = "";
+    export let is_public = false;
 </script>
 
 <FormGroup>
@@ -15,6 +16,9 @@
     {#if (form?.errors?.name)}
         <FormText color="danger">{form.errors.name}</FormText>
     {/if}
+</FormGroup>
+<FormGroup>
+    <FormCheck type="checkbox" name="is_public" bind:value={is_public} label="Public Project" />
 </FormGroup>
 <FormGroup>
     <Label for="tags">Tags</Label>

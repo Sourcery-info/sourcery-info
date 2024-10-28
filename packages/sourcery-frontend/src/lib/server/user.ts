@@ -1,54 +1,49 @@
-import { Settings } from "$lib/classes/settings";
+import { UserModel } from '@sourcery/common/src/models/User.model';
 import type { SourceryAccount } from "$lib/types/SourcerySettings.type";
-import { md5, hashPassword, checkPassword } from "$lib/utils/crypto";
+import { hashPassword, checkPassword } from "$lib/utils/crypto";
+
 export async function getUsers(): Promise<SourceryAccount[]> {
-    const settings = new Settings();
-	const accounts = settings.get('accounts') as SourceryAccount[];
-	if (!accounts || accounts.length === 0) {
-		return [];
-	}
-	return accounts;
+    const users = await UserModel.find({});
+    return users.map(user => ({
+        user_id: user._id.toString(),
+        username: user.email,
+        password: user.password_hash,
+        admin: user.settings?.admin || false,
+        approved: user.settings?.approved || false,
+        date_created: user.created_at.toISOString(),
+        last_login: user.settings?.last_login || null,
+        avatar: user.settings?.avatar,
+        otp: user.settings?.otp || ''
+    }));
 }
 
 export async function createUser(user: SourceryAccount) {
-    const settings = new Settings();
-    const accounts = settings.get('accounts') as SourceryAccount[] || [];
     const hashedPassword = await hashPassword(user.password);
-    // Create a user_id as md5 hash of the current time and the username
-    const user_id = md5(new Date().toISOString() + user.username);
-    accounts.push({
-        user_id,
-        username: user.username,
-        password: hashedPassword,
-		otp: user.otp ?? '',
-        admin: user.admin,
-        approved: user.approved,
-        date_created: new Date().toISOString(),
-        last_login: null,
-        avatar: user.avatar,
+    await UserModel.create({
+        email: user.username,
+        name: user.username,  // Using username as name for now
+        password_hash: hashedPassword,
+        settings: {
+            admin: user.admin,
+            approved: user.approved,
+            avatar: user.avatar,
+            otp: user.otp
+        }
     });
-    // console.log(accounts);
-    await settings.set({ accounts });
 }
 
 export async function checkUniqueUsername(username: string) {
-    const settings = new Settings();
-    const accounts = settings.get('accounts') as SourceryAccount[];
-    if (!accounts || accounts.length === 0) {
-        return false;
-    }
-    return accounts.some(account => account.username === username);
+    const user = await UserModel.findOne({ email: username });
+    return !!user;
 }
 
 export async function checkUserCredentials(username: string, password: string) {
-    const settings = new Settings();
-    const accounts = settings.get('accounts') as SourceryAccount[];
-    if (!accounts || accounts.length === 0) {
+    const user = await UserModel.findOne({ email: username });
+    if (!user) {
         return false;
     }
-    const account = accounts.find(account => account.username === username);
-    if (!account) {
-        return false;
+    if (await checkPassword(password, user.password_hash)) {
+        return user._id.toString();
     }
-    return await checkPassword(password, account.password);
+    return false;
 }

@@ -13,7 +13,10 @@ type response = {
 }
 
 export async function load({ params, locals }): Promise<response> {
-    const projects = new Projects();
+    if (!locals?.session?.user_id) {
+        return error(401, 'Unauthorized');
+    }
+    const projects = new Projects(locals?.session?.user_id);
     let proj_data = projects.get();
     let response: response = {
         // projects: proj_data,

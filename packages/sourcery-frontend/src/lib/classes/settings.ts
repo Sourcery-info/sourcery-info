@@ -1,7 +1,6 @@
-import { PROJECT_DIR } from "$lib/variables"
+import { UserModel } from '@sourcery/common/src/models/User.model';
 import type { SourcerySettings } from "$lib/types/SourcerySettings.type"
 import { SourcerySecurity } from "$lib/types/SourcerySettings.type"
-import fs from 'fs';
 
 const SETTINGS_DEFAULTS: SourcerySettings = {
     vector_model: 'all-minilm:latest',
@@ -13,32 +12,45 @@ const SETTINGS_DEFAULTS: SourcerySettings = {
 
 export class Settings {
     settings: SourcerySettings;
+    user_id: string;
 
-    constructor() {
-        if (!fs.existsSync(PROJECT_DIR)) {
-            fs.mkdirSync(PROJECT_DIR);
-        }
-        if (!fs.existsSync(`${PROJECT_DIR}/settings.json`)) {
-            this._save(SETTINGS_DEFAULTS);
-        }
-        this.settings = this._get_config();
+    constructor(user_id: string) {
+        this.user_id = user_id;
+        if (!this.user_id) throw new Error("User ID is required.");
+        this.settings = SETTINGS_DEFAULTS;
     }
     
-    _get_config() {
-        const data = fs.readFileSync(`${PROJECT_DIR}/settings.json`, 'utf8');
-        return JSON.parse(data);
+    async _get_config() {
+        const user = await UserModel.findById(this.user_id);
+        if (!user) throw new Error("User not found");
+        
+        return {
+            vector_model: user.settings?.default_vector_model || SETTINGS_DEFAULTS.vector_model,
+            chat_model: user.settings?.default_chat_model || SETTINGS_DEFAULTS.chat_model,
+            temperature: SETTINGS_DEFAULTS.temperature,
+            security: SETTINGS_DEFAULTS.security,
+            accounts: SETTINGS_DEFAULTS.accounts,
+        };
     }
 
-    _save(settings: SourcerySettings) {
-        fs.writeFileSync(`${PROJECT_DIR}/settings.json`, JSON.stringify(settings, null, 4));
+    async _save(settings: SourcerySettings) {
+        await UserModel.findByIdAndUpdate(this.user_id, {
+            settings: {
+                default_vector_model: settings.vector_model,
+                default_chat_model: settings.chat_model,
+                // Preserve other settings
+                $retain: ['theme', 'language', 'notifications']
+            }
+        }, { new: true });
     }
 
-    set(settings: Partial<SourcerySettings>) {
+    async set(settings: Partial<SourcerySettings>) {
         this.settings = { ...this.settings, ...settings };
-        this._save(this.settings);
+        await this._save(this.settings);
     }
 
-    get(field: string | null = null) {
+    async get(field: string | null = null) {
+        this.settings = await this._get_config();
         if (field) {
             if (!(field in this.settings)) {
                 return null;

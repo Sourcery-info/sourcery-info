@@ -8,8 +8,11 @@ import { zfd } from 'zod-form-data';
 import { z } from 'zod';
 import { validate } from '$lib/validate';
 
-export async function load({ params }) {
-    const projects = new Projects();
+export async function load({ locals, params }) {
+    if (!locals?.session?.user_id) {
+        return fail(401, { message: 'Unauthorized' });
+    }
+    const projects = new Projects(locals?.session?.user_id);
     const project = projects.get_project(params.project);
     if (!project) return fail(404, { error: 'Project not found' });
     return {
@@ -18,7 +21,10 @@ export async function load({ params }) {
 };
 
 export const actions = {
-    default: async ({ request, params }) => {
+    default: async ({ request, params, locals }) => {
+        if (!locals?.session?.user_id) {
+            return fail(401, { message: 'Unauthorized' });
+        }
         const formData = await request.formData();
         const urlid = params.project;
         const settingsSchema = zfd.formData({
@@ -31,11 +37,11 @@ export const actions = {
             temperature: zfd.numeric(z.number().min(0).max(1)),
             security: zfd.text(z.enum(["secure", "insecure"])), // It would be nice if the values were derived from the SourcerySecurity enum
         });
-        const validation = validate(formData, settingsSchema);
+        const validation = await validate(formData, settingsSchema);
         if (validation.errors) {
             return fail(400, validation);
         }
-        const project = new Project(urlid);
+        const project = new Project(locals?.session?.user_id, urlid);
         try {
             project.save(Object.assign(validation.data, { urlid, updated_at: new Date() }));
         } catch (err) {

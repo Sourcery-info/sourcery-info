@@ -7,10 +7,13 @@ import { zfd } from "zod-form-data";
 import { z } from 'zod';
 import { validate } from '$lib/validate';
 
-const settings = new Settings();
+// const settings = new Settings();
 
-export async function load() {
-    const settings = new Settings();
+export async function load({ locals }) {
+    if (!locals?.session?.user_id) {
+        return fail(401, { message: 'Unauthorized' });
+    }
+    const settings = new Settings(locals?.session?.user_id);
     return {
         props: {
             settings: settings.get()
@@ -19,7 +22,11 @@ export async function load() {
 };
 
 export const actions = {
-    default: async ({ request }) => {
+    default: async ({ request, locals }) => {
+        if (!locals?.session?.user_id) {
+            return fail(401, { message: 'Unauthorized' });
+        }
+        const settings = new Settings(locals?.session?.user_id);
         const formData = await request.formData();
         const settingsSchema = zfd.formData({
             vector_model: zfd.text(z.string()),
@@ -27,11 +34,10 @@ export const actions = {
             temperature: zfd.numeric(z.number().min(0).max(1)),
             security: zfd.text(z.enum(["secure", "insecure"])), // It would be nice if the values were derived from the SourcerySecurity enum
         });
-        const validation = validate(formData, settingsSchema);
+        const validation = await validate(formData, settingsSchema);
         if (validation.errors) {
             return fail(400, validation);
         }
-        // const project = new Project();
         try {
             settings.set(validation.data);
         } catch (err) {
@@ -39,6 +45,6 @@ export const actions = {
         }
         // redirect(303, '/projects');
         return redirect(303, '/settings');
-        
+
     }
 }

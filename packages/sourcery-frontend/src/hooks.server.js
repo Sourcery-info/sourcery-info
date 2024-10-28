@@ -2,6 +2,17 @@
 import { redirect } from '@sveltejs/kit';
 import { validateSessionToken, setSessionTokenCookie, deleteSessionTokenCookie } from '$lib/server/auth';
 import { getUsers } from '$lib/server/user';
+
+import { connectDB } from '$lib/server/db';
+
+connectDB().then(() => {
+    console.log('MongoDB started');
+})
+    .catch((e) => {
+        console.log('MongoDB failed to start');
+        console.log(e);
+    });
+
 export async function handle({ event, resolve }) {
     const route = event.route.id;
 
@@ -28,6 +39,7 @@ export async function handle({ event, resolve }) {
         return redirect(303, "/login");
     }
     event.locals.session = session;
+
     const response = await resolve(event);
     return response;
 }

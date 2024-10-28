@@ -12,7 +12,7 @@
 		project: null
 	};
 
-	console.log(data.session);
+	// console.log(data.session);
 
 	// $: if (!$authStore.isAuthenticated && !['/login', '/create-account'].includes(window.location.pathname)) {
 	// 	goto('/login');

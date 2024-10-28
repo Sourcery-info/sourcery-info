@@ -5,6 +5,9 @@ export type Project = {
     name: string;
     description: string;
     notes: string;
+    owner: string;
+    is_public: boolean;
+    shared_with?: string[];
     created_at: Date | null;
     updated_at: Date | null;
     vector_model: string;

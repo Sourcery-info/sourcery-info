@@ -25,7 +25,7 @@ export const actions = {
             password: zfd.text(z.string().min(8)),
             confirmPassword: zfd.text(z.string().min(8))
         });
-        const validation = validate(formData, newAccountScheme);
+        const validation = await validate(formData, newAccountScheme);
         if (validation.errors) {
             return fail(400, { 
                 errors: validation.errors, 

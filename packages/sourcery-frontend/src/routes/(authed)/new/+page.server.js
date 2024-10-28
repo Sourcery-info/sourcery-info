@@ -13,7 +13,7 @@ export async function load() {
 };
 
 export const actions = {
-    default: async ({ request }) => {
+    default: async ({ request, locals }) => {
         const formData = await request.formData();
         const newProjectScheme = zfd.formData({
             name: zfd.text(z.string().min(3).max(50).refine(check_unique, { message: "Project name already exists" })),
@@ -25,13 +25,21 @@ export const actions = {
             security: zfd.text(z.string()),
             temperature: zfd.numeric(z.number().min(0).max(1)),
         });
-        const validation = validate(formData, newProjectScheme);
+        const validation = await validate(formData, newProjectScheme);
         if (validation.errors) {
             return fail(400, validation);
         }
-        const project = new Project();
+        if (!locals?.session?.user_id) {
+            return fail(400, { errors: [error(400, "User not logged in")] });
+        }
+        const data = {
+            ...validation.data,
+            owner: locals?.session?.user_id,
+        }
+        const project = new Project(locals?.session?.user_id);
         try {
-            project.save(validation.data);
+            const result = await project.save(data);
+            console.log('result', result);
         } catch (err) {
             if (err instanceof Error) {
                 return fail(400, { errors: [error(500, err.toString())], data: validation.data });

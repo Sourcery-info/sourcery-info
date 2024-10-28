@@ -6,11 +6,10 @@ export async function load({ locals, params }) {
         return fail(401, { message: 'Unauthorized' });
     }
     const project = new Project(locals?.session?.user_id, params.project);
+    const data = await project.load();
+    console.log(data);
     return {
-        project: project.get(),
+        project: data,
         conversation: params.conversation
     };
 };
-
-export const actions = {
-}

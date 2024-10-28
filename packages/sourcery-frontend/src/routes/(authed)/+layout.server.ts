@@ -17,7 +17,7 @@ export async function load({ params, locals }): Promise<response> {
         return error(401, 'Unauthorized');
     }
     const projects = new Projects(locals?.session?.user_id);
-    let proj_data = projects.get();
+    const proj_data = await projects.load_projects();
     let response: response = {
         // projects: proj_data,
         project: null,

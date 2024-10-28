@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs";
 import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
 import { ProjectModel } from '@sourcery/common/src/models/Project.model';
+import { getManifest } from "@sourcery/common/src/manifest";
+import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 
 export async function check_unique(name: string) {
     const urlid = friendlyURL(name);
@@ -42,8 +44,22 @@ export default class Project {
                     { shared_with: this.user_id }
                 ]
             });
-            this.data = project?.toObject();
+            this.data = {
+                name: project?.name || '',
+                urlid: project?.urlid || '',
+                description: project?.description || '',
+                notes: project?.notes || '',
+                is_public: project?.is_public || false,
+                shared_with: project?.shared_with || [],
+                created_at: project?.created_at || new Date(),
+                // owner: project?.owner || '',
+                updated_at: project?.updated_at || new Date(),
+                vector_model: project?.vector_model || '',
+                chat_model: project?.chat_model || '',
+                files: getManifest(project?.urlid || '') as unknown as SourceryFile[]
+            };
         }
+        
         return this.data;
     }
 

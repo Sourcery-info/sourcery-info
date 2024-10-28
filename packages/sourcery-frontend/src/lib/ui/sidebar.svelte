@@ -73,6 +73,10 @@
 </div>
 
 <style>
+	.sidebar {
+		height: calc(100vh - 50px);
+	}
+	
 	.bold {
 		font-weight: bold;
 	}

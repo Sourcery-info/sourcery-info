@@ -91,3 +91,32 @@
         </Col>
     </div>
 </div>
+
+<style lang="scss">
+    $chat-bg: #d1d7fc;
+
+    .chat-window {
+        padding: 20px;
+        display: grid;
+        grid-template-rows: auto 70px; // Larger input area
+        gap: 20px; // Add some spacing
+        height: 100%;
+
+    .answer {
+        padding: 20px;
+        background-color: $chat-bg;
+        border-radius: 8px;
+        font-family: 'SF Mono', 'Fira Code', monospace; // Better code font
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        line-height: 1.6;
+    }
+
+    .question {
+        margin-top: 0;
+        padding: 15px;
+        background-color: $chat-bg;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+}
+</style>

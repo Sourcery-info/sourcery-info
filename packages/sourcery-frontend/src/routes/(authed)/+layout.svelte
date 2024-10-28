@@ -3,6 +3,7 @@
 	import '$lib/sass/global.scss';
 	import Navbar from '$lib/ui/navbar.svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
+	import { Alert } from '@sveltestrap/sveltestrap';
 
 	export let data = {
 		projects: [],
@@ -10,11 +11,52 @@
 	};
 </script>
 
-<div class="grid-main">	
+<div class="grid-main">
+	<div class="alerts">
+	{#each data.alerts as alert}
+		<div class="alert-item">
+		<Alert color={alert.type} dismissible={true} on:dismissed={() => data.alerts = data.alerts.filter(a => a !== alert)}>{alert.message}</Alert>
+		</div>
+	{/each}
+	</div>
 	<div class="main">
 		<Sidebar selected_project={data.project} projects={data.projects} />
-		<div class="content container">
+		<div class="content">
 			<slot />
 		</div>
 	</div>
 </div>
+
+<style lang="scss">
+	.grid-main {
+		display: grid;
+		grid-template-rows: auto 1fr;
+		min-height: calc(100vh - 100px);
+		width: 100%;
+	}
+
+	.main {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		height: 100%;
+		overflow: hidden;
+	}
+
+	.content {
+		height: 100%;
+		overflow-y: auto;
+		padding: 20px;
+	}
+
+	.alerts {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		width: 300px;
+		z-index: 1000;
+
+		.alert-item {
+			box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+		}
+	}
+</style>

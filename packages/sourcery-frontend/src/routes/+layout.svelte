@@ -4,19 +4,13 @@
 	import '$lib/sass/global.scss';
 	import Navbar from '$lib/ui/navbar.svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
-	// import { authStore } from '$lib/stores/authStore';
-	// import { goto } from '$app/navigation';
+	import { Alert } from '@sveltestrap/sveltestrap';
 
 	export let data = {
 		projects: [],
-		project: null
+		project: null,
 	};
 
-	// console.log(data.session);
-
-	// $: if (!$authStore.isAuthenticated && !['/login', '/create-account'].includes(window.location.pathname)) {
-	// 	goto('/login');
-	// }
 </script>
 
 <svelte:head>
@@ -24,7 +18,16 @@
 </svelte:head>
 <div class="grid-main">
 	<Navbar project={data.project} version={'0.0.1'} session={data.session} />
-	<div class="content container mt-3">
+	<div class="content">
 		<slot />
 	</div>
 </div>
+
+<style lang="scss">
+	.content {
+		height: calc(100vh - 50px);
+		overflow-y: auto;
+		position: relative;
+		display: block;
+	}
+</style>

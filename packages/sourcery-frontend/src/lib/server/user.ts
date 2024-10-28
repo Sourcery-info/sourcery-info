@@ -13,7 +13,7 @@ export async function getUsers(): Promise<SourceryAccount[]> {
         date_created: user.created_at.toISOString(),
         last_login: user.settings?.last_login || null,
         avatar: user.settings?.avatar,
-        otp: user.settings?.otp || ''
+        otp: user.settings?.otp || '',
     }));
 }
 

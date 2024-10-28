@@ -2,6 +2,7 @@
 
 export async function load({ locals }: { locals: any }) {
     return {
-        session: locals.session
+        session: locals.session,
+        alerts: locals.alerts || []
     };
 }

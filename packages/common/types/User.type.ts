@@ -5,6 +5,8 @@
     password_hash: string;
     created_at: Date;
     updated_at: Date;
+    approved: boolean;
+    admin: boolean;
     settings?: UserSettings;
 }
 

@@ -10,6 +10,10 @@ declare global {
 		interface Locals {
 			session: Session | null;
 			user: User | null;
+			alerts: Array<{
+				type: string;
+				message: string;
+			}>
 		}
 		// interface PageData {}
 		// interface PageState {}

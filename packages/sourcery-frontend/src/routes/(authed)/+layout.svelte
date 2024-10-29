@@ -1,9 +1,7 @@
 <script>
 	// @ts-nocheck
 	import '$lib/sass/global.scss';
-	import Navbar from '$lib/ui/navbar.svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
-	import { Alert } from '@sveltestrap/sveltestrap';
 
 	export let data = {
 		projects: [],
@@ -13,11 +11,6 @@
 
 <div class="grid-main">
 	<div class="alerts">
-	{#each data.alerts as alert}
-		<div class="alert-item">
-		<Alert color={alert.type} dismissible={true} on:dismissed={() => data.alerts = data.alerts.filter(a => a !== alert)}>{alert.message}</Alert>
-		</div>
-	{/each}
 	</div>
 	<div class="main">
 		<Sidebar selected_project={data.project} projects={data.projects} />

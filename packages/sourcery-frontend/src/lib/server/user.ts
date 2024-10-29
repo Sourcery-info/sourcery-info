@@ -8,13 +8,36 @@ export async function getUsers(): Promise<SourceryAccount[]> {
         user_id: user._id.toString(),
         username: user.email,
         password: user.password_hash,
-        admin: user.settings?.admin || false,
-        approved: user.settings?.approved || false,
+        admin: user.admin || false,
+        approved: user.approved || false,
         date_created: user.created_at.toISOString(),
         last_login: user.settings?.last_login || null,
         avatar: user.settings?.avatar,
         otp: user.settings?.otp || '',
     }));
+}
+
+export async function getUser(user_id: string): Promise<SourceryAccount | null> {
+    const user = await UserModel.findById(user_id);
+    if (!user) {
+        return null;
+    }
+    return {
+        user_id: user._id.toString(),
+        username: user.email,
+        password: user.password_hash,
+        admin: user.admin || false,
+        approved: user.approved || false,
+        date_created: user.created_at.toISOString(),
+        last_login: user.settings?.last_login || null,
+        avatar: user.settings?.avatar,
+        otp: user.settings?.otp || ''
+    };
+}
+
+export async function getUserCount(): Promise<number> {
+    const count = await UserModel.countDocuments();
+    return count;
 }
 
 export async function createUser(user: SourceryAccount) {
@@ -32,9 +55,12 @@ export async function createUser(user: SourceryAccount) {
     });
 }
 
-export async function checkUniqueUsername(username: string) {
+export async function checkUniqueUsername(username: string, user_id: string | null = null) {
     const user = await UserModel.findOne({ email: username });
-    return !!user;
+    if (user_id && user?._id.toString() === user_id) {
+        return true;
+    }
+    return !user;
 }
 
 export async function checkUserCredentials(username: string, password: string) {
@@ -46,4 +72,13 @@ export async function checkUserCredentials(username: string, password: string) {
         return user._id.toString();
     }
     return false;
+}
+
+export async function updateUser(_id: string, user: SourceryAccount) {
+    const data = {
+        email: user.username,
+        admin: user.admin,
+        approved: user.approved
+    }
+    return await UserModel.findByIdAndUpdate(_id, data);
 }

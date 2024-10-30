@@ -29,12 +29,6 @@
 				New Project
 			</NavLink>
 		</NavItem>
-		<NavItem>
-			<NavLink href="/settings">
-				<Icon name="gear" />
-				Settings
-			</NavLink>
-		</NavItem>
 		<hr />
 
 		{#if selected_project}

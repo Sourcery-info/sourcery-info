@@ -7,9 +7,9 @@ import { getManifest } from '@sourcery/common/src/manifest.js';
 import type { SourceryFile } from '$lib/types/SourceryFile.type';
 
 type response = {
-    // projects: ProjectType[],
     project: ProjectType | null,
-    session: any
+    // session: any,
+    // user: any
 }
 
 export async function load({ params, locals }): Promise<response> {
@@ -19,12 +19,21 @@ export async function load({ params, locals }): Promise<response> {
     const projects = new Projects(locals?.session?.user_id);
     const proj_data = await projects.load_projects();
     let response: response = {
-        // projects: proj_data,
         project: null,
-        session: locals.session
+        // session: locals.session,
+        // user: locals.user
     }
     if (params?.project) {
-        response.project = proj_data.find(p => p.urlid === params.project) || null;
+        const foundProject = proj_data.find(p => p.urlid === params.project);
+        response.project = foundProject ? {
+            ...foundProject,
+            owner: locals.session.user_id,
+            updated_at: foundProject.created_at,
+            vector_model: 'default',
+            chat_model: 'default',
+            tags: [],
+            security: 'public',
+        } : null;
         if (response.project === null) {
             return error(404, 'Project not found');
         }

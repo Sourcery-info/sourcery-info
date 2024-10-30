@@ -1,6 +1,8 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import type { User, UserSettings } from '@sourcery/common/types/User.type';
-delete mongoose.connection.models['User'];
+if (mongoose.models.User) {
+    mongoose.deleteModel('User');
+}
 const UserSettingsSchema = new Schema<UserSettings>({
     theme: String,
     language: String,
@@ -39,8 +41,7 @@ const UserSchema = new Schema<User & Document>({
     admin: {
         type: Boolean,
         default: false
-    },
-    blah: String
+    }
 });
 
 UserSchema.pre('save', function(next) {

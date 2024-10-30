@@ -21,12 +21,12 @@
 	export let project;
 	export let version;
 	export let session;
+	export let user;
 
-	let isOpen = false;
+	let userMenuIsOpen = false;
+	let adminMenuIsOpen = false;
 
-    function handleUpdate(event) {
-		isOpen = event?.detail?.isOpen;
-	}
+	console.log(user);
 
 	// Check event.locals.session is not null
 	
@@ -56,17 +56,47 @@
 			</NavItem>
 		</Nav>
 	{/if}
-	<Nav class="mr-auto">
-		<NavItem>v{version}</NavItem>
-	</Nav>
+	
 	{#if session}
-		<Nav>
-			<NavItem>
-				<NavLink href="/logout">
-					<Icon class="text-white" name="door-open-fill" />
-				</NavLink>
-			</NavItem>
-		</Nav>
+		<Dropdown isOpen={userMenuIsOpen} on:toggle={() => userMenuIsOpen = !userMenuIsOpen}>
+			<DropdownToggle>
+				<Icon name="person-fill" />
+			</DropdownToggle>
+			<DropdownMenu>
+				<DropdownItem>
+					<NavLink href="/profile">
+						<Icon name="person-fill" /> Profile
+					</NavLink>
+				</DropdownItem>
+				<DropdownItem>
+					<NavLink href="/settings">
+						<Icon name="gear-fill" /> Settings
+					</NavLink>
+				</DropdownItem>
+				<DropdownItem>
+					<NavLink href="/logout">
+						<Icon name="door-open-fill" /> Logout
+					</NavLink>
+				</DropdownItem>
+			</DropdownMenu>
+		</Dropdown>
+	{/if}
+	{#if user?.admin}
+		<Dropdown isOpen={adminMenuIsOpen} on:toggle={() => adminMenuIsOpen = !adminMenuIsOpen}>
+			<DropdownToggle>
+				<Icon name="gear-fill" />
+			</DropdownToggle>
+			<DropdownMenu>
+				<DropdownItem>
+					<NavLink href="/admin/users/list">
+						<Icon name="people-fill" /> Users
+					</NavLink>
+				</DropdownItem>
+				<DropdownItem>
+					<NavItem>v{version}</NavItem>
+				</DropdownItem>
+			</DropdownMenu>
+		</Dropdown>
 	{/if}
 </Navbar>
 </div>

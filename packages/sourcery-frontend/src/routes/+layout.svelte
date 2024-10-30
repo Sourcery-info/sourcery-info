@@ -18,7 +18,7 @@
 	<title>Sourcery.info</title>
 </svelte:head>
 <div class="grid-main">
-	<Navbar project={data.project} version={'0.0.1'} session={data.session} />
+	<Navbar project={data.project} version={'0.0.1'} session={data.session} user={data.user} />
 	{#if data.alerts && data.alerts.length > 0}
 		<div class="alerts-container">
 			{#each data.alerts as alert}

@@ -1,12 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import type { Project } from '@sourcery/common/types/Project.type';
+if (mongoose.models.Project) {
+    mongoose.deleteModel('Project');
+}
 
 const ProjectSchema = new Schema<Project & Document>({
-    urlid: { 
-        type: String, 
-        required: true, 
-        unique: true 
-    },
     name: { 
         type: String, 
         required: true 
@@ -17,7 +15,7 @@ const ProjectSchema = new Schema<Project & Document>({
         type: Schema.Types.ObjectId, 
         ref: 'User', 
         required: true 
-    },
+    } as any,
     is_public: { 
         type: Boolean, 
         default: false 
@@ -38,7 +36,7 @@ const ProjectSchema = new Schema<Project & Document>({
     }
 });
 
-ProjectSchema.pre('save', function(next) {
+ProjectSchema.pre('save', function(this: Project & Document, next) {
     this.updated_at = new Date();
     next();
 });

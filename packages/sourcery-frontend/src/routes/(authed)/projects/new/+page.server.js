@@ -1,12 +1,12 @@
 /** @type {import('./$types').PageServerLoad} */
 /** @type {import('./$types').Actions} */
 
-import Project from '$lib/classes/project';
+import { createProject } from '$lib/classes/projects'
 import { fail, redirect, error } from '@sveltejs/kit';
 import { zfd } from "zod-form-data";
 import { z } from 'zod';
 import { validate } from '$lib/validate';
-import { check_unique } from '$lib/classes/project';
+import { checkUniqueName } from '$lib/classes/projects';
 
 export async function load() {
     return {};
@@ -16,7 +16,7 @@ export const actions = {
     default: async ({ request, locals }) => {
         const formData = await request.formData();
         const newProjectScheme = zfd.formData({
-            name: zfd.text(z.string().min(3).max(50).refine(check_unique, { message: "Project name already exists" })),
+            name: zfd.text(z.string().min(3).max(50).refine(checkUniqueName, { message: "Project name already exists" })),
             description: zfd.text(z.string().optional()),
             tags: zfd.text(z.string().optional()),
             notes: zfd.text(z.string().optional()),
@@ -36,10 +36,9 @@ export const actions = {
             ...validation.data,
             owner: locals?.session?.user_id,
         }
-        const project = new Project(locals?.session?.user_id);
+
         try {
-            const result = await project.save(data);
-            console.log('result', result);
+            await createProject(data);
         } catch (err) {
             if (err instanceof Error) {
                 return fail(400, { errors: [error(500, err.toString())], data: validation.data });

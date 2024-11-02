@@ -26,8 +26,6 @@
 	let userMenuIsOpen = false;
 	let adminMenuIsOpen = false;
 
-	console.log(user);
-
 	// Check event.locals.session is not null
 	
 </script>

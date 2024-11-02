@@ -24,7 +24,7 @@
 			</NavLink>
 		</NavItem>
 		<NavItem>
-			<NavLink href="/new">
+			<NavLink href="/projects/new">
 				<Icon name="plus-circle" />
 				New Project
 			</NavLink>

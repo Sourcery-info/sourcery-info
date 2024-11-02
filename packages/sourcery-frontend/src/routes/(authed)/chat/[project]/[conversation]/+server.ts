@@ -5,7 +5,7 @@ import { Readable } from "node:stream";
 export async function POST({ params, request }) {
     const { project, conversation } = params;
     const { input } = await request.json();
-    console.log(JSON.stringify({ input, conversation }));
+    // console.log(JSON.stringify({ input, conversation }));
     const response = await fetch(`http://localhost:9101/chat/${project}`, {
         method: 'POST',
         body: JSON.stringify({ input, conversation }),
@@ -14,7 +14,7 @@ export async function POST({ params, request }) {
             'Response-Type': 'text/event-stream'
         }
     });
-    console.log(response);
+    // console.log(response);
     if (!response.ok || !(response.body instanceof Readable)) {
         return new Response("Error", {
             status: 500

@@ -11,7 +11,7 @@ connectDB().then(() => {
 })
     .catch((e) => {
         console.log('MongoDB failed to connect');
-        console.log(e);
+        console.error(e);
     });
 
 export async function handle({ event, resolve }) {

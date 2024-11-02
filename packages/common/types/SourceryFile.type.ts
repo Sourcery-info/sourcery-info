@@ -67,7 +67,7 @@ export type StageLog = {
 }
 
 export type SourceryFile = {
-    uid?: string;
+    _id: string;
     original_name?: string;
     filename: string;
     metadata?: string;

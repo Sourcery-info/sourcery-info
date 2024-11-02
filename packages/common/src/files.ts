@@ -30,7 +30,6 @@ export const uploadFile = async (project: string, file: File) => {
     let filepath = path.join(dir, filename);
     // Check that file doesn't already exist, if it does, increment filename
     while (glob.sync(filepath).length > 0) {
-        console.log('file exists', filepath)
         filepath = incrementFilename(filepath);
     }
     // Write file to disk

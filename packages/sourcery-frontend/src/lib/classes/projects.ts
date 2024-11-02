@@ -1,50 +1,56 @@
-import { getDirectories } from '$lib/utils/files';
-import { PROJECT_DIR } from "$lib/variables"
-import Project from "$lib/classes/project";
+import { ensureProjectDirectory } from '$lib/utils/files';
 import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
 import { ProjectModel } from '@sourcery/common/src/models/Project.model';
 // import type { User } from '@sourcery/common/types/User.type.js';
 
-export default class Projects {
-    projects: ProjectType[];
-    user_id: string;
+export async function checkUniqueName(name: string) {
+    const existingProject = await ProjectModel.findOne({ name });
+    return !existingProject;
+}
 
-    constructor(user_id: string) {
-        this.user_id = user_id;
-        this.projects = [];
-        this.load_projects();
+export function mapDBProject(project: ProjectType): ProjectType {
+    return {
+        _id: project._id.toString(),
+        name: project.name,
+        urlid: project.urlid,
+        description: project.description,
+        notes: project.notes,
+        is_public: project.is_public,
+        shared_with: project.shared_with,
+        created_at: project.created_at,
+        updated_at: project.updated_at,
+        owner: project.owner.toString(),
+        vector_model: project.vector_model,
+        chat_model: project.chat_model,
+        tags: project.tags,
+        security: project.security,
+        temperature: project.temperature,
     }
+}
 
-    async load_projects() {
-        // Fetch projects using Mongoose ProjectModel
-        const projects = await ProjectModel.find({
-            $or: [
-                { owner: this.user_id },
-                { is_public: true },
-                { shared_with: this.user_id }
-            ]
-        });
-        // Convert Mongoose documents to plain objects
-        return projects.map(project => {
-            return {
-                name: project.name,
-                urlid: project.urlid,
-                description: project.description,
-                notes: project.notes,
-                is_public: project.is_public,
-                shared_with: project.shared_with,
-                created_at: project.created_at
-            }
-        });
-    }
+export async function getProjects(user_id: string): Promise<ProjectType[]> {
+    const projects = await ProjectModel.find({
+        $or: [
+            { owner: user_id },
+            { is_public: true },
+            { shared_with: user_id }
+        ]
+    });
+    return projects.map(mapDBProject);
+}
 
-    get_project(urlid: string): ProjectType {
-        const project = this.projects.find(project => project.urlid === urlid);
-        if (!project) throw new Error('Project not found');
-        return project;
-    }
+export async function getProject(project_id: string): Promise<ProjectType | null> {
+    const project = await ProjectModel.findById(project_id);
+    return project ? mapDBProject(project) : null;
+}
 
-    get(): ProjectType[] {
-        return this.projects;
-    }
+export async function createProject(project: ProjectType): Promise<ProjectType> {
+    const newProject = await ProjectModel.create(project);
+    if (!newProject) throw new Error('Failed to create project');
+    await ensureProjectDirectory(newProject._id.toString());
+    return mapDBProject(newProject);
+}
+
+export async function updateProject(project: ProjectType): Promise<void> {
+    await ProjectModel.findByIdAndUpdate(project._id, project, { new: true });
 }

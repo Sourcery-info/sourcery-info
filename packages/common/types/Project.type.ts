@@ -1,10 +1,11 @@
 import type { SourceryFile } from './SourceryFile.type';
 
 export type Project = {
+    _id: string;
     urlid: string | null;
     name: string;
-    description: string;
-    notes: string;
+    description?: string;
+    notes?: string;
     owner: string;
     is_public: boolean;
     shared_with?: string[];
@@ -12,7 +13,8 @@ export type Project = {
     updated_at: Date | null;
     vector_model: string;
     chat_model: string;
-    tags: string[];
+    temperature: number;
+    tags?: string;
     security: string;
     conversations?: string[];
     files?: SourceryFile[];

@@ -21,11 +21,10 @@
                                         <p>{project.created_at}</p>
                                     {/if}
                                     <p>
-                                        <Button color="primary" href="/chat/{project.urlid}">Chat</Button>
-                                        <Button color="secondary" href="/files/{project.urlid}">Files</Button>
-                                        <Button color="secondary" href="/edit/{project.urlid}">Edit</Button>
+                                        <Button color="primary" href="/chat/{project._id}">Chat</Button>
+                                        <Button color="secondary" href="/files/{project._id}">Files</Button>
+                                        <Button color="secondary" href="/projects/edit/{project._id}">Edit</Button>
                                     </p>
-                                    
                                 </CardBody>
                             </Card>
                         </Col>

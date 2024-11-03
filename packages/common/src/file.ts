@@ -1,3 +1,4 @@
+// DEPRECATED
 import type { SourceryFile, StageLog } from "@sourcery/common/types/SourceryFile.type.ts"
 import { FileTypes, FileStatus, FileStage } from "@sourcery/common/types/SourceryFile.type.ts"
 import fs from 'fs';
@@ -7,7 +8,7 @@ import { ensureDir } from "@sourcery/common/src/utils.ts";
 import crypto from 'crypto';
 
 export class File implements SourceryFile {
-    uid: string | undefined;
+    _id: string | undefined;
     filename: string;
     original_name: string | undefined;
     metadata: string | undefined;
@@ -19,17 +20,16 @@ export class File implements SourceryFile {
     created_at: Date;
     updated_at: Date | null;
 
-    constructor(project: string, uid: string | null = null, filename: string | null = null) {
+    constructor(project: string, _id: string | null = null, filename: string | null = null) {
         this.project = project;
         let sourceryfile: SourceryFile;
-        if (uid !== null) {
-            sourceryfile = this.load_metadata(uid);
+        if (_id !== null) {
+            sourceryfile = this.load_metadata(_id);
         } else if (filename !== null) {
             sourceryfile = this.init(filename);
         } else {
-            throw new Error("Either uid or filename must be provided");
+            throw new Error("Either _id or filename must be provided");
         }
-        this.uid = sourceryfile.uid;
         this.filename = sourceryfile.filename;
         this.original_name = sourceryfile.original_name;
         this.metadata = sourceryfile.metadata;
@@ -42,11 +42,11 @@ export class File implements SourceryFile {
         this.updated_at = sourceryfile.updated_at;
     }
 
-    load_metadata(uid: string): SourceryFile {
+    load_metadata(_id: string): SourceryFile {
         if (!process.env.PROJECT_DIR) {
             throw new Error("Environment variable PROJECT_DIR not set");
         }
-        this.uid = uid;
+        this._id = _id;
         // const dirname = path.join(process.env.PROJECT_DIR, this.project, uid);
         const metadata = path.join(this.dirname(), `metadata.json`);
         const data = fs.readFileSync(metadata, 'utf-8');
@@ -56,7 +56,7 @@ export class File implements SourceryFile {
 
     fromJSON(json: any): SourceryFile {
         return {
-            uid: json.uid,
+            _id: json._id,
             original_name: json.original_name,
             filename: json.filename,
             metadata: json.metadata,
@@ -161,7 +161,7 @@ export class File implements SourceryFile {
 
     toJSON(): SourceryFile {
         return {
-            uid: this.uid,
+            _id: this._id,
             original_name: this.original_name,
             filename: this.filename,
             metadata: this.metadata,

@@ -3,7 +3,7 @@ import { Queue } from "bullmq";
 
 dotenv.config();
 
-export class SourceryQueue {
+export class SourceryPub {
     protected queue: Queue;
 
     constructor(queue_name: string = "sourcery.info") {

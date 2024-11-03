@@ -3,7 +3,7 @@ import { Worker } from "bullmq";
 
 dotenv.config();
 
-export class SourceryWorker {
+export class SourcerySub {
     protected worker: Worker;
 
     constructor(fn: Function, queue_name: string = "sourcery.info") {

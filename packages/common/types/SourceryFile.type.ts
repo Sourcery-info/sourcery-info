@@ -1,4 +1,5 @@
 export enum FileStatus {
+    PENDING = 'pending',
     ACTIVE = 'active',
     INACTIVE = 'inactive',
     DELETED = 'deleted',
@@ -40,6 +41,7 @@ export enum FileTypes {
     BZ2 = 'bz2',
     RAR = 'rar',
     SEVENZ = '7z',
+    UNKNOWN = 'unknown',
 }
 
 export enum StageState {
@@ -56,7 +58,7 @@ export enum StageResult {
 
 export type StageLog = {
     stage: FileStage | string;
-    input: StageLog;
+    input: SourceryFile | null;
     state: StageState;
     result: StageResult | undefined | null;
     message: string;
@@ -67,7 +69,7 @@ export type StageLog = {
 }
 
 export type SourceryFile = {
-    _id: string;
+    _id?: string;
     original_name?: string;
     filename: string;
     metadata?: string;
@@ -76,7 +78,6 @@ export type SourceryFile = {
     // data: string;
     status: FileStatus;
     stage: FileStage | string;
-    stage_logs?: StageLog[];
     created_at: Date;
     updated_at: Date | null;
 }

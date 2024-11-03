@@ -3,7 +3,7 @@ import type { SourceryFile } from '@sourcery/common/types/SourceryFile.type.js';
 
 export function mapDBFile(file: SourceryFile): SourceryFile {
     return {
-        _id: file._id.toString(),
+        _id: file._id?.toString(),
         original_name: file.original_name,
         filename: file.filename,
         metadata: file.metadata,

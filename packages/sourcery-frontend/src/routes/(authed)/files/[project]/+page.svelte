@@ -13,11 +13,11 @@
 	 * @param {Event} e - The event object.
 	 */
 	function checkAllFiles(e) {
-		for (let file of data.props.manifest) {
+		for (let file of data.props.files) {
 			// @ts-ignore
 			file.checked = e.target?.checked;
 		}
-		data.props.manifest = data.props.manifest;
+		data.props.files = data.props.files;
 	}
 
 	onMount(async () => {
@@ -25,10 +25,10 @@
 		await connect(data.props.websocket_port);
 		try {
 			await subscribe(`${data.props.project}-file`, (msg) => {
-				const f = data.props.manifest.find((file) => file.uid === msg.file.uid);
+				const f = data.props.files.find((file) => file.uid === msg.file.uid);
 				if (f) {
 					Object.assign(f, msg.file);
-					data.props.manifest = data.props.manifest;
+					data.props.files = data.props.files;
 				}
 			});
 		} catch (error) {
@@ -61,18 +61,18 @@
 				<div class="uploaded-files card">
 					<div class="card-header file-header">
 						<input type="checkbox" on:click={checkAllFiles} />
-						<div>Files ({data.props.manifest.length} files)</div>
+						<div>Files ({data.props.files.length} files)</div>
 						<div>
 							<Button color="primary" size="sm" formaction="?/reindexFiles">Reindex</Button>
 							<Button color="danger" size="sm" formaction="?/deleteFiles">Delete</Button>
 						</div>
 					</div>
 					<ul class="list-group list-group-flush">
-						{#each data.props.manifest as file}
+						{#each data.props.files as file}
 							<li class="list-group-item">
 								<Input
 									name="files"
-									value={file.uid}
+									value={file._id}
 									type="checkbox"
 									label={file.original_name}
 									bind:checked={file.checked}

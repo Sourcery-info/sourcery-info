@@ -1,22 +1,25 @@
 /** @type {import('./$types').PageServerLoad} */
-import { uploadFile } from '$lib/utils/files';
+import { getFiletype, uploadFile, deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { File as SourceryFile } from '@sourcery/common/src/file';
-import { getManifest } from '@sourcery/common/src/manifest.js';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error } from '@sveltejs/kit';
 import { WEBSOCKET_PORT } from '$lib/variables.js';
+import { updateFile, deleteFile, createFile, getFile, getFiles } from '$lib/classes/files';
+import { FileStatus, FileTypes } from '@sourcery/common/types/SourceryFile.type';
+import { FileStage } from '@sourcery/common/types/SourceryFile.type';
 
 const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
 
 export async function load({ params }) {
 	const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
 	const project = params.project;
-	const manifest = getManifest(project);
+	// const manifest = getManifest(project);
+	const files = await getFiles(project);
 	const db_info = await qdrant.getInfo(project);
 	const websocket_port = WEBSOCKET_PORT || 3001;
 	return {
 		props: {
-			manifest,
+			files,
 			db_info,
 			websocket_port,
 			project
@@ -28,9 +31,31 @@ export const actions = {
 	upload: async ({ request, params }) => {
 		const formData = await request.formData();
 		const files = formData.getAll('files');
-		const project = params.project;
+		const project_id = params.project;
 		for (const file of files) {
-			await uploadFile(project, file as File);
+			const file_record = await createFile({
+				project: project_id,
+				original_name: "",
+				filename: "",
+				filetype: FileTypes.UNKNOWN,
+				stage: FileStage.UNPROCESSED,
+				status: FileStatus.PENDING,
+				created_at: new Date(),
+				updated_at: new Date(),
+			});
+			if (!file_record._id) {
+				return error(500, 'Failed to create file record');
+			}
+			const { original_name, filename, filetype } = await uploadFile(project_id, file_record._id, file as File);
+			const stage = FileStage.UNPROCESSED;
+			await updateFile({
+				...file_record,
+				original_name: original_name,
+				filename: filename,
+				filetype,
+				stage,
+				status: FileStatus.ACTIVE,
+			});
 		}
 		return {
 			status: 200,
@@ -73,8 +98,8 @@ export const actions = {
 		const formData = await request.formData();
 		for (const uid of formData.values()) {
 			await qdrant.deleteRecord(params.project, uid.toString());
-			const file = new SourceryFile(params.project, uid.toString());
-			await file.delete();
+			await deleteFileUtils(params.project, uid.toString());
+			await deleteFile(uid.toString());
 		}
 		return {
 			status: 200,

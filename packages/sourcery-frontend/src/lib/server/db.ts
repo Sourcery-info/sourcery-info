@@ -1,13 +1,11 @@
 import mongoose from 'mongoose';
-import { MONGO_URL } from '$env/static/private';
-
-if (!MONGO_URL) {
-    throw new Error('MONGO_URL environment variable not set');
-}
 
 let isConnected = false;
 
-export async function connectDB() {
+export async function connectDB(MONGO_URL: string) {
+    if (!MONGO_URL) {
+        throw new Error('MONGO_URL not set');
+    }
     if (isConnected) return;
 
     try {

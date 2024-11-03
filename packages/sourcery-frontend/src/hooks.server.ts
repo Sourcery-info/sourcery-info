@@ -2,11 +2,11 @@
 import { redirect } from '@sveltejs/kit';
 import { validateSessionToken, setSessionTokenCookie, deleteSessionTokenCookie } from '$lib/server/auth';
 import { getUser, getUserCount } from '$lib/server/user';
-
+import { MONGO_URL } from '$env/static/private';
 import { connectDB } from '$lib/server/db';
 import { alertMessages, createAlertUrl } from '$lib/alerts';
 
-connectDB().then(() => {
+connectDB(MONGO_URL).then(() => {
     console.log('Connected to MongoDB');
 })
     .catch((e) => {

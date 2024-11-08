@@ -12,43 +12,50 @@ import { UnprocessedPipeline } from "./pipeline/unprocessed";
     import { ErrorPipeline } from "./pipeline/error";
 import { connectDB } from '@sourcery/frontend/src/lib/server/db';
 import { stages } from "./file_workflows";
+import { FileStage } from "@sourcery/common/types/SourceryFile.type";
 import dotenv from "dotenv";
 dotenv.config();
 
-async function handleFile(file: SourceryFile, stage: string) {
+async function handleFile(file: SourceryFile) {
     let stage_instance = null;
+    let stage = file.stage;
+    if (!stage) {
+        stage = FileStage.UNPROCESSED;
+    }
+    console.log(`Processing ${stage} Pipeline`);
     switch (stage) {
-        case "unprocessed":
+        case FileStage.UNPROCESSED:
             stage_instance = new UnprocessedPipeline(file);
             break;
-        case "validating":
+        case FileStage.VALIDATING:
             stage_instance = new Validate(file);
             break;
-        case "ocr":
+        case FileStage.OCRING:
             stage_instance = new OCRPipeline(file);
             break;
-        case "text_extraction":
+        case FileStage.ENTITY_EXTRACTION:
             stage_instance = new ExtractText(file);
             break;
-        case "chunking":
+        case FileStage.CHUNKING:
             stage_instance = new Chunk(file);
             break;
-        case "vectorizing":
+        case FileStage.VECTORISING:
             stage_instance = new Vectorize(file);
             break;
-        case "saving":
+        case FileStage.SAVING:
             stage_instance = new Save(file);
             break;
-        case "done":
+        case FileStage.DONE:
             stage_instance = new DonePipeline(file);
             break;
-        case "error":
+        case FileStage.ERROR:
             stage_instance = new ErrorPipeline(file);
             break;
         default:
             console.error(`No file workflow found for stage ${stage}`);
             return false;
     }
+    console.log({ stage_instance });
     if (!stage_instance) {
         console.error(`No file workflow found for stage ${stage}`);
         return false;
@@ -70,7 +77,7 @@ async function main() {
     }
     await connectDB(process.env.MONGO_URL);
     for (const stage of stages) {
-        new SourcerySub((file: SourceryFile) => handleFile(file, stage), `file-${stage}`);
+        new SourcerySub((file: SourceryFile) => handleFile(file), `file-${stage}`);
     }
 }
 

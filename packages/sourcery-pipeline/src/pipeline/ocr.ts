@@ -8,6 +8,7 @@ export class OCRPipeline extends PipelineBase {
 
     constructor(file: SourceryFile) {
         super(file);
+        console.log("OCR Pipeline constructor");
     }
     
     async process() {

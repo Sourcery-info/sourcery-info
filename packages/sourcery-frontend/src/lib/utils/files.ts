@@ -2,10 +2,14 @@ import { mkdtemp, writeFile, copyFile, mkdir, rm } from "node:fs/promises";
 import path from "path";
 import { md5 } from "./crypto";
 import {tmpdir} from 'os';
-import { PROJECT_DIR } from "$lib/variables";
+// import { PROJECT_DIR } from "$lib/variables";
 import { FileStage, FileTypes } from "@sourcery/common/types/SourceryFile.type";
 import { ensureDir } from "@sourcery/common/src/utils";
 import { readdir } from "node:fs/promises";
+import dotenv from 'dotenv';
+dotenv.config();
+
+const PROJECT_DIR = path.resolve(process.env.PROJECT_DIR || 'projects');
 
 export const getFilepath = (project_id: string, file_id: string) => {
     return path.join(PROJECT_DIR, project_id, "files", file_id);

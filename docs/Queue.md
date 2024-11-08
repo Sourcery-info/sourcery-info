@@ -29,7 +29,7 @@ Each pipeline follows this process:
 
 #### Listening for New Files
 
-Each pipeline stage will listen for new files based on the `stage` property of the file. The stage is appended to the `queue` key to form a sub-queue. For example, if the pipeline stage is `extract_text`, it will listen for new files with the `file:extract_text` key.
+Each pipeline stage will listen for new files based on the `stage` property of the file. The stage is appended to the `file` key to form a sub-queue. For example, if the pipeline stage is `extract_text`, it will listen for new files with the `file-extract_text` key.
 
 #### Marking a File as Being Processed
 

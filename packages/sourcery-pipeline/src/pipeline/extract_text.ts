@@ -1,12 +1,13 @@
 import { PipelineBase } from "./base"
 import { FileTypes } from "@sourcery/common/types/SourceryFile.type";
 import { File } from "@sourcery/common/src/file";
+import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import * as fs from 'node:fs';
 import { spawn } from 'child_process';
 
 export class ExtractText extends PipelineBase {
 
-    constructor(file: File) {
+    constructor(file: SourceryFile) {
         super(file);
     }
     

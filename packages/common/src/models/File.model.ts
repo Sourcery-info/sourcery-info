@@ -5,17 +5,17 @@ if (mongoose.models.File) {
     mongoose.deleteModel('File');
 }
 
-const StageLogSchema = new Schema<StageLog>({
-    stage: String,
-    input: Schema.Types.Mixed,
-    state: { type: String, enum: StageState },
-    result: { type: String, enum: StageResult },
-    message: String,
-    start_time: Date,
-    end_time: Date,
-    duration: Number,
-    filename: String,
-});
+// const StageLogSchema = new Schema<StageLog>({
+//     stage: String,
+//     input: Schema.Types.Mixed,
+//     state: { type: String, enum: StageState },
+//     result: { type: String, enum: StageResult },
+//     message: String,
+//     start_time: Date,
+//     end_time: Date,
+//     duration: Number,
+//     filename: String,
+// });
 
 const FileSchema = new Schema<SourceryFile & Document>({
     original_name: String,
@@ -29,7 +29,10 @@ const FileSchema = new Schema<SourceryFile & Document>({
     } as any,
     status: { type: String, enum: FileStatus, index: true },
     stage: { type: String, enum: FileStage, index: true },
-    stage_logs: [StageLogSchema],
+    stage_queue: { type: [String], default: [] },
+    completed_stages: { type: [String], default: [] },
+    last_filename: String,
+    processing: { type: Boolean, default: false, index: true },
     created_at: { 
         type: Date, 
         default: Date.now,

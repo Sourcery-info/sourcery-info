@@ -4,6 +4,7 @@ export enum FileStatus {
     INACTIVE = 'inactive',
     DELETED = 'deleted',
     ARCHIVED = 'archived',
+    ERROR = 'error',
 }
 
 export enum FileStage {
@@ -15,6 +16,8 @@ export enum FileStage {
     CHUNKING = 'chunking',
     INDEXING = 'indexing',
     PROCESSED = 'processed',
+    DONE = 'done',
+    ERROR = 'error',
 }
 
 export enum FileTypes {
@@ -75,9 +78,13 @@ export type SourceryFile = {
     metadata?: string;
     filetype: FileTypes;
     project: string;
-    // data: string;
     status: FileStatus;
     stage: FileStage | string;
+    stage_queue: FileStage[];
+    completed_stages: FileStage[];
+    last_filename?: string;
+    processing: Boolean;
+    last_stage?: FileStage | string;
     created_at: Date;
     updated_at: Date | null;
 }

@@ -2,10 +2,11 @@ import { PipelineBase } from "./base"
 import { File } from "@sourcery/common/src/file";
 import * as fs from 'node:fs';
 import { Ollama } from "ollama";
+import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 
 export class Vectorize extends PipelineBase {
 
-    constructor(file: File) {
+    constructor(file: SourceryFile) {
         super(file);
     }
     

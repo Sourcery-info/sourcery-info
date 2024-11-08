@@ -13,6 +13,9 @@ export function mapDBFile(file: SourceryFile): SourceryFile {
         stage: file.stage,
         created_at: file.created_at,
         updated_at: file.updated_at,
+        stage_queue: file.stage_queue,
+        completed_stages: file.completed_stages,
+        processing: file.processing,
     };
 }
 
@@ -32,7 +35,10 @@ export async function createFile(file: SourceryFile): Promise<SourceryFile> {
 }
 
 export async function updateFile(file: SourceryFile): Promise<SourceryFile | null> {
-    const updatedFile = await FileModel.findByIdAndUpdate(file._id, file, { new: true });
+    const _id = file._id?.toString();
+    const data = { ...file, _id };
+    delete data._id;
+    const updatedFile = await FileModel.findByIdAndUpdate(_id, { $set: data }, { new: true });
     return updatedFile ? mapDBFile(updatedFile) : null;
 }
 

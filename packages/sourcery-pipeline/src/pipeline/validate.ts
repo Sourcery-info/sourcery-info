@@ -1,42 +1,54 @@
 import { PipelineBase } from "./base"
-import { FileTypes } from "@sourcery/common/types/SourceryFile.type.ts";
-import { File } from "@sourcery/common/src/file";
+import { FileTypes } from "@sourcery/common/types/SourceryFile.type";
 import * as fs from 'node:fs/promises';
 import isUft8 from "is-utf8";
+import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 
 export class Validate extends PipelineBase {
 
-    constructor(file: File) {
-        super(file);
+    constructor(file: SourceryFile) {
+        super(file, "validate");
     }
     
     async process() {
-        console.log(this.file)
         let result = false;
         switch (this.file.filetype) {
             case FileTypes.PDF:
-                result = await this.validate_pdf();
+                try {
+                    result = await this.validate_pdf();
+                } catch (e) {
+                    throw new Error(`File ${this.file._id} failed PDF validation`);
+                }
                 break;
             case FileTypes.TXT:
-                result = true;
+                try {
+                    result = await this.validate_txt();
+                } catch (e) {
+                    throw new Error(`File ${this.file._id} failed text validation`);
+                }
                 break;
             default:
-                break;
+                throw new Error(`File ${this.file._id} has an invalid filetype`);
         }
-        if (!result) throw new Error(`File ${this.file.filename} failed validation`);
+        if (!result) throw new Error(`File ${this.file._id} failed validation`);
+        console.log(`File ${this.file._id} passed validation`);
         return this.file;
     }
 
     async validate_pdf() {
-        const buf = await fs.readFile(this.file.filename);
+        console.log(`Validating PDF file ${this.file._id}`);
+        console.log(this.last_filename)
+        const buf = fs.readFile(this.last_filename);
         if (Buffer.isBuffer(buf) && buf.lastIndexOf("%PDF-") === 0 && buf.lastIndexOf("%%EOF") > -1) {
+            console.log(`File ${this.file._id} passed PDF validation`);
             return true;
         }
-        throw new Error(`File ${this.file.filename} failed PDF validation`);
+        console.log(`File ${this.file._id} failed PDF validation`);
+        throw new Error(`File ${this.file._id} failed PDF validation`);
     }
 
     async validate_txt() {
-        const buf = await fs.readFile(this.file.filename);
+        const buf = fs.readFile(this.last_filename);
         if (Buffer.isBuffer(buf) && isUft8(buf)) {
             // this.emit("info", `File ${this.file.filename} is a valid text file.`)
             return true;

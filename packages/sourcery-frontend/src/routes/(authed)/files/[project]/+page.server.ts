@@ -1,6 +1,7 @@
 /** @type {import('./$types').PageServerLoad} */
 import { getFiletype, uploadFile, deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { File as SourceryFile } from '@sourcery/common/src/file';
+import { SourceryPub } from '@sourcery/queue/src/pub';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error } from '@sveltejs/kit';
 import { WEBSOCKET_PORT } from '$lib/variables.js';
@@ -9,6 +10,8 @@ import { FileStatus, FileTypes } from '@sourcery/common/types/SourceryFile.type'
 import { FileStage } from '@sourcery/common/types/SourceryFile.type';
 
 const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
+
+const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export async function load({ params }) {
 	const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
@@ -42,20 +45,24 @@ export const actions = {
 				status: FileStatus.PENDING,
 				created_at: new Date(),
 				updated_at: new Date(),
+				stage_queue: [],
+				completed_stages: [],
+				processing: false,
 			});
 			if (!file_record._id) {
 				return error(500, 'Failed to create file record');
 			}
 			const { original_name, filename, filetype } = await uploadFile(project_id, file_record._id, file as File);
 			const stage = FileStage.UNPROCESSED;
-			await updateFile({
+			const data = {
 				...file_record,
 				original_name: original_name,
 				filename: filename,
 				filetype,
 				stage,
-				status: FileStatus.ACTIVE,
-			});
+			};
+			await updateFile(data);
+			await pub.addJob(`file-${stage}-${file_record._id}`, data);
 		}
 		return {
 			status: 200,

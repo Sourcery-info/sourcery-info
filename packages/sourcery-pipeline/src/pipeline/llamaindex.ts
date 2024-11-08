@@ -3,10 +3,11 @@ import { PipelineBase } from "./base"
 import { File } from "@sourcery/common/src/file";
 import path from "path";
 import fetch from "node-fetch";
+import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 
 export class LlamaIndexPipeline extends PipelineBase {
 
-    constructor(file: File) {
+    constructor(file: SourceryFile) {
         super(file);
     }
     

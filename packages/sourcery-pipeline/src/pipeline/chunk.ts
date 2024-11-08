@@ -2,11 +2,12 @@ import { chunk } from "llm-chunk";
 import he from "he";
 import { PipelineBase } from "./base"
 import { File } from "@sourcery/common/src/file";
+import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import * as fs from 'node:fs';
 
 export class Chunk extends PipelineBase {
 
-    constructor(file: File) {
+    constructor(file: SourceryFile) {
         super(file);
     }
     

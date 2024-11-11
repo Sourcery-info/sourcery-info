@@ -4,12 +4,12 @@ import { Validate } from "./pipeline/validate";
 import { ExtractText } from "./pipeline/extract_text";
 import { Chunk } from "./pipeline/chunk";
 import { Vectorize } from "./pipeline/vectorize";
-import { OCRPipeline } from "./pipeline/ocr";
+import { DoclingPipeline } from "./pipeline/docling";
 import { Save } from "./pipeline/save";
 import { DonePipeline } from "./pipeline/done";
 import { LlamaIndexPipeline } from "./pipeline/llamaindex";
 import { UnprocessedPipeline } from "./pipeline/unprocessed";
-    import { ErrorPipeline } from "./pipeline/error";
+import { ErrorPipeline } from "./pipeline/error";
 import { connectDB } from '@sourcery/frontend/src/lib/server/db';
 import { stages } from "./file_workflows";
 import { FileStage } from "@sourcery/common/types/SourceryFile.type";
@@ -30,8 +30,8 @@ async function handleFile(file: SourceryFile) {
         case FileStage.VALIDATING:
             stage_instance = new Validate(file);
             break;
-        case FileStage.OCRING:
-            stage_instance = new OCRPipeline(file);
+        case FileStage.DOCLING:
+            stage_instance = new DoclingPipeline(file);
             break;
         case FileStage.ENTITY_EXTRACTION:
             stage_instance = new ExtractText(file);
@@ -55,7 +55,7 @@ async function handleFile(file: SourceryFile) {
             console.error(`No file workflow found for stage ${stage}`);
             return false;
     }
-    console.log({ stage_instance });
+    // console.log({ stage_instance });
     if (!stage_instance) {
         console.error(`No file workflow found for stage ${stage}`);
         return false;

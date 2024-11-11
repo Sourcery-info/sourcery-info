@@ -1,22 +1,26 @@
 export const fileTypeWorkflows: Record<string, { stages: string[] }> = {
     "pdf": {
         "stages": [
-            // "virus_scanning",
-            "ocr",
-            // "text_extraction",
-            "vectorising"
+            "docling",
+            "vectorising",
+            "saving",
+            "done"
         ]
     },
     "text": {
         "stages": [
             "virus_scanning",
-            "vectorising"
+            "vectorising",
+            "saving",
+            "done"
         ]
     },
     "default": {
         "stages": [
             "virus_scanning",
-            "vectorising"
+            "vectorising",
+            "saving",
+            "done"
         ]
     }
 }
@@ -24,7 +28,7 @@ export const fileTypeWorkflows: Record<string, { stages: string[] }> = {
 export const stages = [
     "unprocessed",
     "validating",
-    "ocr",
+    "docling",
     "text_extraction",
     "chunking",
     "vectorising",

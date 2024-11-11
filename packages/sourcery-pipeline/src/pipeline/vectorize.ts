@@ -2,18 +2,22 @@ import { PipelineBase } from "./base"
 import { File } from "@sourcery/common/src/file";
 import * as fs from 'node:fs';
 import { Ollama } from "ollama";
+import { writeFile } from "node:fs/promises";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 
 export class Vectorize extends PipelineBase {
 
     constructor(file: SourceryFile) {
-        super(file);
+        super(file, "json");
     }
     
     async process() {
         const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
-        const text = fs.readFileSync(this.file.filename, 'utf8');
-        const chunks = JSON.parse(text);
+        const text = fs.readFileSync(this.last_filename, 'utf8');
+        // const chunks = JSON.parse(text);
+        // const result = [];
+        // let i = 0;
+        const chunks = [text];
         const result = [];
         let i = 0;
         for (const chunk of chunks) {
@@ -29,7 +33,7 @@ export class Vectorize extends PipelineBase {
             });
             console.log(`Processed chunk ${i++} of ${chunks.length}`)
         }
-        this.file.write(JSON.stringify(result, null, 2));
+        await writeFile(this.filename, JSON.stringify(result, null, 2));
         return this.file;
     }
 }

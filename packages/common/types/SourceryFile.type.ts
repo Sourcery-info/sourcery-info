@@ -11,6 +11,7 @@ export enum FileStage {
     UNPROCESSED = 'unprocessed',
     VALIDATING = 'validating',
     VIRUS_SCANNING = 'virus_scanning',
+    DOCLING = 'docling',
     OCRING = 'ocr',
     ENTITY_EXTRACTION = 'entity_extraction',
     CHUNKING = 'chunking',

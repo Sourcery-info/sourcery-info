@@ -6,7 +6,7 @@ import { fileTypeWorkflows } from "../file_workflows";
 
 export class UnprocessedPipeline extends PipelineBase {
     constructor(file: SourceryFile) {
-        super(file, "unprocessed");
+        super(file);
     }
 
     async process(): Promise<SourceryFile> {

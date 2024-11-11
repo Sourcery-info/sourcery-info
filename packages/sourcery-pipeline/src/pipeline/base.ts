@@ -25,29 +25,35 @@ export class PipelineBase {
     protected filename: string;
     protected last_filename: string;
     protected stage_name: string;
+    protected extension: string;
+    // protected input_type: string;
+    // protected output_type: string;
 
-    constructor(file: SourceryFile) {
+    constructor(file: SourceryFile, extension: string | null = null) {
         if (!file.project) {
             throw new Error("File project is required");
         }
         if (!file._id) {
             throw new Error("File _id is required");
         }
+        // this.input_type = input_type;
+        // this.output_type = output_type;
         this.stage_name = file.stage;
         this.time_start = new Date();
         this.file = file;
         this.file.stage = this.stage_name;
         console.log(`File ${file._id} has started stage ${file.stage}`);
         this.filepath = getFilepath(file.project, file._id);
-        this.filename = path.join(this.filepath, file.stage, file.filename + "." + file.filetype);
-        this.last_filename = file.last_filename || file.filename;
-
+        this.extension = extension || file.filetype;
+        this.filename = path.join(this.filepath, file.stage, file.filename + "." + this.extension);
+        this.last_filename = this.file.last_filename || this.filename;
         // Ensure that directory for this stage exists
         const project_dir = process.env.PROJECT_DIR;
         if (!project_dir) {
             throw new Error("Environment variable PROJECT_DIR not set");
         }
-        ensureDir(path.join(project_dir, file.project));
+        console.log(`Ensuring directory ${path.join(this.filepath, this.file.stage)} exists`);
+        ensureDir(path.join(this.filepath, this.file.stage));
         this.file.processing = true;
         updateFile(this.file);
         this.log(StageState.STARTED, null, "Stage started")
@@ -61,6 +67,7 @@ export class PipelineBase {
     }
 
     log(state: StageState, result: StageResult | null, message: string) {
+        console.log(`${this.file.stage} - ${state} - ${result} - ${message}`);
         // const log = {} as StageLog;
         // log.stage = this.file.stage;
         // log.state = state;
@@ -76,16 +83,11 @@ export class PipelineBase {
 
     async done() {
         this.file.processing = false;
-        this.file.last_filename = this.file.filename;
-        const stagePath = path.join(this.filepath, this.file.stage);
-        const stageFile = path.join(stagePath, this.file.filename + "." + this.file.filetype);
-        
-        if (!existsSync(stageFile)) {
-            const previousStage = this.file.completed_stages[this.file.completed_stages.length - 1];
-            const previousPath = path.join(this.filepath, previousStage);
-            const previousFile = path.join(previousPath, this.file.filename + "." + this.file.filetype);
-            ensureDir(stagePath);
-            await fs.copyFile(previousFile, stageFile);
+        this.file.last_filename = this.filename;
+        if (!existsSync(this.filename)) {
+            this.filename = path.join(this.filepath, this.file.stage, this.file.filename + "." + this.extension);
+            // console.log(`Copying ${this.last_filename} to ${this.filename}`);
+            await fs.copyFile(this.last_filename, this.filename);
         }
         this.file.completed_stages.push(this.file.stage as FileStage);
         this.file.stage = this.file.stage_queue.shift() as FileStage;

@@ -51,25 +51,25 @@ services:
               count: 1
               capabilities: [gpu]
 
-  sourcery-ocr:
-    build:
-      context: ./
-      dockerfile: ./packages/sourcery-ocr/Dockerfile
-    tty: true
-    restart: unless-stopped
-    container_name: sourcery-ocr
-    privileged: true
-    volumes:
-      - ./packages/sourcery-ocr:/app/packages/sourcery-ocr
-    ports:
-      - 3001:3000
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+  # sourcery-ocr:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./packages/sourcery-ocr/Dockerfile
+  #   tty: true
+  #   restart: unless-stopped
+  #   container_name: sourcery-ocr
+  #   privileged: true
+  #   volumes:
+  #     - ./packages/sourcery-ocr:/app/packages/sourcery-ocr
+  #   ports:
+  #     - 3001:3000
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
 
   sourcery:
     build:
@@ -91,6 +91,13 @@ services:
       - REDIS_HOST=sourcery-keydb
       - REDIS_PORT=6379
       - MONGO_URL=mongodb://sourcery-mongodb:27017
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   sourcery-mongodb:
     image: mongo:latest

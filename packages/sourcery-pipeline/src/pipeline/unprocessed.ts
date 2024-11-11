@@ -14,7 +14,7 @@ export class UnprocessedPipeline extends PipelineBase {
             throw new Error("File type is required");
         }
         const workflow = fileTypeWorkflows[this.file.filetype as FileTypes] || fileTypeWorkflows.default;
-        this.file.stage_queue = workflow.stages as FileStage[];
+        this.file.stage_queue = [...workflow.stages as FileStage[]];
         this.file.stage = "unprocessed";
         this.file.last_filename = this.file.filename;
         await updateFile(this.file);

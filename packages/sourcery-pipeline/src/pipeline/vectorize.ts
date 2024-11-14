@@ -23,7 +23,7 @@ export class Vectorize extends PipelineBase {
         for (const chunk of chunks) {
             const embeddingRequest = {
                 prompt: chunk,
-                model: "all-minilm",
+                model: "all-minilm:latest",
             };
             const vector = await ollama.embeddings(embeddingRequest);
             result.push({

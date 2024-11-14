@@ -1,4 +1,4 @@
-import { ensureProjectDirectory } from '$lib/utils/files';
+import { ensureProjectDirectory } from '@sourcery/frontend/src/lib/utils/files';
 import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
 import { ProjectModel } from '@sourcery/common/src/models/Project.model';
 // import type { User } from '@sourcery/common/types/User.type.js';

@@ -15,7 +15,6 @@ export async function POST({ params, request }) {
             'Response-Type': 'text/event-stream'
         }
     });
-    // console.log(response);
     if (!response.ok || !(response.body instanceof Readable)) {
         return new Response("Error", {
             status: 500

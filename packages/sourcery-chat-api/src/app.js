@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import { Qdrant } from "@sourcery/sourcery-db/src/qdrant.ts";
 import { getProject } from "@sourcery/frontend/src/lib/classes/projects.ts";
 import { getFiles } from "@sourcery/frontend/src/lib/classes/files.ts";
+import { connectDB } from '@sourcery/frontend/src/lib/server/db';
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -18,7 +19,7 @@ const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11
 const ensure_model = async (model) => {
     const response = await ollama.list();
     const models = response.models;
-    console.log(JSON.stringify(models, null, 2))
+    // console.log(JSON.stringify(models, null, 2))
     if (!models.map(m => m.model).includes(model)) {
         console.log(`Pulling model ${model}`)
         await ollama.pull({ model: model, force: true });
@@ -48,9 +49,9 @@ const get_rag_context = async (project_name, files, question, top_k = 5) => {
 
         // console.log({ files })
         const file_query = {
-            key: "file_uid",
+            key: "_id",
             match: {
-                any: files.map(f => f.uid),
+                any: files.map(f => f._id),
             }
         }
 
@@ -127,4 +128,6 @@ httpServer.get("/test", async (req, res) => {
 httpServer.listen({
     port: 9101,
     host: "0.0.0.0",
+}, () => {
+    return connectDB(process.env.MONGO_URL || "mongodb://localhost:27017/sourcery")
 })

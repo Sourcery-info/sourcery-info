@@ -3,10 +3,11 @@ import fetch from 'node-fetch';
 import { Readable } from "node:stream";
 
 export async function POST({ params, request }) {
-    const { project, conversation } = params;
+    const { project_id, conversation } = params;
     const { input } = await request.json();
     // console.log(JSON.stringify({ input, conversation }));
-    const response = await fetch(`http://localhost:9101/chat/${project}`, {
+    console.log(`http://localhost:9101/chat/${project_id}`);
+    const response = await fetch(`http://localhost:9101/chat/${project_id}`, {
         method: 'POST',
         body: JSON.stringify({ input, conversation }),
         headers: { 

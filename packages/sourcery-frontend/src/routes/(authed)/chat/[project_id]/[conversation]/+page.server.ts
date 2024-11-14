@@ -5,8 +5,9 @@ export async function load({ locals, params }) {
     if (!locals?.session?.user_id) {
         return fail(401, { message: 'Unauthorized' });
     }
-    const project = await getProject(params.project);
-    if (!project) {
+    const project_id = params.project_id;
+    const project = await getProject(project_id);
+    if (!project?._id) {
         return fail(404, { message: 'Project not found' });
     }
     return {

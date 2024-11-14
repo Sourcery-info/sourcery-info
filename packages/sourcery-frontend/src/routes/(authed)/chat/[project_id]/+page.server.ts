@@ -4,7 +4,7 @@ import { redirect } from '@sveltejs/kit';
 
 export async function load({ params }) {
     const conversation = randomUUID();
-    redirect(307, `/chat/${params.project}/${conversation}`);
+    redirect(307, `/chat/${params.project_id}/${conversation}`);
 };
 
 export const actions = {

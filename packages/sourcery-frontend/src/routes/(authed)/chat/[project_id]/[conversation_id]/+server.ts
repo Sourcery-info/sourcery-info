@@ -1,15 +1,16 @@
 /** @type {import('./$types').RequestHandler} */
 import fetch from 'node-fetch';
 import { Readable } from "node:stream";
+import { getConversation, createConversation, deleteConversation, updateConversation } from '$lib/classes/conversations';
 
 export async function POST({ params, request }) {
-    const { project_id, conversation } = params;
+    const { project_id, conversation_id } = params;
     const { input } = await request.json();
     // console.log(JSON.stringify({ input, conversation }));
     console.log(`http://localhost:9101/chat/${project_id}`);
     const response = await fetch(`http://localhost:9101/chat/${project_id}`, {
         method: 'POST',
-        body: JSON.stringify({ input, conversation }),
+        body: JSON.stringify({ input, conversation_id }),
         headers: { 
             'Content-Type': 'application/json',
             'Response-Type': 'text/event-stream'

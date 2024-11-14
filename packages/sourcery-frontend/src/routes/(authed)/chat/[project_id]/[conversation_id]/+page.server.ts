@@ -12,6 +12,6 @@ export async function load({ locals, params }) {
     }
     return {
         project,
-        conversation: params.conversation
+        conversation_id: params.conversation_id
     };
 };

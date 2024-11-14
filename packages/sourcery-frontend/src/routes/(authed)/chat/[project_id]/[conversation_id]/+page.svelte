@@ -25,7 +25,7 @@
         thinking = true;
         messages.push({ type: 'input', content: query });
         messages = messages;
-        const response = await fetch(`/chat/${data.project?._id}/${data.conversation}`, {
+        const response = await fetch(`/chat/${data.project?._id}/${data.conversation_id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

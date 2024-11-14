@@ -3,7 +3,8 @@ import restifyErrors from "restify-errors"
 import { Ollama } from "ollama";
 import bodyParser from 'body-parser';
 import { Qdrant } from "@sourcery/sourcery-db/src/qdrant.ts";
-import { getManifest } from "@sourcery/common/src/manifest.js"
+import { getProject } from "@sourcery/frontend/src/lib/classes/projects.ts";
+import { getFiles } from "@sourcery/frontend/src/lib/classes/files.ts";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -13,7 +14,6 @@ const MODEL = "llama3.2:latest"
 const VECTOR_MODEL = "all-minilm:latest"
 
 const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
-// console.log({ host: process.env.OLLAMA_URL || "http://localhost:11434" })
 
 const ensure_model = async (model) => {
     const response = await ollama.list();
@@ -42,6 +42,7 @@ const rag_prompt_template = (context, question) => [
 
 const get_rag_context = async (project_name, files, question, top_k = 5) => {
     try {
+        console.log({ project_name, files, question, top_k })
         await ensure_model(VECTOR_MODEL);
         const vector = await ollama.embeddings({ model: VECTOR_MODEL, prompt: question });
 
@@ -65,6 +66,7 @@ const get_rag_context = async (project_name, files, question, top_k = 5) => {
         });
         const results = await qdrant.search(project_name, query);
         if (!results) {
+            console.log(`No results found for query`);
             return [];
         }
         const context = results.map(result => `Filename: ${result.payload.original_name}\n${result.payload.text}`).join("\n\n---\n\n");
@@ -75,22 +77,21 @@ const get_rag_context = async (project_name, files, question, top_k = 5) => {
     }
 }
 
-httpServer.post("/chat/:project", async (req, res) => {
-    const project_name = req.params.project;
-    if (!project_name) {
+httpServer.post("/chat/:project_id", async (req, res) => {
+    const project_id = req.params.project_id;
+    if (!project_id) {
         throw new restifyErrors.BadRequestError("No project provided");
     }
     if (!req.body?.input) {
         throw new restifyErrors.BadRequestError("No input provided");
     }
-    const manifest = await getManifest(project_name);
-    // console.log({ manifest })
-    if (!manifest) {
+    const project = await getProject(project_id);
+    if (!project?._id) {
         throw new restifyErrors.NotFoundError("Project not found");
     }
-    const files = manifest.filter(f => f.status === "active" && f.stage === "done");
+    const files = await getFiles(project_id);
     const { input } = req.body;
-    const context = await get_rag_context(project_name, files, input);
+    const context = await get_rag_context(project_id, files, input);
     const messages = rag_prompt_template(context, input);
     try {
         await ensure_model(MODEL);

@@ -3,18 +3,24 @@ import type { Conversation as ConversationType } from '@sourcery/common/types/Co
 
 function mapDBConversation(conversation: ConversationType): ConversationType {
     return {
-        _id: conversation._id.toString(),
-        description: conversation.description,
-        project_id: conversation.project_id.toString(),
-        user_id: conversation.user_id.toString(),
+        _id: conversation._id?.toString(),
+        project_id: conversation.project_id?.toString() || undefined,
+        user_id: conversation.user_id?.toString() || undefined,
         created_at: conversation.created_at,
         updated_at: conversation.updated_at,
-        messages: conversation.messages,
+        description: conversation.description || conversation.messages?.[0]?.content || conversation.created_at?.toLocaleString(),
+        messages: conversation.messages?.map(message => {
+            return {
+                role: message.role,
+                content: message.content,
+                created_at: message.created_at || new Date()
+            };
+        }).sort((a, b) => a.created_at.getTime() - b.created_at.getTime()) || [],
     }
 }
 
 export async function getConversations(project_id: string): Promise<ConversationType[]> {
-    const conversations = await ConversationModel.find({ project: project_id });
+    const conversations = await ConversationModel.find({ project_id: project_id.toString() });
     return conversations.map(mapDBConversation);
 }
 
@@ -27,7 +33,10 @@ export async function getConversation(conversation_id: string): Promise<Conversa
 }
 
 export async function createConversation(conversation: ConversationType): Promise<ConversationType> {
+    delete(conversation._id);
+
     const newConversation = await ConversationModel.create(conversation);
+    console.log(newConversation);
     return mapDBConversation(newConversation);
 }
 

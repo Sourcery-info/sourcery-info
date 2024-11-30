@@ -1,6 +1,8 @@
 /** @type {import('./$types').PageServerLoad} */
 import { getProject } from '$lib/classes/projects'
 import { fail } from '@sveltejs/kit';
+import { updateConversation, getConversation } from '$lib/classes/conversations';
+
 export async function load({ locals, params }) {
     if (!locals?.session?.user_id) {
         return fail(401, { message: 'Unauthorized' });
@@ -10,8 +12,31 @@ export async function load({ locals, params }) {
     if (!project?._id) {
         return fail(404, { message: 'Project not found' });
     }
+    const conversation = await getConversation(params.conversation_id);
+    console.log(`conversation: ${conversation?._id}`);
+    if (!conversation?._id) {
+        return fail(404, { message: 'Conversation not found' });
+    }
     return {
         project,
-        conversation_id: params.conversation_id
+        conversation
     };
 };
+
+export const actions = {
+    message_complete: async ({ request, params }) => {
+        const { conversation_id } = params;
+        const { message } = await request.json();
+        const conversation = await getConversation(conversation_id);
+        if (!conversation?._id) {
+            return fail(404, { message: 'Conversation not found' });
+        }
+        if (!conversation.messages) {
+            conversation.messages = [];
+        }
+        await updateConversation({ 
+            ...conversation,
+            messages: [...conversation.messages, message] 
+        });
+    }
+}

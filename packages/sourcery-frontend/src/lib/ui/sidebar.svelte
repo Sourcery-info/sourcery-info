@@ -3,6 +3,7 @@
 	/** @type {import('./$types').PageData} */
 	import { Nav, NavItem, NavLink, Icon, Button } from '@sveltestrap/sveltestrap';
 	export let selected_project;
+	export let conversations = [];
 	import { enhance } from '$app/forms';
 
 	async function toggleActive(file) {
@@ -58,8 +59,11 @@
 					{/each}
 				</NavItem>
 				<NavItem>
-					<div class="bold"><Icon name="chat-dots" /> Chats</div>
-					<a class="sidebar-item" href="/chat/{selected_project.urlid}">New Chat</a>
+					<div class="bold"><Icon name="chat-dots" /> Conversations</div>
+					{#each conversations as conversation}
+						<a class="sidebar-item" href="/chat/{conversation.project_id}/{conversation._id}">{conversation.description}</a>
+					{/each}
+					<a class="sidebar-item" href="/chat/{selected_project._id}">New Conversation...</a>
 				</NavItem>
 			</Nav>
 		{/if}

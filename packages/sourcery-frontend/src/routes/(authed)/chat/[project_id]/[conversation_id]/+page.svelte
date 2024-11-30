@@ -1,16 +1,17 @@
 <script lang="ts">
     import { Input, Container, Row, Col, InputGroup, Button } from '@sveltestrap/sveltestrap';
-    export let data;
-
-    type Messages = {
-        type: 'input' | 'response';
-        content: string;
+    import { onMount } from 'svelte';
+    import type { Message as MessageType } from '@sourcery/common/types/Message.type.js';
+    import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
+    import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
+    export let data: {
+        conversation: ConversationType;
+        project: ProjectType;
     };
 
     let content = '';
     let input = '';
     let thinking = false;
-    let messages: Messages[] = [];
 
     /**
      * Handles the form submission event.
@@ -23,9 +24,9 @@
         const query = input;
         input = '';
         thinking = true;
-        messages.push({ type: 'input', content: query });
-        messages = messages;
-        const response = await fetch(`/chat/${data.project?._id}/${data.conversation_id}`, {
+        if (data.conversation.messages) data.conversation.messages.push({ role: 'user', content: query });
+        data.conversation.messages = data.conversation.messages;
+        const response = await fetch(`/chat/${data.project?._id}/${data.conversation?._id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -39,7 +40,7 @@
                 const { done, value } = await reader.read();
                 thinking = false;
                 if (done) {
-                    messages.push({ type: 'response', content });
+                    if (data.conversation.messages) data.conversation.messages.push({ role: 'assistant', content });
                     content = '';
                     break;
                 }
@@ -49,7 +50,7 @@
             console.error('Error reading response', error);
         } finally {
             thinking = false;
-            messages = messages;
+            data.conversation.messages = data.conversation.messages;
             document.getElementById('input')?.focus();
         }
     }
@@ -57,11 +58,11 @@
 
 <div class="chat-window">
     <Col sm="12" class="answer">
-        {#each messages as message}
-            {#if message.type === 'input'}
+        {#each data.conversation?.messages ?? [] as message}
+            {#if message.role === 'user'}
                 <p class="text-right">&gt; {message.content}</p>
             {/if}
-            {#if message.type === 'response'}
+            {#if message.role === 'assistant'}
                 <p>{@html message.content}</p>
             {/if}
         {/each}

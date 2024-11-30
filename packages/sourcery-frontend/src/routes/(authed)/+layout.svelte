@@ -5,7 +5,8 @@
 
 	export let data = {
 		projects: [],
-		project: null
+		project: null,
+		conversations: []
 	};
 </script>
 
@@ -13,7 +14,7 @@
 	<div class="alerts">
 	</div>
 	<div class="main">
-		<Sidebar selected_project={data.project} projects={data.projects} />
+		<Sidebar selected_project={data.project} conversations={data.conversations} />
 		<div class="content">
 			<slot />
 		</div>

@@ -2,7 +2,6 @@
     // @ts-nocheck
     /** @type {import('./$types').PageData} */
     import { Button } from '@sveltestrap/sveltestrap';
-    import Cardcontainer from '$lib/ui/cardcontainer.svelte';
     import Projectsettings from '$lib/ui/projectsettings.svelte';
     import ModelSettings from '$lib/ui/modelsettings.svelte';
     import { enhance } from '$app/forms'
@@ -17,14 +16,13 @@
 
 </script>
 
-<Cardcontainer>
-    <div slot="title">
-        <h1>New Project</h1>
-    </div>
-
-    <form method="POST" use:enhance>
-        <Projectsettings bind:form={form} />
+<div>
+    <div class="text-base/7 font-semibold text-white">New Project</div>
+    <div class="mt-10">
+        <form method="POST" use:enhance>
+            <Projectsettings bind:form={form} />
         <ModelSettings bind:form={form} {chat_model} {vector_model} {temperature} {security} />
-        <Button color="primary" type="submit">Submit</Button>
-    </form>
-</Cardcontainer>
+            <Button color="primary" type="submit">Submit</Button>
+        </form>
+    </div>
+</div>

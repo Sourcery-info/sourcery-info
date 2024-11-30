@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { Input, Container, Row, Col, InputGroup, Button } from '@sveltestrap/sveltestrap';
     import { onMount } from 'svelte';
     import type { Message as MessageType } from '@sourcery/common/types/Message.type.js';
     import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
@@ -13,11 +12,6 @@
     let input = '';
     let thinking = false;
 
-    /**
-     * Handles the form submission event.
-     *
-     * @param {SubmitEvent} event - The form submission event.
-     */
     async function handleSubmit(event: SubmitEvent) {
         if (input === '') return;
         event.preventDefault();
@@ -56,68 +50,78 @@
     }
 </script>
 
-<div class="chat-window">
-    <Col sm="12" class="answer">
+<div class="flex flex-col h-screen bg-gray-900">
+    <!-- Chat messages -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-4 mb-[76px]">
         {#each data.conversation?.messages ?? [] as message}
             {#if message.role === 'user'}
-                <p class="text-right">&gt; {message.content}</p>
+                <div class="flex justify-end">
+                    <div class="bg-blue-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
+                        <p class="text-sm">{message.content}</p>
+                    </div>
+                </div>
             {/if}
             {#if message.role === 'assistant'}
-                <p>{@html message.content}</p>
+                <div class="flex justify-start">
+                    <div class="bg-gray-800 text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]">
+                        <p class="text-sm font-mono">{@html message.content}</p>
+                    </div>
+                </div>
             {/if}
         {/each}
         {#if thinking}
-            <p>Thinking...</p>
+            <div class="flex justify-start">
+                <div class="bg-gray-800 text-gray-300 rounded-lg py-2 px-4">
+                    <p class="text-sm">Thinking...</p>
+                </div>
+            </div>
         {/if}
-        {@html content}
-    </Col>
-    <div class="d-flex question">
-        <Col sm="12">
-            <form class="bottom" method="POST" on:submit|preventDefault={handleSubmit} action="?/chat">
-                <InputGroup>
-                    <Input
-                        id="input"
-                        type="text"
-                        placeholder="Type a message"
-                        bind:value={input}
-                        disabled={thinking}
-                    />
-                    {#if !thinking}
-                        <Button color="primary">Send</Button>
-                    {:else}
-                        <Button color="warning">Cancel</Button>
-                    {/if}
-                </InputGroup>
-            </form>
-        </Col>
+        {#if content}
+            <div class="flex justify-start">
+                <div class="bg-gray-800 text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]">
+                    <p class="text-sm font-mono">{@html content}</p>
+                </div>
+            </div>
+        {/if}
+    </div>
+
+    <!-- Input area - fixed at bottom -->
+    <div class="fixed bottom-0 left-0 right-0 border-t border-gray-700 bg-gray-900 p-4">
+        <form 
+            method="POST" 
+            on:submit|preventDefault={handleSubmit} 
+            action="?/chat"
+            class="flex space-x-4 max-w-[100rem] mx-auto px-4"
+        >
+            <input
+                id="input"
+                type="text"
+                placeholder="Type a message"
+                bind:value={input}
+                disabled={thinking}
+                class="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 placeholder-gray-400 
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                       disabled:bg-gray-700 disabled:text-gray-500"
+            />
+            {#if !thinking}
+                <button 
+                    type="submit"
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
+                           focus:ring-offset-gray-900 transition-colors"
+                >
+                    Send
+                </button>
+            {:else}
+                <button 
+                    type="button"
+                    class="rounded-lg bg-yellow-600 px-4 py-2 text-white hover:bg-yellow-700 
+                           focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 
+                           focus:ring-offset-gray-900 transition-colors"
+                >
+                    Cancel
+                </button>
+            {/if}
+        </form>
     </div>
 </div>
-
-<style lang="scss">
-    $chat-bg: #d1d7fc;
-
-    .chat-window {
-        padding: 20px;
-        display: grid;
-        grid-template-rows: auto 70px; // Larger input area
-        gap: 20px; // Add some spacing
-        height: 100%;
-
-    .answer {
-        padding: 20px;
-        background-color: $chat-bg;
-        border-radius: 8px;
-        font-family: 'SF Mono', 'Fira Code', monospace; // Better code font
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        line-height: 1.6;
-    }
-
-    .question {
-        margin-top: 0;
-        padding: 15px;
-        background-color: $chat-bg;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    }
-}
-</style>

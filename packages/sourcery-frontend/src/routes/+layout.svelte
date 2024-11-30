@@ -1,8 +1,9 @@
 <script>
 	
 	// @ts-nocheck
-	import '$lib/sass/global.scss';
-	import Navbar from '$lib/ui/navbar.svelte';
+	// import '$lib/sass/global.scss';
+	import '../app.css';
+	// import Navbar from '$lib/ui/navbar.svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
 	import { Alert } from '@sveltestrap/sveltestrap';
 
@@ -17,8 +18,8 @@
 <svelte:head>
 	<title>Sourcery.info</title>
 </svelte:head>
-<div class="grid-main">
-	<Navbar project={data.project} version={'0.0.1'} session={data.session} user={data.user} />
+<div class="min-h-full bg-gray-900">
+	<!-- <Navbar project={data.project} version={'0.0.1'} session={data.session} user={data.user} /> -->
 	{#if data.alerts && data.alerts.length > 0}
 		<div class="alerts-container">
 			{#each data.alerts as alert}
@@ -28,7 +29,7 @@
 			{/each}
 		</div>
 	{/if}
-	<div class="content">
+	<div class="content bg-gray-900">
 		<slot />
 	</div>
 </div>

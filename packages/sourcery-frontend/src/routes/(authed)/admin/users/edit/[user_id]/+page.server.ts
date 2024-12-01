@@ -19,6 +19,8 @@ export const actions = {
         const formData = await request.formData();
         const userScheme = zfd.formData({
             username: zfd.text(z.string().min(3).max(50).refine(async (username) => await checkUniqueUsername(username, params.user_id), { message: "Username already exists" })),
+            name: zfd.text(z.string().min(1).max(100)),
+            email: zfd.text(z.string().email().max(100)),
             approved: zfd.checkbox({trueValue: "1"}),
             admin: zfd.checkbox({trueValue: "1"}),
         });

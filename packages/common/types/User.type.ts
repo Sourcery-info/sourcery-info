@@ -2,7 +2,9 @@
     _id: string;
     email: string;
     name: string;
+    username: string;
     password_hash: string;
+    password?: string;
     created_at: Date;
     updated_at: Date;
     approved: boolean;

@@ -6,6 +6,8 @@ export enum SourcerySecurity {
 export type SourceryAccount = {
     user_id: string;
     username: string;
+    name: string;
+    email: string;
     password: string;
     otp: string | null;
     admin: boolean;

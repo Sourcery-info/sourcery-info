@@ -40,6 +40,7 @@ export async function getProjects(user_id: string): Promise<ProjectType[]> {
 }
 
 export async function getProject(project_id: string): Promise<ProjectType | null> {
+    if (!project_id) return null;
     const project = await ProjectModel.findById(project_id);
     return project ? mapDBProject(project) : null;
 }

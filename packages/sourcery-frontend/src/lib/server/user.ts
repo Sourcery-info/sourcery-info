@@ -1,12 +1,15 @@
 import { UserModel } from '@sourcery/common/src/models/User.model';
 import type { SourceryAccount } from "$lib/types/SourcerySettings.type";
+import type { User } from "@sourcery/common/types/User.type";
 import { hashPassword, checkPassword } from "$lib/utils/crypto";
 
 export async function getUsers(): Promise<SourceryAccount[]> {
     const users = await UserModel.find({});
     return users.map(user => ({
         user_id: user._id.toString(),
-        username: user.email,
+        username: user.username,
+        name: user.name,
+        email: user.email,
         password: user.password_hash,
         admin: user.admin || false,
         approved: user.approved || false,
@@ -24,7 +27,9 @@ export async function getUser(user_id: string): Promise<SourceryAccount | null> 
     }
     return {
         user_id: user._id.toString(),
-        username: user.email,
+        username: user.username,
+        name: user.name,
+        email: user.email,
         password: user.password_hash,
         admin: user.admin || false,
         approved: user.approved || false,
@@ -64,7 +69,7 @@ export async function checkUniqueUsername(username: string, user_id: string | nu
 }
 
 export async function checkUserCredentials(username: string, password: string) {
-    const user = await UserModel.findOne({ email: username });
+    const user = await UserModel.findOne({ $or: [{ email: username }, { username: username }] });
     if (!user) {
         return false;
     }
@@ -74,11 +79,21 @@ export async function checkUserCredentials(username: string, password: string) {
     return false;
 }
 
-export async function updateUser(_id: string, user: SourceryAccount) {
-    const data = {
-        email: user.username,
-        admin: user.admin,
-        approved: user.approved
+export async function updateUser(_id: string, user: User) {
+    const existingUser = await UserModel.findById(_id);
+    if (!existingUser) {
+        return null;
     }
+    const data: Partial<User> = {
+        email: user.email || existingUser.email,
+        admin: user.admin || existingUser.admin,
+        name: user.name || existingUser.name,
+        username: user.username || existingUser.username,
+        approved: user.approved || existingUser.approved
+    }
+    if (user.password) {
+        data.password_hash = await hashPassword(user.password);
+    }
+    console.log({ data });
     return await UserModel.findByIdAndUpdate(_id, data);
 }

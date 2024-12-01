@@ -17,6 +17,11 @@ const UserSchema = new Schema<User & Document>({
         required: true, 
         unique: true 
     },
+    username: { 
+        type: String, 
+        required: true,
+        unique: true
+    },
     name: { 
         type: String, 
         required: true 

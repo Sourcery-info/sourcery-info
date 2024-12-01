@@ -1,7 +1,5 @@
 <script lang="ts">
 	/** @type {import('./$types').PageData} */
-	import { Table, Button } from '@sveltestrap/sveltestrap';
-
 	export let data;
 </script>
 

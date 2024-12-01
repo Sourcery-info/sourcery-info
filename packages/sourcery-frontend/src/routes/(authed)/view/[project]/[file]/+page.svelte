@@ -1,4 +1,5 @@
 <script>
+	// Deprecated
 	/** @type {import('./$types').PageData} */
 	import { TabContent, TabPane } from '@sveltestrap/sveltestrap';
 

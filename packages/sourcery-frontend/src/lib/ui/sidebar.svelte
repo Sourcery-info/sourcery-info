@@ -1,7 +1,6 @@
 <script lang="ts">
 	// @ts-nocheck
 	/** @type {import('./$types').PageData} */
-	import { Nav, NavItem, NavLink, Icon, Button } from '@sveltestrap/sveltestrap';
 	export let selected_project;
 	export let conversations = [];
 	import { enhance } from '$app/forms';

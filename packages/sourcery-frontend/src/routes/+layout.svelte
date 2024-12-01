@@ -1,18 +1,15 @@
 <script>
-	
 	// @ts-nocheck
 	// import '$lib/sass/global.scss';
 	import '../app.css';
-	// import Navbar from '$lib/ui/navbar.svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
-	import { Alert } from '@sveltestrap/sveltestrap';
+	import Alert from '$lib/ui/alert.svelte';
 
 	export let data = {
 		projects: [],
 		project: null,
 		alerts: []
 	};
-
 </script>
 
 <svelte:head>
@@ -23,7 +20,7 @@
 	{#if data.alerts && data.alerts.length > 0}
 		<div class="alerts-container">
 			{#each data.alerts as alert}
-				<Alert color={alert.type} dismissible>
+				<Alert color={alert.type} dismissible={true}>
 					{alert.message}
 				</Alert>
 			{/each}

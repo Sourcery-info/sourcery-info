@@ -42,6 +42,13 @@
 		<div class="fixed inset-0 bg-gray-900/80" aria-hidden="true"></div>
 		<div class="fixed inset-0 flex">
 			<div class="relative mr-16 flex w-full max-w-xs flex-1" transition:fly={{ x: -100, duration: 300 }}>
+				<div class="flex h-full w-full flex-col overflow-y-auto">
+					<Sidebar 
+						selected_project={data.project} 
+						conversations={data.conversations}
+						on:menuItemClick={handleSidebarClick} 
+					/>
+				</div>
 				<div class="absolute left-full top-0 flex w-16 justify-center pt-5">
 					<button type="button" class="-m-2.5 p-2.5" on:click={toggleMobileMenu}>
 						<span class="sr-only">Close sidebar</span>
@@ -50,11 +57,6 @@
 						</svg>
 					</button>
 				</div>
-				<Sidebar 
-					selected_project={data.project} 
-					conversations={data.conversations}
-					on:menuItemClick={handleSidebarClick} 
-				/>
 			</div>
 		</div>
 	</div>
@@ -62,11 +64,13 @@
 
 	<!-- Desktop sidebar -->
 	<div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
-		<Sidebar 
-			selected_project={data.project} 
-			conversations={data.conversations}
-			on:menuItemClick={() => {}} 
-		/>
+		<div class="flex h-full flex-col overflow-y-auto">
+			<Sidebar 
+				selected_project={data.project} 
+				conversations={data.conversations}
+				on:menuItemClick={() => {}} 
+			/>
+		</div>
 	</div>
 
 	<!-- Main content -->

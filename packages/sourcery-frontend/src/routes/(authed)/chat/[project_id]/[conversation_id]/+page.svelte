@@ -86,7 +86,7 @@
     </div>
 
     <!-- Input area - fixed at bottom -->
-    <div class="fixed bottom-0 left-0 right-0 border-t border-gray-700 bg-gray-900 p-4">
+    <div class="fixed bottom-0 right-0 lg:left-72 left-0 border-t border-gray-700 bg-gray-900 p-4">
         <form 
             method="POST" 
             on:submit|preventDefault={handleSubmit} 

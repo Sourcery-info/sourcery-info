@@ -19,7 +19,9 @@
         <form method="POST" use:enhance>
             <Projectsettings bind:form={form} bind:name={data.project.name} bind:tags={data.project.tags} bind:description={data.project.description} bind:notes={data.project.notes} />
             <ModelSettings bind:form={form} bind:chat_model={data.project.chat_model} bind:vector_model={data.project.vector_model} bind:temperature={data.project.temperature} bind:security={data.project.security} />
-            <Button color="primary">Submit</Button>
+            <button type="submit" class="mt-10 rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                Submit
+            </button>
         </form>
         {/if}
     </div>

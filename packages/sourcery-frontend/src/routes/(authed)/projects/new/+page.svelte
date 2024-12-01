@@ -22,7 +22,9 @@
         <form method="POST" use:enhance>
             <Projectsettings bind:form={form} />
         <ModelSettings bind:form={form} {chat_model} {vector_model} {temperature} {security} />
-            <Button color="primary" type="submit">Submit</Button>
+            <button type="submit" class="mt-10 rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                Submit
+            </button>
         </form>
     </div>
 </div>

@@ -3,7 +3,8 @@
 import { PROJECT_DIR } from "$lib/variables"
 import fs from "fs";
 import { error } from '@sveltejs/kit';
-import { getManifest } from "@sourcery/common/src/manifest";
+import { getFile } from "$lib/classes/files";
+import { marked } from 'marked';
 
 const CONTENT_TYPES = {
     pdf: 'application/pdf',
@@ -47,21 +48,30 @@ async function format_original(filename, filetype) {
 }
 
 export async function GET({ params }) {
-    const file_uid = params.file;
+    const file_id = params.file_id;
     const format = params.format; // Extract the format from the params
-    const project = params.project;
-    if (!project || !file_uid) {
+    const project_id = params.project_id;
+    if (!project_id || !file_id) {
         return error(404, 'Not Found');
     }
-    const manifest = getManifest(project);
-    const file = manifest.find(f => f.uid === file_uid);
+    const file = await getFile(file_id);
     if (!file) {
         return error(404, 'File not found');
     }
     let response = null;
     switch (format) {
         case 'original':
-            response = await format_original(`${PROJECT_DIR}/${project}/files/${file.uid}/unprocessed/${file.original_name}`, file.filetype);
+            response = await format_original(`${PROJECT_DIR}/${project_id}/files/${file_id}/unprocessed/${file.filename}.${file.filetype}`, file.filetype);
+            break;
+        case 'md':
+            const md = fs.readFileSync(`${PROJECT_DIR}/${project_id}/files/${file_id}/docling/${file.filename}.md`, 'utf8');
+            const html = marked(md); // Convert markdown to HTML
+            response = {
+                headers: {
+                    'content-type': 'text/html',
+                },
+                body: html
+            };
             break;
         // case 'html':
         //     return {

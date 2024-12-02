@@ -1,9 +1,11 @@
 <script lang="ts">
 	// @ts-nocheck
 	/** @type {import('./$types').PageData} */
+	import { page } from '$app/stores';
 	export let selected_project;
 	export let conversations = [];
 	export let files = [];
+	export let currentFileId = '';
 	import { enhance } from '$app/forms';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
@@ -130,10 +132,10 @@
 							{#if files.length > 0}
 								{#each files as file}
 									<li>
-										<button
-											on:click={() => toggleActive(file)}
+										<a
+											href={`/file/${selected_project._id}/${file._id}`}
 											class="group flex w-full items-center gap-x-3 rounded-md p-2 text-sm/6 font-regular
-												{file.status === 'active'
+												{file._id === $page.params.file_id
 												? 'bg-gray-800 text-white'
 												: 'text-gray-400 hover:bg-gray-800 hover:text-white'}"
 										>
@@ -153,7 +155,7 @@
 												/>
 											</svg>
 											<span class="truncate">{file.original_name || file.filename}</span>
-										</button>
+										</a>
 									</li>
 								{/each}
 							{/if}
@@ -194,7 +196,10 @@
 										<a
 											href="/chat/{conversation.project_id}/{conversation._id}"
 											on:click={handleItemClick}
-											class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-regular text-gray-400 hover:bg-gray-800 hover:text-white"
+											class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-regular text-gray-400 hover:bg-gray-800 hover:text-white {conversation._id ===
+											$page.params.conversation_id
+												? 'bg-gray-800 text-white'
+												: 'text-gray-400 hover:bg-gray-800 hover:text-white'}"
 										>
 											<span class="truncate">{conversation.description}</span>
 										</a>

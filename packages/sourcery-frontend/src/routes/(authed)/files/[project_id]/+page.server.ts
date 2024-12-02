@@ -15,17 +15,17 @@ const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export async function load({ params }) {
 	const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
-	const project = params.project;
+	const project_id = params.project_id;
 	// const manifest = getManifest(project);
-	const files = await getFiles(project);
-	const db_info = await qdrant.getInfo(project);
+	const files = await getFiles(project_id);
+	const db_info = await qdrant.getInfo(project_id);
 	const websocket_port = WEBSOCKET_PORT || 3001;
 	return {
 		props: {
 			files,
 			db_info,
 			websocket_port,
-			project
+			project_id
 		}
 	};
 }
@@ -34,7 +34,7 @@ export const actions = {
 	upload: async ({ request, params }) => {
 		const formData = await request.formData();
 		const files = formData.getAll('files');
-		const project_id = params.project;
+		const project_id = params.project_id;
 		for (const file of files) {
 			const file_record = await createFile({
 				project: project_id,
@@ -67,51 +67,49 @@ export const actions = {
 		return {
 			status: 200,
 			data: {
-				message: `Upload file to project ${params.project} with ${request.method} method`
+				message: `Upload file to project ${params.project_id} with ${request.method} method`
 			}
 		};
 	},
 	deleteCollection: async ({ params }) => {
 		console.log('Delete collection');
-		const project = params.project;
-		await qdrant.deleteCollection(project);
+		const project_id = params.project_id;
+		await qdrant.deleteCollection(project_id);
 		return {
 			status: 200,
 			data: {
-				message: `Deleted collection for project ${params.project}`
+				message: `Deleted collection for project ${params.project_id}`
 			}
 		};
 	},
 	update: async ({ request, params }) => {
 		console.log('Update file metadata');
 		const formData = await request.json();
-		const uid = formData.uid;
-		if (!uid) {
-			return error(400, 'No uid provided');
+		const _id = formData._id;
+		if (!_id) {
+			return error(400, 'No _id provided');
 		}
-		// const data = formData.get('data');
-		const project = params.project;
-		const file = new SourceryFile(project, uid);
-		file.setData(formData);
-		await file.save();
+		const updatedFile = await updateFile(formData);
+		console.log('Updated file:', updatedFile);
 		return {
 			status: 200,
 			data: {
-				message: `Updated collection for project ${params.project}`
+				message: `Updated file ${_id} for project ${params.project_id}`,
+				file: updatedFile
 			}
 		};
 	},
 	deleteFiles: async ({ request, params }) => {
 		const formData = await request.formData();
 		for (const uid of formData.values()) {
-			await qdrant.deleteRecord(params.project, uid.toString());
-			await deleteFileUtils(params.project, uid.toString());
+			await qdrant.deleteRecord(params.project_id, uid.toString());
+			await deleteFileUtils(params.project_id, uid.toString());
 			await deleteFile(uid.toString());
 		}
 		return {
 			status: 200,
 			data: {
-				message: `Deleted file for project ${params.project}`
+				message: `Deleted file for project ${params.project_id}`
 			}
 		};
 	},
@@ -119,14 +117,14 @@ export const actions = {
 		console.log('Reindex files');
 		const formData = await request.formData();
 		for (const uid of formData.values()) {
-			await qdrant.deleteRecord(params.project, uid.toString());
-			const file = new SourceryFile(params.project, uid.toString());
+			await qdrant.deleteRecord(params.project_id, uid.toString());
+			const file = new SourceryFile(params.project_id, uid.toString());
 			await file.reindex();
 		}
 		return {
 			status: 200,
 			data: {
-				message: `Reindexed collection for project ${params.project}`
+				message: `Reindexed collection for project ${params.project_id}`
 			}
 		};
 	}

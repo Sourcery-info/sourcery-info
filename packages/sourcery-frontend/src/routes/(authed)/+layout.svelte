@@ -54,6 +54,7 @@
 						<Sidebar
 							selected_project={data.project}
 							conversations={data.conversations}
+							files={data.project?.files || []}
 							on:menuItemClick={handleSidebarClick}
 						/>
 					</div>
@@ -84,6 +85,7 @@
 			<Sidebar
 				selected_project={data.project}
 				conversations={data.conversations}
+				files={data.project?.files || []}
 				on:menuItemClick={() => {}}
 			/>
 		</div>

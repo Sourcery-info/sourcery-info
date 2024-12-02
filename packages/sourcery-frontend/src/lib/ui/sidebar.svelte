@@ -3,6 +3,7 @@
 	/** @type {import('./$types').PageData} */
 	export let selected_project;
 	export let conversations = [];
+	export let files = [];
 	import { enhance } from '$app/forms';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
@@ -14,10 +15,14 @@
 	$: visibleConversations = conversations.slice(0, MAX_CONVERSATIONS);
 	$: hasMoreConversations = conversations.length > MAX_CONVERSATIONS;
 
+	$: {
+		console.log('Files in sidebar:', files);
+	}
+
 	async function toggleActive(file) {
 		file.status = file.status == 'active' ? 'inactive' : 'active';
 		selected_project = selected_project;
-		const res = await fetch(`/files/${selected_project.urlid}?/update`, {
+		const res = await fetch(`/files/${selected_project._id}?/update`, {
 			method: 'POST',
 			body: JSON.stringify(file)
 		});
@@ -97,6 +102,41 @@
 						{/if}
 					</ul>
 				</li>
+				{#if selected_project && files.length > 0}
+					<li>
+						<div class="text-xs/6 font-semibold text-gray-400">Files</div>
+						<ul role="list" class="-mx-2 mt-2 space-y-1">
+							{#each files as file}
+								<li>
+									<button
+										on:click={() => toggleActive(file)}
+										class="group flex w-full items-center gap-x-3 rounded-md p-2 text-sm/6 font-regular
+											{file.status === 'active'
+											? 'bg-gray-800 text-white'
+											: 'text-gray-400 hover:bg-gray-800 hover:text-white'}"
+									>
+										<svg
+											class="size-5 shrink-0 {file.status === 'active'
+												? 'text-green-400'
+												: 'text-gray-400'}"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke-width="1.5"
+											stroke="currentColor"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+											/>
+										</svg>
+										<span class="truncate">{file.original_name || file.filename}</span>
+									</button>
+								</li>
+							{/each}
+						</ul>
+					</li>
+				{/if}
 				{#if conversations.length > 0}
 					<li>
 						<div class="text-xs/6 font-semibold text-gray-400">Conversations</div>

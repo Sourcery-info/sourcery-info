@@ -35,7 +35,7 @@
 
 <svelte:window on:click={handleClickOutside} />
 
-<div class="bg-gray-900">
+<div class="min-h-screen bg-gray-900">
 	<!-- Mobile menu -->
 	{#if isMobileMenuOpen}
 		<div

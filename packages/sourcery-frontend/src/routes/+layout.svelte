@@ -26,19 +26,12 @@
 			{/each}
 		</div>
 	{/if}
-	<div class="content bg-gray-900">
+	<div class="bg-gray-900">
 		<slot />
 	</div>
 </div>
 
 <style lang="scss">
-	.content {
-		height: calc(100vh - 50px);
-		overflow-y: auto;
-		position: relative;
-		display: block;
-	}
-
 	.alerts-container {
 		position: fixed;
 		top: 70px;

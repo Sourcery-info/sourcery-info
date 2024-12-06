@@ -91,6 +91,7 @@ services:
       - REDIS_HOST=sourcery-keydb
       - REDIS_PORT=6379
       - MONGO_URL=mongodb://sourcery-mongodb:27017
+    privileged: true
     deploy:
       resources:
         reservations:

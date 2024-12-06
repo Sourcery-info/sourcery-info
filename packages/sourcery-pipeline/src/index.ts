@@ -7,6 +7,7 @@ import { Vectorize } from "./pipeline/vectorize";
 import { DoclingPipeline } from "./pipeline/docling";
 import { Save } from "./pipeline/save";
 import { DonePipeline } from "./pipeline/done";
+import { PDFToImagePipeline } from "./pipeline/pdftoimage";
 import { LlamaIndexPipeline } from "./pipeline/llamaindex";
 import { UnprocessedPipeline } from "./pipeline/unprocessed";
 import { ErrorPipeline } from "./pipeline/error";
@@ -51,6 +52,9 @@ async function handleFile(file: SourceryFile) {
         case FileStage.ERROR:
             stage_instance = new ErrorPipeline(file);
             break;
+        case FileStage.PDF_TO_IMAGE:
+            stage_instance = new PDFToImagePipeline(file);
+            break;
         default:
             console.error(`No file workflow found for stage ${stage}`);
             return false;
@@ -77,6 +81,7 @@ async function main() {
     }
     await connectDB(process.env.MONGO_URL);
     for (const stage of stages) {
+        console.log(`Subscribing to ${stage} queue`);
         new SourcerySub((file: SourceryFile) => handleFile(file), `file-${stage}`);
     }
 }

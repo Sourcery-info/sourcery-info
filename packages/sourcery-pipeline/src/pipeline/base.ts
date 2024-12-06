@@ -26,10 +26,15 @@ export class PipelineBase {
     protected last_filename: string;
     protected stage_name: string;
     protected extension: string;
+    protected directory_name: string;
+    protected static stage_paths: { [key: string]: {
+        directory: string;
+        files: string[];
+    } } = {};
     // protected input_type: string;
     // protected output_type: string;
 
-    constructor(file: SourceryFile, extension: string | null = null) {
+    constructor(file: SourceryFile, extension: string | null = null, directory_name: string | null = null) {
         if (!file.project) {
             throw new Error("File project is required");
         }
@@ -45,15 +50,16 @@ export class PipelineBase {
         console.log(`File ${file._id} has started stage ${file.stage}`);
         this.filepath = getFilepath(file.project, file._id);
         this.extension = extension || file.filetype;
-        this.filename = path.join(this.filepath, file.stage, file.filename + "." + this.extension);
+        this.directory_name = directory_name || file.stage;
+        this.filename = path.join(this.filepath, this.directory_name, file.filename + "." + this.extension);
         this.last_filename = this.file.last_filename || this.filename;
         // Ensure that directory for this stage exists
         const project_dir = process.env.PROJECT_DIR;
         if (!project_dir) {
             throw new Error("Environment variable PROJECT_DIR not set");
         }
-        console.log(`Ensuring directory ${path.join(this.filepath, this.file.stage)} exists`);
-        ensureDir(path.join(this.filepath, this.file.stage));
+        console.log(`Ensuring directory ${path.join(this.filepath, this.directory_name)} exists`);
+        ensureDir(path.join(this.filepath, this.directory_name));
         this.file.processing = true;
         updateFile(this.file);
         this.log(StageState.STARTED, null, "Stage started")
@@ -85,10 +91,15 @@ export class PipelineBase {
         this.file.processing = false;
         this.file.last_filename = this.filename;
         if (!existsSync(this.filename)) {
-            this.filename = path.join(this.filepath, this.file.stage, this.file.filename + "." + this.extension);
+            this.filename = path.join(this.filepath, this.directory_name, this.file.filename + "." + this.extension);
             // console.log(`Copying ${this.last_filename} to ${this.filename}`);
             await fs.copyFile(this.last_filename, this.filename);
         }
+        PipelineBase.stage_paths[this.directory_name] = {
+            directory: path.join(this.filepath, this.directory_name),
+            files: await fs.readdir(path.join(this.filepath, this.directory_name))
+        };
+        console.log(PipelineBase.stage_paths);
         this.file.completed_stages.push(this.file.stage as FileStage);
         this.file.stage = this.file.stage_queue.shift() as FileStage;
         updateFile(this.file);

@@ -5,7 +5,6 @@
 	export let selected_project;
 	export let conversations = [];
 	export let files = [];
-	export let currentFileId = '';
 	import { enhance } from '$app/forms';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();

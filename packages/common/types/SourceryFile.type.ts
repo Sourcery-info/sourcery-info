@@ -21,6 +21,7 @@ export enum FileStage {
     SAVING = 'saving',
     DONE = 'done',
     ERROR = 'error',
+    PDF_TO_IMAGE = 'pdf_to_image',
 }
 
 export enum FileTypes {

@@ -8,6 +8,7 @@ import { DoclingPipeline } from "./pipeline/docling";
 import { Save } from "./pipeline/save";
 import { DonePipeline } from "./pipeline/done";
 import { PDFToImagePipeline } from "./pipeline/pdftoimage";
+import { EasyOCRPipeline } from "./pipeline/easyocr";
 import { LlamaIndexPipeline } from "./pipeline/llamaindex";
 import { UnprocessedPipeline } from "./pipeline/unprocessed";
 import { ErrorPipeline } from "./pipeline/error";
@@ -15,6 +16,7 @@ import { connectDB } from '@sourcery/frontend/src/lib/server/db';
 import { stages } from "./file_workflows";
 import { FileStage } from "@sourcery/common/types/SourceryFile.type";
 import dotenv from "dotenv";
+import { LLAMAMMPipeline } from "./pipeline/llama-mm";
 dotenv.config();
 
 async function handleFile(file: SourceryFile) {
@@ -54,6 +56,12 @@ async function handleFile(file: SourceryFile) {
             break;
         case FileStage.PDF_TO_IMAGE:
             stage_instance = new PDFToImagePipeline(file);
+            break;
+        case FileStage.EASYOCR:
+            stage_instance = new EasyOCRPipeline(file);
+            break;
+        case FileStage.LLAMA_MM:
+            stage_instance = new LLAMAMMPipeline(file);
             break;
         default:
             console.error(`No file workflow found for stage ${stage}`);

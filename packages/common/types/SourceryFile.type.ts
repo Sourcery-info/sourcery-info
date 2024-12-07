@@ -22,6 +22,8 @@ export enum FileStage {
     DONE = 'done',
     ERROR = 'error',
     PDF_TO_IMAGE = 'pdf_to_image',
+    EASYOCR = 'easyocr',
+    LLAMA_MM = 'llama-mm',
 }
 
 export enum FileTypes {

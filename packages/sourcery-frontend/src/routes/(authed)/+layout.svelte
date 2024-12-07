@@ -1,14 +1,21 @@
-<script>
-	// @ts-nocheck
-	// import '$lib/sass/global.scss';
-	import Sidebar from '$lib/ui/sidebar.svelte';
+<script lang="ts">
 	import { fade, fly } from 'svelte/transition';
+	import { filesStore } from '$lib/stores/files';
+	import { onMount } from 'svelte';
+	import Sidebar from '$lib/ui/sidebar.svelte';
 
 	export let data = {
 		projects: [],
 		project: null,
-		conversations: []
+		conversations: [],
+		session: null,
+		user: null,
+		alerts: []
 	};
+
+	$: if (data.project?.files) {
+		filesStore.set(data.project.files);
+	}
 
 	let isMobileMenuOpen = false;
 	let isUserMenuOpen = false;
@@ -22,8 +29,9 @@
 	}
 
 	// Close menus when clicking outside
-	function handleClickOutside(event) {
-		if (isUserMenuOpen && !event.target.closest('#user-menu-button')) {
+	function handleClickOutside(event: MouseEvent) {
+		const target = event.target as HTMLElement;
+		if (isUserMenuOpen && !target.closest('#user-menu-button')) {
 			isUserMenuOpen = false;
 		}
 	}
@@ -31,6 +39,12 @@
 	function handleSidebarClick() {
 		isMobileMenuOpen = false;
 	}
+
+	onMount(() => {
+		return () => {
+			filesStore.reset();
+		};
+	});
 </script>
 
 <svelte:window on:click={handleClickOutside} />
@@ -53,8 +67,7 @@
 					<div class="flex h-full w-full flex-col overflow-y-auto">
 						<Sidebar
 							selected_project={data.project}
-							conversations={data.conversations}
-							files={data.project?.files || []}
+							conversations={data.conversations || []}
 							on:menuItemClick={handleSidebarClick}
 						/>
 					</div>
@@ -84,8 +97,7 @@
 		<div class="flex h-full flex-col overflow-y-auto">
 			<Sidebar
 				selected_project={data.project}
-				conversations={data.conversations}
-				files={data.project?.files || []}
+				conversations={data.conversations || []}
 				on:menuItemClick={() => {}}
 			/>
 		</div>
@@ -240,37 +252,3 @@
 		</main>
 	</div>
 </div>
-
-<style lang="scss">
-	// .grid-main {
-	// 	display: grid;
-	// 	grid-template-rows: auto 1fr;
-	// 	min-height: calc(100vh - 100px);
-	// 	width: 100%;
-	// }
-
-	// .main {
-	// 	display: grid;
-	// 	grid-template-columns: auto 1fr;
-	// 	height: 100%;
-	// 	overflow: hidden;
-	// }
-
-	// .content {
-	// 	height: 100%;
-	// 	overflow-y: auto;
-	// 	padding: 20px;
-	// }
-
-	// .alerts {
-	// 	position: absolute;
-	// 	top: 10px;
-	// 	right: 10px;
-	// 	width: 300px;
-	// 	z-index: 1000;
-
-	// 	.alert-item {
-	// 		box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-	// 	}
-	// }
-</style>

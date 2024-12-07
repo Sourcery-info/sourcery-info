@@ -1,33 +1,34 @@
-<script>
-	// @ts-nocheck
-	/** @type {import('./$types').PageData} */
+<script lang="ts">
+	import { filesStore } from '$lib/stores/files';
 	import { onMount, onDestroy } from 'svelte';
 	import { connect, subscribe, unsubscribe } from '@sourcery/ws/src/client';
 	import { enhance } from '$app/forms';
+
 	export let data;
+
+	// Use the store for rendering
+	$: files = $filesStore;
 
 	/**
 	 * Checks all files.
 	 *
 	 * @param {Event} e - The event object.
 	 */
-	function checkAllFiles(e) {
-		for (let file of data.props.files) {
+	function checkAllFiles(e: Event) {
+		for (let file of files) {
 			// @ts-ignore
 			file.checked = e.target?.checked;
 		}
-		data.props.files = data.props.files;
+		filesStore.set(files);
 	}
 
 	onMount(async () => {
 		console.log('mounted');
-		await connect(data.props.websocket_port);
+		await connect(Number(data.props.websocket_port));
 		try {
-			await subscribe(`${data.props.project}-file`, (msg) => {
-				const f = data.props.files.find((file) => file.uid === msg.file.uid);
-				if (f) {
-					Object.assign(f, msg.file);
-					data.props.files = data.props.files;
+			await subscribe(`${data.props.project_id}-file`, (msg) => {
+				if (msg.file) {
+					filesStore.updateFile(msg.file._id, msg.file);
 				}
 			});
 		} catch (error) {
@@ -139,7 +140,7 @@
 								class="rounded border-white/10 bg-white/5 text-indigo-500 focus:ring-indigo-500"
 							/>
 							<h3 class="text-base font-semibold text-white">
-								Files ({data.props.files.length} files)
+								Files ({files.length} files)
 							</h3>
 						</div>
 						<div class="space-x-2">
@@ -160,14 +161,13 @@
 						</div>
 					</div>
 					<ul class="divide-y divide-white/10">
-						{#each data.props.files as file}
+						{#each files as file}
 							<li class="flex items-center justify-between px-4 py-3">
 								<div class="flex items-center space-x-3">
 									<input
 										name="files"
 										value={file._id}
 										type="checkbox"
-										bind:checked={file.checked}
 										class="rounded border-white/10 bg-white/5 text-indigo-500 focus:ring-indigo-500"
 									/>
 									<span class="text-sm text-white">{file.original_name}</span>
@@ -185,11 +185,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	.file-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-</style>

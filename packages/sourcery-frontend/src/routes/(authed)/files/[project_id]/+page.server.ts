@@ -35,6 +35,7 @@ export const actions = {
 		const formData = await request.formData();
 		const files = formData.getAll('files');
 		const project_id = params.project_id;
+		let res_data = [];
 		for (const file of files) {
 			const file_record = await createFile({
 				project: project_id,
@@ -63,12 +64,10 @@ export const actions = {
 			};
 			await updateFile(data);
 			await pub.addJob(`file-${stage}-${file_record._id}`, data);
+			res_data.push(data);
 		}
 		return {
-			status: 200,
-			data: {
-				message: `Upload file to project ${params.project_id} with ${request.method} method`
-			}
+			data: res_data
 		};
 	},
 	deleteCollection: async ({ params }) => {

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	// @ts-nocheck
 	/** @type {import('./$types').PageData} */
 	import { onMount, onDestroy } from 'svelte';
@@ -10,6 +10,7 @@
 	import Text from './text.svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
 	import Dialog from '$lib/ui/dialog.svelte';
+	import { filesStore } from '$lib/stores/files';
 	export let data;
 
 	// Add tab state management
@@ -45,6 +46,21 @@
 
 	async function handleDelete() {
 		closeDeleteDialog();
+		try {
+			const response = await fetch(`/file/${data.props.project_id}/${data.props.file._id}`, {
+				method: 'DELETE'
+			});
+			if (response.ok) {
+				console.log(`File count before delete: ${$filesStore.length}`);
+				filesStore.remove(data.props.file._id);
+				console.log(`File count after delete: ${$filesStore.length}`);
+				goto(`/project/${data.props.project_id}`);
+			}
+		} catch (err) {
+			console.error('Error deleting file:', err);
+			showErrorDialog = true;
+			errorMessage = 'Failed to delete file';
+		}
 	}
 
 	onMount(async () => {});

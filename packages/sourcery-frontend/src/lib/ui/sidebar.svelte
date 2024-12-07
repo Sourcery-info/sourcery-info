@@ -2,9 +2,9 @@
 	// @ts-nocheck
 	/** @type {import('./$types').PageData} */
 	import { page } from '$app/stores';
+	import { filesStore } from '$lib/stores/files';
 	export let selected_project;
 	export let conversations = [];
-	export let files = [];
 	import { enhance } from '$app/forms';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
@@ -16,36 +16,37 @@
 	$: visibleConversations = conversations.slice(0, MAX_CONVERSATIONS);
 	$: hasMoreConversations = conversations.length > MAX_CONVERSATIONS;
 
-	$: {
-		console.log('Files in sidebar:', files);
-	}
-
-	async function toggleActive(file) {
-		file.status = file.status == 'active' ? 'inactive' : 'active';
-		selected_project = selected_project;
-		const res = await fetch(`/files/${selected_project._id}?/update`, {
-			method: 'POST',
-			body: JSON.stringify(file)
-		});
-	}
+	// async function toggleActive(file) {
+	// 	file.status = file.status == 'active' ? 'inactive' : 'active';
+	// 	selected_project = selected_project;
+	// 	const res = await fetch(`/files/${selected_project._id}?/update`, {
+	// 		method: 'POST',
+	// 		body: JSON.stringify(file)
+	// 	});
+	// }
 
 	function handleItemClick() {
 		dispatch('menuItemClick');
 	}
 
-	async function handleFileUpload(event) {
-		const files = event.target.files;
-		if (!files.length) return;
+	async function handleFileUpload(event: Event) {
+		const uploaded_files = (event.target as HTMLInputElement).files;
+		if (!uploaded_files) return;
 
 		const formData = new FormData();
-		for (const file of files) {
-			formData.append('files', file);
+		for (const uploaded_file of uploaded_files) {
+			formData.append('files', uploaded_file);
 		}
 
-		const res = await fetch(`/files/${selected_project._id}?/upload`, {
+		const res = await fetch(`/files/${selected_project._id}/upload`, {
 			method: 'POST',
 			body: formData
 		});
+
+		if (res.ok) {
+			const res_json = await res.json();
+			filesStore.update((files) => [...files, ...res_json.files]);
+		}
 
 		event.target.value = '';
 	}
@@ -128,8 +129,8 @@
 									/>
 								</label>
 							</li>
-							{#if files.length > 0}
-								{#each files as file}
+							{#if $filesStore.length > 0}
+								{#each $filesStore as file}
 									<li>
 										<a
 											href={`/file/${selected_project._id}/${file._id}`}

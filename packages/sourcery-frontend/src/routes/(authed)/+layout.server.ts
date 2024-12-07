@@ -32,7 +32,6 @@ export async function load({ params, locals }): Promise<response> {
         response.project = await getProject(params.project_id);
         if (response.project) {
             const files = await getFiles(params.project_id);
-            console.log('Files from server:', files);
             response.project.files = files as unknown as SourceryFile[];
             response.conversations = (await getConversations(params.project_id)).map(conversation => {
                 delete conversation.messages;

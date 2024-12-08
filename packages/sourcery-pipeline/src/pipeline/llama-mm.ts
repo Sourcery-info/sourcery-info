@@ -3,29 +3,36 @@ import { Ollama } from "ollama";
 import path from "path";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import fs from "fs/promises";
+import { setTimeout } from "timers/promises";
+
 const ollama = new Ollama({
     host: process.env.OLLAMA_URL || "http://localhost:9100",
 });
 import { ensure_model } from "@sourcery/common/src/ollama";
 
+const OLLAMA_TIMEOUT = parseInt(process.env.OLLAMA_TIMEOUT || "120") * 1000; // Convert to milliseconds
+const OLLAMA_RETRIES = parseInt(process.env.OLLAMA_RETRIES || "3");
+
 export class LLAMAMMPipeline extends PipelineBase {
 
     constructor(file: SourceryFile) {
-        super(file, "md");
+        super(file, "md", "md");
         console.log("LLAMAMM Pipeline constructor");
     }
-    
+
     async process() {
         try {
             await ensure_model("llama3.2-vision");
             const images = LLAMAMMPipeline.stage_paths.images.files;
-            // const image_paths = images.map(image => path.join(this.filepath, "images", image));
-            
+
+            // Continue with existing individual image processing
             let x = 0;
+            let pages = [];
             for (const image of images) {
-                console.log(`Processing ${image}`);
+                console.time(`Ollama processed ${image}`);
                 const imagePath = path.join(this.filepath, "images", image);
-                const output_file = path.join(this.filepath, "llama-mm", `${this.file.filename}.${x++}.md`);
+                const output_file = path.join(this.filepath, "md", `${this.file.filename}.${x++}.md`);
+                console.log(`Processing ${image} - Output file: ${output_file}`);
                 // Test if it is a valid image file
                 
                 if (!(await this.isValidImage(imagePath))) {
@@ -38,33 +45,60 @@ export class LLAMAMMPipeline extends PipelineBase {
                     continue;
                 }
                 const img_base64 = await ollama.encodeImage(img_data);
+                let content = "";
+                // if (pages.length > 0) {
+                //     content = `OCR this image. Return the text in Markdown format. Here is the previous pages content for context: <previous_pages>${pages.join("\n\n")}</previous_pages>`;
+                // } else {
+                    content = `OCR this image. Return the text in Markdown format:`;
+                // }
                 const messages = [
                     {
                         role: 'user',
-                        content: `OCR this image. Return the text in Markdown format:`,
+                        content,
                         images: [img_base64]
                     }
                 ]
                 let response;
-                try {
-                    response = await ollama.chat({
-                        model: 'llama3.2-vision',  // Using llava which is compatible with llama3.2-vision
-                    messages,
-                    options: {
-                        temperature: 0.0,
+                let retries = OLLAMA_RETRIES;
+                
+                while (retries > 0) {
+                    try {
+                        const timeoutPromise = setTimeout(OLLAMA_TIMEOUT, 'timeout');
+                        response = await Promise.race([
+                            ollama.chat({
+                                model: 'llama3.2-vision',
+                                messages,
+                                options: {
+                                    temperature: 0.0,
+                                }
+                            }),
+                            timeoutPromise.then(() => {
+                                ollama.abort();
+                                throw new Error('Ollama request timed out');
+                            })
+                        ]);
+                        break; // Success, exit retry loop
+                    } catch (error: any) {
+                        retries--;
+                        if (retries === 0) {
+                            throw new Error(`Failed to process image after ${OLLAMA_RETRIES} attempts: ${error.message}`);
                         }
-                    });
-                    console.log(response.message.content);
-                } catch (error) {
-                    console.error(error);
+                        console.warn(`Attempt failed, ${retries} retries remaining. Error: ${error.message}`);
+                        await setTimeout(1000); // Wait 1 second before retrying
+                    }
                 }
+
                 if (!response) { 
                     throw new Error(`No response from ollama for ${image}`);
                 }
+                pages.push(response.message.content);
                 // Write the description to a file
                 await fs.writeFile(output_file, response.message.content);
-                console.log(`Processed ${image} - Description saved to ${output_file}`);
+                console.timeEnd(`Ollama processed ${image}`);
             }
+            
+            const output_text = pages.map((page, i) => `# Page ${i + 1}\n${page}`).join("\n\n");
+            await fs.writeFile(path.join(this.filepath, "md", `${this.file.filename}.md`), output_text);
         } catch (error) {
             console.error(`Error processing ${this.file.filename}`);
             console.error(error);

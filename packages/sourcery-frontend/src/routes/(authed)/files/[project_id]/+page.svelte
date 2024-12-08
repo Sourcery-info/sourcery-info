@@ -6,20 +6,21 @@
 
 	export let data;
 
-	// Use the store for rendering
-	$: files = $filesStore;
-
 	/**
 	 * Checks all files.
 	 *
 	 * @param {Event} e - The event object.
 	 */
 	function checkAllFiles(e: Event) {
-		for (let file of files) {
-			// @ts-ignore
-			file.checked = e.target?.checked;
+		const checked = (e.target as HTMLInputElement).checked;
+		for (let file of $filesStore) {
+			if (file._id) {
+				filesStore.updateFile(file._id, {
+					...file,
+					checked
+				});
+			}
 		}
-		filesStore.set(files);
 	}
 
 	onMount(async () => {
@@ -140,7 +141,7 @@
 								class="rounded border-white/10 bg-white/5 text-indigo-500 focus:ring-indigo-500"
 							/>
 							<h3 class="text-base font-semibold text-white">
-								Files ({files.length} files)
+								Files ({$filesStore.length} files)
 							</h3>
 						</div>
 						<div class="space-x-2">
@@ -161,13 +162,14 @@
 						</div>
 					</div>
 					<ul class="divide-y divide-white/10">
-						{#each files as file}
+						{#each $filesStore as file}
 							<li class="flex items-center justify-between px-4 py-3">
 								<div class="flex items-center space-x-3">
 									<input
 										name="files"
 										value={file._id}
 										type="checkbox"
+										checked={file.checked}
 										class="rounded border-white/10 bg-white/5 text-indigo-500 focus:ring-indigo-500"
 									/>
 									<span class="text-sm text-white">{file.original_name}</span>

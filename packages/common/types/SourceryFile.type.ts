@@ -93,4 +93,5 @@ export type SourceryFile = {
     last_stage?: FileStage | string;
     created_at: Date;
     updated_at: Date | null;
+    checked?: boolean;
 }

@@ -4,19 +4,19 @@ import path from "path";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import fs from "fs/promises";
 import { setTimeout } from "timers/promises";
-
+import { isValidImage } from "@sourcery/common/src/utils";
 const ollama = new Ollama({
     host: process.env.OLLAMA_URL || "http://localhost:9100",
 });
 import { ensure_model } from "@sourcery/common/src/ollama";
 
-const OLLAMA_TIMEOUT = parseInt(process.env.OLLAMA_TIMEOUT || "120") * 1000; // Convert to milliseconds
+const OLLAMA_TIMEOUT = parseInt(process.env.OLLAMA_TIMEOUT || "30") * 1000; // Convert to milliseconds
 const OLLAMA_RETRIES = parseInt(process.env.OLLAMA_RETRIES || "3");
 
 export class LLAMAMMPipeline extends PipelineBase {
 
     constructor(file: SourceryFile) {
-        super(file, "md", "md");
+        super(file, "json", "json");
         console.log("LLAMAMM Pipeline constructor");
     }
 
@@ -28,14 +28,21 @@ export class LLAMAMMPipeline extends PipelineBase {
             // Continue with existing individual image processing
             let x = 0;
             let pages = [];
+            const easyocr_file = path.join(this.filepath, "easyocr", `${this.file.filename}.json`);
+            const easyocr_data = await fs.readFile(easyocr_file, "utf-8");
+            const easyocr_data_json = JSON.parse(easyocr_data);
+            console.log(easyocr_data_json);
             for (const image of images) {
                 console.time(`Ollama processed ${image}`);
                 const imagePath = path.join(this.filepath, "images", image);
-                const output_file = path.join(this.filepath, "md", `${this.file.filename}.${x++}.md`);
+                const output_file = path.join(this.filepath, "json", `${this.file.filename}.${x++}.json`);
+                const easyocr_page = easyocr_data_json[x];
+                
+                
                 console.log(`Processing ${image} - Output file: ${output_file}`);
                 // Test if it is a valid image file
                 
-                if (!(await this.isValidImage(imagePath))) {
+                if (!(await isValidImage(imagePath))) {
                     console.error(`Invalid or unsupported image file: ${image}`);
                     continue;
                 }
@@ -49,7 +56,41 @@ export class LLAMAMMPipeline extends PipelineBase {
                 // if (pages.length > 0) {
                 //     content = `OCR this image. Return the text in Markdown format. Here is the previous pages content for context: <previous_pages>${pages.join("\n\n")}</previous_pages>`;
                 // } else {
-                    content = `OCR this image. Return the text in Markdown format:`;
+                    content = `OCR this document page. 
+OCR all the text in the page. Do not skip any text. Go right to the bottom of the page.
+If there is an image, describe it in detail. 
+If there is a table, return the table in CSV format.
+If there is a chart or diagram, describe it in detail and extract the data in CSV format.
+If there is a page number or page number range, return it as a string.
+Do not hallucinate. Describe only the text and data that you see. If there is nothing there, return an empty string.
+If there is text, return the text accurately and faithfully in markdown format.
+
+Return JSON with the following fields:
+- image_description: description of the image
+- table_csv: CSV representation of the table
+- chart_description: description of the chart
+- chart_data_csv: CSV representation of the chart data
+- diagram_description: description of the diagram
+- page_number: page number or page number range
+- markdown: Markdown-formatted text from the page, split into an array of paragraphs.
+
+Example JSON:
+{
+    "image_description": ["...", "..."],
+    "table_csv": ["...", "..."],
+    "chart_description": ["...", "..."],
+    "page_number": ["...", "..."],
+    "markdown": ["...", "..."]
+}
+
+Here is an easyocr version of the page:
+<easyocr_page>${easyocr_page}</easyocr_page>
+`;
+    //         content = `Analyze the text in the provided image. Extract all readable content and present it in a structured Markdown format that is clear, concise, and well-organized. Ensure proper formatting (e.g., headings, lists, or code blocks) as necessary to represent the content effectively.
+
+    // Return JSON with the following fields:
+    // - markdown: Markdown-formatted text from the page
+    // `
                 // }
                 const messages = [
                     {
@@ -60,14 +101,19 @@ export class LLAMAMMPipeline extends PipelineBase {
                 ]
                 let response;
                 let retries = OLLAMA_RETRIES;
-                
+                let json_response;
                 while (retries > 0) {
+                    // Pause half a second before retrying
+                    await setTimeout(500);
                     try {
                         const timeoutPromise = setTimeout(OLLAMA_TIMEOUT, 'timeout');
                         response = await Promise.race([
-                            ollama.chat({
+                            ollama.generate({
                                 model: 'llama3.2-vision',
-                                messages,
+                                prompt: content,
+                                images: [img_base64],
+                                format: 'json',
+                                // keep_alive: 0,
                                 options: {
                                     temperature: 0.0,
                                 }
@@ -77,6 +123,12 @@ export class LLAMAMMPipeline extends PipelineBase {
                                 throw new Error('Ollama request timed out');
                             })
                         ]);
+                        // Check if the response is valid JSON
+                        json_response = JSON.parse(response.response);
+                        if (json_response.error) {
+                            throw new Error(`Ollama returned an error: ${json_response.error}`);
+                        }
+
                         break; // Success, exit retry loop
                     } catch (error: any) {
                         retries--;
@@ -84,54 +136,26 @@ export class LLAMAMMPipeline extends PipelineBase {
                             throw new Error(`Failed to process image after ${OLLAMA_RETRIES} attempts: ${error.message}`);
                         }
                         console.warn(`Attempt failed, ${retries} retries remaining. Error: ${error.message}`);
-                        await setTimeout(1000); // Wait 1 second before retrying
+                        // await setTimeout(1000); // Wait 1 second before retrying
                     }
                 }
 
                 if (!response) { 
                     throw new Error(`No response from ollama for ${image}`);
                 }
-                pages.push(response.message.content);
+                pages.push(json_response);
                 // Write the description to a file
-                await fs.writeFile(output_file, response.message.content);
+                await fs.writeFile(output_file, JSON.stringify(json_response, null, 2));
                 console.timeEnd(`Ollama processed ${image}`);
             }
             
-            const output_text = pages.map((page, i) => `# Page ${i + 1}\n${page}`).join("\n\n");
-            await fs.writeFile(path.join(this.filepath, "md", `${this.file.filename}.md`), output_text);
+            const output_text = JSON.stringify(pages, null, 2);
+            await fs.writeFile(path.join(this.filepath, "json", `${this.file.filename}.json`), output_text);
         } catch (error) {
             console.error(`Error processing ${this.file.filename}`);
             console.error(error);
             throw error;
         }
         return this.file;
-    }
-
-    private async isValidImage(imagePath: string): Promise<boolean> {
-        // Check file extension first
-        const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-        const ext = path.extname(imagePath).toLowerCase();
-        if (!validExtensions.includes(ext)) {
-            return false;
-        }
-
-        try {
-            // Read first few bytes to check magic numbers
-            const fileHandle = await fs.open(imagePath);
-            const buffer = Buffer.alloc(12);  // Allocate 12 bytes for all format checks
-            await fileHandle.read(buffer, 0, 12);
-            await fileHandle.close();
-            
-            // Check magic numbers for common image formats
-            const isJPEG = buffer[0] === 0xFF && buffer[1] === 0xD8;
-            const isPNG = buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
-            const isGIF = buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;
-            const isWEBP = buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50;
-
-            return isJPEG || isPNG || isGIF || isWEBP;
-        } catch (error) {
-            console.error(`Error reading file ${imagePath}:`, error);
-            return false;
-        }
     }
 }

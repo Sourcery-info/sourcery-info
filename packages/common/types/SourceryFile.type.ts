@@ -24,6 +24,10 @@ export enum FileStage {
     PDF_TO_IMAGE = 'pdf_to_image',
     EASYOCR = 'easyocr',
     LLAMA_MM = 'llama-mm',
+    ENTITIES = 'entities',
+    MONTAGE = 'montage',
+    FILENAME = 'filename',
+    MARKER_PDF = 'marker_pdf',
 }
 
 export enum FileTypes {

@@ -9,6 +9,7 @@ import { Save } from "./pipeline/save";
 import { DonePipeline } from "./pipeline/done";
 import { PDFToImagePipeline } from "./pipeline/pdftoimage";
 import { EasyOCRPipeline } from "./pipeline/easyocr";
+import { MarkerPDFPipeline } from "./pipeline/marker-pdf";
 import { LlamaIndexPipeline } from "./pipeline/llamaindex";
 import { UnprocessedPipeline } from "./pipeline/unprocessed";
 import { ErrorPipeline } from "./pipeline/error";
@@ -17,6 +18,9 @@ import { stages } from "./file_workflows";
 import { FileStage } from "@sourcery/common/types/SourceryFile.type";
 import dotenv from "dotenv";
 import { LLAMAMMPipeline } from "./pipeline/llama-mm";
+import { EntitiesPipeline } from "./pipeline/entities";
+import { MontagePipeline } from "./pipeline/montage";
+import { FilenamePipeline } from "./pipeline/filename";
 dotenv.config();
 
 async function handleFile(file: SourceryFile) {
@@ -62,6 +66,18 @@ async function handleFile(file: SourceryFile) {
             break;
         case FileStage.LLAMA_MM:
             stage_instance = new LLAMAMMPipeline(file);
+            break;
+        case FileStage.ENTITIES:
+            stage_instance = new EntitiesPipeline(file);
+            break;
+        case FileStage.MONTAGE:
+            stage_instance = new MontagePipeline(file);
+            break;
+        case FileStage.FILENAME:
+            stage_instance = new FilenamePipeline(file);
+            break;
+        case FileStage.MARKER_PDF:
+            stage_instance = new MarkerPDFPipeline(file);
             break;
         default:
             console.error(`No file workflow found for stage ${stage}`);

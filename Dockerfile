@@ -16,7 +16,10 @@ RUN apt update && apt install -y \
     python3-pip \
     python3 \
     python3-venv \
-    imagemagick
+    imagemagick \
+    ffmpeg \
+    libsm6 \
+    libxext6
 
 WORKDIR /app
 COPY package.json .

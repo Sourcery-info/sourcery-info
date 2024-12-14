@@ -17,7 +17,7 @@ export class MarkerPDFPipeline extends PipelineBase {
     private options: MarkerPDFOptions;
 
     constructor(file: SourceryFile, options: MarkerPDFOptions = {}) {
-        super(file, 'md');
+        super(file, 'md', 'md');
         this.options = options;
         console.log("MarkerPDF Pipeline constructor");
     }
@@ -68,7 +68,7 @@ export class MarkerPDFPipeline extends PipelineBase {
             fs.renameSync(path.join(directory, file), path.join(this.filepath, file));
         }
         fs.rmdirSync(directory);
-        fs.renameSync(path.join(this.filepath, this.file.filename), path.join(this.filepath, 'marker_pdf'));
+        fs.renameSync(path.join(this.filepath, this.file.filename), path.join(this.filepath, 'md'));
     }
 
     async process() {

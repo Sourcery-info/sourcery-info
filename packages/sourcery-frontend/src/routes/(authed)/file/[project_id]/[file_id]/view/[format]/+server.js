@@ -64,7 +64,7 @@ export async function GET({ params }) {
             response = await format_original(`${PROJECT_DIR}/${project_id}/files/${file_id}/unprocessed/${file.filename}.${file.filetype}`, file.filetype);
             break;
         case 'md':
-            const md = fs.readFileSync(`${PROJECT_DIR}/${project_id}/files/${file_id}/docling/${file.filename}.md`, 'utf8');
+            const md = fs.readFileSync(`${PROJECT_DIR}/${project_id}/files/${file_id}/md/${file.filename}.md`, 'utf8');
             const html = marked(md); // Convert markdown to HTML
             response = {
                 headers: {

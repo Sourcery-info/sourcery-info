@@ -53,5 +53,21 @@ export const actions = {
 			throw error(500, 'Failed to delete file');
 		}
 		redirect(303, `/project/${project_id}`);
+	},
+	reindex: async ({ params }) => {
+		const { file_id } = params;
+		const file = await getFile(file_id);
+		if (!file) {
+			return error(404, 'File not found');
+		}
+		file.stage = FileStage.UNPROCESSED;
+		file.status = FileStatus.PENDING;
+		file.processing = false;
+		await updateFile(file);
+		await pub.addJob(`file-${FileStage.UNPROCESSED}-${file_id}`, file);
+		return {
+			success: true,
+			file: file
+		};
 	}
 };

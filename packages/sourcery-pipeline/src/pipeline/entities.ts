@@ -38,19 +38,19 @@ JSON example:
         {
             "type": "PERSON",
             "value": "John Smith",
-            "context": "mentioned as CEO"
+            "context": "CEO, Acme Corp"
         },
         {
             "type": "ORGANIZATION",
             "value": "Acme Corp",
-            "context": "company discussed in document"
+            "context": "Hazardous materials manufacturer"
         }
     ]
 }
 
 Text to analyze:
 ${content}`;
-
+        // console.log(prompt);
         while (retries > 0) {
             try {
                 const timeoutPromise = setTimeout(OLLAMA_TIMEOUT, 'timeout');
@@ -73,6 +73,7 @@ ${content}`;
                 ]);
 
                 try {
+                    console.log(response.message.content);
                     const entities = JSON.parse(response.message.content);
                     console.log(entities);
                     if (Array.isArray(entities.entities)) {
@@ -102,6 +103,10 @@ ${content}`;
             const mdFiles = EntitiesPipeline.stage_paths.md.files;
             
             for (const mdFile of mdFiles) {
+                // Ensure file ends in .md
+                if (!mdFile.endsWith('.md')) {
+                    continue;
+                }
                 console.time(`Processing entities for ${mdFile}`);
                 const inputPath = path.join(this.filepath, "md", mdFile);
                 const outputPath = path.join(this.filepath, "entities", mdFile.replace('.md', '.json'));

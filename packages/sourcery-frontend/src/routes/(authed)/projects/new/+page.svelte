@@ -4,12 +4,12 @@
 	import Projectsettings from '$lib/ui/projectsettings.svelte';
 	import ModelSettings from '$lib/ui/modelsettings.svelte';
 	import { enhance } from '$app/forms';
+	import { AIModels } from '@sourcery/common/src/ai-models';
 
 	export let form;
 
-	import models from '$lib/models.json';
-	let chat_model = models.filter((model) => model.type === 'chat')[0].value;
-	let vector_model = models.filter((model) => model.type === 'embed')[0].value;
+	let chat_model = AIModels.filter((model) => model.type === 'chat')[0].value;
+	let vector_model = AIModels.filter((model) => model.type === 'embed')[0].value;
 	let temperature = 0.1;
 	let security = 'secure';
 </script>

@@ -1,6 +1,6 @@
 <script>
 	// @ts-nocheck
-	import models from '$lib/models.json';
+	import { AIModels } from '@sourcery/common/src/ai-models';
 
 	export let form;
 
@@ -9,8 +9,8 @@
 	export let temperature;
 	export let security;
 
-	const chatModels = models.filter((model) => model.type === 'chat');
-	const vectorModels = models.filter((model) => model.type === 'embed');
+	const chatModels = AIModels.filter((model) => model.type === 'chat');
+	const vectorModels = AIModels.filter((model) => model.type === 'embed');
 	const temperatureStep = 0.1;
 	const temperatureMin = 0;
 	const temperatureMax = 1.0;

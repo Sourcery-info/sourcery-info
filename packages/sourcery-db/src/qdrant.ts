@@ -31,7 +31,7 @@ export class Qdrant implements SourceryDB {
         }
         const config = {
             vectors: {
-                size: 384,
+                size: 768,
                 distance: 'Cosine',
                 on_disk: true
             }
@@ -58,6 +58,12 @@ export class Qdrant implements SourceryDB {
         return true;    
     }
 
+    async getOne(collection: string, id: string): Promise<any> {
+        const response = await fetch(`${this.url}/collections/${collection}/points/${id}`);
+        const result = await response.json();
+        return result.result;
+    }
+
     async upsert(collection: string, id: string, data: any) {
         const response = await fetch(`${this.url}/collections/${collection}/upsert`, {
             method: 'POST',
@@ -77,8 +83,7 @@ export class Qdrant implements SourceryDB {
             id: record.id,
             vector: record.vectors,
             payload: record.data
-        }));
-        // console.log(points);
+        })).filter(r => r.vector.length > 0);
         const response = await fetch(`${this.url}/collections/${collection}/points?wait=true`, {
             method: 'PUT',
             headers: {
@@ -87,8 +92,10 @@ export class Qdrant implements SourceryDB {
             body: JSON.stringify({points})
         });
         const result = await response.json();
-        // console.log({ result });
-        return {} as any;
+        if (result.status !== "ok") {
+            throw new Error(result.status?.error || "Unknown error");
+        }
+        return result;
     }
 
     async search(collection: string, query: SourceryDBRecordSearch): Promise<any> {

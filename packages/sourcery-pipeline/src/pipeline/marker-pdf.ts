@@ -65,9 +65,17 @@ export class MarkerPDFPipeline extends PipelineBase {
         const directory = path.join(this.filepath, this.stage_name);
         const files = fs.readdirSync(directory);
         for (const file of files) {
+            if (fs.existsSync(path.join(this.filepath, file))) {
+                fs.rmSync(path.join(this.filepath, file), { recursive: true, force: true });
+            }
+            // console.log(`Renaming ${path.join(directory, file)} to ${path.join(this.filepath, file)}`);
             fs.renameSync(path.join(directory, file), path.join(this.filepath, file));
         }
         fs.rmdirSync(directory);
+        // Delete the original directory if it exists
+        if (fs.existsSync(path.join(this.filepath, 'md'))) {
+            fs.rmSync(path.join(this.filepath, 'md'), { recursive: true, force: true });
+        }
         fs.renameSync(path.join(this.filepath, this.file.filename), path.join(this.filepath, 'md'));
     }
 

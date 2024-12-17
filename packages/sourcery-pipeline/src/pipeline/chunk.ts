@@ -1,113 +1,86 @@
-import { chunk } from "llm-chunk";
-import he from "he";
 import { PipelineBase } from "./base"
-import { File } from "@sourcery/common/src/file";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
+import type { TChunk } from "@sourcery/common/types/Chunks.type";
 import * as fs from 'node:fs';
-
-export class Chunk extends PipelineBase {
+import path from "node:path";
+import { randomUUID } from 'crypto';
+export class ChunkingPipeline extends PipelineBase {
 
     constructor(file: SourceryFile) {
-        super(file);
+        super(file, "json", "chunks");
     }
     
     async process() {
-        const text = fs.readFileSync(this.file.filename, 'utf8');
-        const chunks = this.chunkText(text, 1000);
-        this.file.filename = this.file.filename.replace(/\.txt$/i, '.json');
-        this.file.write(JSON.stringify(chunks, null, 2));
+        // Read files from markdown step
+        const mdFiles = ChunkingPipeline.stage_paths.md.files;
+        for (const mdFile of mdFiles) {
+            // Ensure file ends in .md
+            if (!mdFile.endsWith('.md')) {
+                continue;
+            }
+            const inputPath = path.join(this.filepath, "md", mdFile);
+            const outputPath = path.join(this.filepath, "chunks", mdFile.replace('.md', '.json'));
+            const text = fs.readFileSync(inputPath, 'utf8');
+            const root = this.chunkMarkdown(text, 1000);
+            fs.writeFileSync(outputPath, JSON.stringify(root, null, 2));
+        }
         return this.file;
     }
 
-    chunkText(content: string, max_words: number) {
-        function wordCount(text: string): number {
-            return text.split(/\s+/).filter(word => word.length > 0).length;
+    chunkMarkdown(content: string, max_words: number = 1000): TChunk {
+        const root: TChunk = {
+            id: randomUUID(),
+            level: 0,
+            title: "root",
+            content: content,
+            parent: null,
+            children: []
         }
+        root.children = this.chunkByLevel(root);
+        return root;
+    }
 
-        function chunkParagraph(paragraph: string, max_words: number) {
-            let sentences = paragraph.split(/(?<=\.)\s+/);
-            let chunks = [];
-            let currentChunk: string[] = [];
-
-            sentences.forEach(sentence => {
-                let currentWords = wordCount(currentChunk.join(' '));
-                let sentenceWords = wordCount(sentence);
-
-                if (currentWords + sentenceWords > max_words) {
-                    chunks.push(currentChunk.join(' '));
-                    currentChunk = [sentence]; // Start a new chunk with the current sentence
-                } else {
-                    currentChunk.push(sentence);
-                }
-            });
-            if (currentChunk.length > 0) {
-                chunks.push(currentChunk.join(' '));
+    private chunkByLevel(parent: TChunk): TChunk[] {
+        const chunks: TChunk[] = [];
+        const level = parent.level + 1;
+        const headingRegex = new RegExp(`^#{${level}}\\s`, 'gm');
+        const anyHeadingsRegex = new RegExp(`^#{1,6}\\s`, 'gm');
+        if (!parent.content.match(anyHeadingsRegex)) {
+            console.log(`No deeper headings at this level: ${level}`);
+            return [];
+        }
+        const parts = parent.content.split(headingRegex);
+        for (let i = 0; i < parts.length; i++) {
+            const content = `${parts[i]}`;
+            const title = parts[i].split('\n')[0];
+            const id = randomUUID();
+            const chunk: TChunk = {
+                id: id,
+                level: level,
+                title: title,
+                content: content,
+                parent: parent.id,
+                children: []
             }
-            return chunks;
+            chunk.children = this.chunkByLevel(chunk);
+            chunks.push(chunk);
         }
-
-        let paragraphs = content.split(/\n+/);
-        let chunks: string[] = [];
-        let currentChunk: string[] = [];
-
-        paragraphs.forEach(paragraph => {
-            let currentWords = wordCount(currentChunk.join(' '));
-            let paragraphWords = wordCount(paragraph);
-
-            if (paragraphWords > max_words) {
-                if (currentChunk.length > 0) {
-                    chunks.push(currentChunk.join('\n'));
-                    currentChunk = [];
-                }
-                // Break paragraph into sentences and process
-                chunks = chunks.concat(chunkParagraph(paragraph, max_words));
-            } else {
-                if (currentWords + paragraphWords > max_words) {
-                    chunks.push(currentChunk.join('\n'));
-                    currentChunk = [paragraph]; // Start a new chunk with the current paragraph
-                } else {
-                    currentChunk.push(paragraph);
-                }
-            }
-        });
-
-        if (currentChunk.length > 0) {
-            chunks.push(currentChunk.join('\n'));
-        }
-
         return chunks;
     }
 
-    cleanContent(content: string) {
-        // Remove everything in between <script>...</script> tags
-        content = content.replace(/<script.*?>.*?<\/script>/g, '');
-        // Replace all <br> tags with newlines
-        content = content.replace(/<br>/g, '\n');
-        // Replace all <br /> tags with newlines
-        content = content.replace(/<br \/>/g, '\n');
-        // Replace all <p> tags with newlines
-        content = content.replace(/<p>/g, '\n');
-        // Replace all </p> tags with newlines
-        content = content.replace(/<\/p>/g, '\n');
-        // Replace all <div> tags with newlines
-        content = content.replace(/<div>/g, '\n');
-        // Replace all </div> tags with newlines
-        content = content.replace(/<\/div>/g, '\n');
-        // Remove all HTML tags
-        content = content.replace(/<[^>]*>/g, '');
-        // Remove Wordpress shortcodes
-        content = content.replace(/\[.*?\]/g, '');
-        // Remove HTML entities
-        content = he.decode(content);
-        // Remove all leading and trailing whitespace
-        content = content.trim();
-        // Remove all double spaces
-        content = content.replace(/  /g, ' ');
-        // Normalize paragraph breaks
-        content = content.replace(/\n\n+/g, '\n\n');
-        content = content.replace(/\r\n/g, '\n\n');
-        // No more than 2 newlines in a row
-        content = content.replace(/\n{3,}/g, '\n\n');
-        return content;
+    /**
+     * Flattens a chunk tree into an array of chunks
+     */
+    static flattenChunks(chunk: TChunk): TChunk[] {
+        let chunks: TChunk[] = [chunk];
+        if (!chunk.children) {
+            return chunks;
+        }
+        for (const child of chunk.children) {
+            chunks = chunks.concat(this.flattenChunks(child));
+        }
+        return chunks;
     }
+
+    
 }

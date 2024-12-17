@@ -12,7 +12,7 @@ dotenv.config();
 export const httpServer = restify.createServer();
 httpServer.use(bodyParser.json());
 const MODEL = "llama3.2:latest"
-const VECTOR_MODEL = "all-minilm:latest"
+const VECTOR_MODEL = "nomic-embed-text:latest"
 
 const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
 
@@ -41,13 +41,32 @@ const rag_prompt_template = (context, question) => [
     },
 ];
 
-const get_rag_context = async (project_name, files, question, top_k = 5) => {
+const get_rag_context = async (project_name, files, question, top_k = 10) => {
+    const qdrant = new Qdrant({
+        url: process.env.QDRANT_URL || "http://localhost:6333",
+    });
+    const get_parents = async (project_name, search_results) => {
+        // If we match a chunk, we need to get the parent chunk
+        const parents = new Set();
+        const ids = search_results.map(s => s.id);
+        for (const result of search_results) {
+            if (result.payload.parent_id && !ids.includes(result.payload.parent_id)) {
+                parents.add(result.payload.parent_id);
+            }
+        }
+        const parent_results = [];
+        for (const parent of parents) {
+            const p = await qdrant.getOne(project_name, parent);
+            if (p?.payload?.content) {
+                parent_results.push(p);
+            }
+        }
+        return parent_results;
+    }
     try {
         console.log({ project_name, files, question, top_k })
         await ensure_model(VECTOR_MODEL);
         const vector = await ollama.embeddings({ model: VECTOR_MODEL, prompt: question });
-
-        // console.log({ files })
         const file_query = {
             key: "_id",
             match: {
@@ -62,15 +81,15 @@ const get_rag_context = async (project_name, files, question, top_k = 5) => {
                 must: [file_query],
             }
         }
-        const qdrant = new Qdrant({
-            url: process.env.QDRANT_URL || "http://localhost:6333",
-        });
+
         const results = await qdrant.search(project_name, query);
         if (!results) {
             console.log(`No results found for query`);
             return [];
         }
-        const context = results.map(result => `Filename: ${result.payload.original_name}\n${result.payload.text}`).join("\n\n---\n\n");
+        const parents = await get_parents(project_name, results);
+        console.log(`Found ${parents.length} parents from ${results.length} results`);
+        const context = parents.map(result => `Filename: ${result.payload.original_name}\n${result.payload.content}`).join("\n\n---\n\n");
         return context;
     } catch (err) {
         console.error(err);

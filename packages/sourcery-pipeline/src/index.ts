@@ -2,10 +2,10 @@ import { SourcerySub } from "@sourcery/queue/src/sub";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import { Validate } from "./pipeline/validate";
 import { ExtractText } from "./pipeline/extract_text";
-import { Chunk } from "./pipeline/chunk";
-import { Vectorize } from "./pipeline/vectorize";
+import { ChunkingPipeline } from "./pipeline/chunk";
+import { VectorizePipeline } from "./pipeline/vectorize";
 import { DoclingPipeline } from "./pipeline/docling";
-import { Save } from "./pipeline/save";
+import { SavePipeline } from "./pipeline/save";
 import { DonePipeline } from "./pipeline/done";
 import { PDFToImagePipeline } from "./pipeline/pdftoimage";
 import { EasyOCRPipeline } from "./pipeline/easyocr";
@@ -44,13 +44,13 @@ async function handleFile(file: SourceryFile) {
             stage_instance = new ExtractText(file);
             break;
         case FileStage.CHUNKING:
-            stage_instance = new Chunk(file);
+            stage_instance = new ChunkingPipeline(file);
             break;
         case FileStage.VECTORISING:
-            stage_instance = new Vectorize(file);
+            stage_instance = new VectorizePipeline(file);
             break;
         case FileStage.SAVING:
-            stage_instance = new Save(file);
+            stage_instance = new SavePipeline(file);
             break;
         case FileStage.DONE:
             stage_instance = new DonePipeline(file);

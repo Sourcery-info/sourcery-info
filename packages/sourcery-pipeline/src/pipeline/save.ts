@@ -13,10 +13,16 @@ export class SavePipeline extends PipelineBase {
         super(file, "json");
         this.client = new Qdrant({ url: process.env.QDRANT_URL || "http://localhost:6333", });
     }
+
+    async delete_existing_file() {
+        const collection = this.file.project;
+        await this.client.deleteFile(collection, this.file.filename);
+    }
     
     async process() {
         const collection = this.file.project;
         await this.client.createCollection(collection);
+        await this.delete_existing_file();
         const chunkFile = SavePipeline.stage_paths.vectorising.files[0];
         const inputPath = path.join(this.filepath, "vectorising", chunkFile);
         const data = await readFile(inputPath, "utf8");
@@ -33,6 +39,8 @@ export class SavePipeline extends PipelineBase {
                     level: chunk.level,
                     content: chunk.content,
                     parent_id: chunk.parent,
+                    context: chunk.context,
+                    content_length: chunk.content.length,
                     ...this.file
                 }
             }

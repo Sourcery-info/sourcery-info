@@ -13,6 +13,8 @@ export async function GET({ params }) {
     }
     file.stage = FileStage.UNPROCESSED;
     file.status = FileStatus.PENDING;
+    file.stage_queue = [];
+    file.completed_stages = [];
     file.processing = false;
     await updateFile(file);
     await pub.addJob(`file-${FileStage.UNPROCESSED}-${file_id}`, file);

@@ -28,13 +28,13 @@ const ensure_model = async (model) => {
 }
 
 httpServer.get("/", async () => {
-    return { hello: "world" };
+    return { status: "ok" };
 });
 
 const rag_prompt_template = (context, question) => [
     {
         role: "system",
-        content: "You are named Sourcery, an AI that assists investigative journalists, able to find the most interesting facts and important information buried in boring documents. Using the information contained in the context, give a comprehensive answer to the question. Respond only to the question asked. The response should be concise and relevant to the question. Provide the filename of the source document when relevant. If the answer cannot be deduced from the context, politely decline to give an answer."
+        content: "You are named Sourcery, an AI that assists investigative journalists, able to find the most interesting facts and important information buried in boring documents. You will be given multiple chunks of information from different documents. Each chunk contains a filename, the context, and the relevant content. Using the information contained in the chunks, give a comprehensive answer to the question. Respond only to the question asked. The response should be concise and relevant to the question. Provide the filename of the source document when relevant. Quote the text from the document when relevant. Give as a complete answer as possible. If the answer cannot be deduced from the context, politely decline to give an answer. Answer in Markdown format."
     },
     {
         role: "user",
@@ -65,7 +65,6 @@ const get_rag_context = async (project_name, files, question, top_k = 15) => {
         return parent_results;
     }
     try {
-        console.log({ project_name, files, question, top_k })
         await ensure_model(VECTOR_MODEL);
         const vector = await ollama.embeddings({ model: VECTOR_MODEL, prompt: question });
         const file_query = {
@@ -90,10 +89,8 @@ const get_rag_context = async (project_name, files, question, top_k = 15) => {
         }
         const parents = await get_parents(project_name, results);
         console.log(`Found ${parents.length} parents from ${results.length} results`);
-        // console.log(results[0]);
         const contexts = results.map(result => `Filename: ${result.payload.original_name}\n<context>${result.payload.context || ""}</context>\n<content>${result.payload.content}</content>`);
         const reranked = await rerank(question, contexts);
-        console.log(reranked);
         return reranked.ranked_documents.map(d => `<document>${d.document}</document>`).join("\n\n---\n\n");
     } catch (err) {
         console.error(err);
@@ -113,7 +110,16 @@ httpServer.post("/chat/:project_id", async (req, res) => {
     if (!project?._id) {
         throw new restifyErrors.NotFoundError("Project not found");
     }
-    const files = await getFiles(project_id);
+    const message_id = req.body?.message_id;
+    if (!message_id) {
+        throw new restifyErrors.BadRequestError("No message_id provided");
+    }
+    let files = [];
+    if (req.body?.files) {
+        files = await getFiles(project_id, req.body.files);
+    } else {
+        files = await getFiles(project_id);
+    }
     const { input } = req.body;
     const context = await get_rag_context(project_id, files, input);
     const messages = rag_prompt_template(context, input);
@@ -123,7 +129,7 @@ httpServer.post("/chat/:project_id", async (req, res) => {
         console.error(err);
         throw new restifyErrors.InternalServerError("Error processing chat");
     }
-    const chatStream = await ollama.chat({ model: MODEL, messages, stream: true }).catch(err => {
+    const chatStream = await ollama.chat({ model: MODEL, messages, stream: true, options: { temperature: 0.1 } }).catch(err => {
         console.error(err);
         throw new restifyErrors.InternalServerError("Error processing chat");
     });
@@ -136,16 +142,16 @@ httpServer.post("/chat/:project_id", async (req, res) => {
                 return res.end();
             }
         }
+
     } catch (error) {
         console.error(error);
         new restifyErrors.InternalServerError("Error processing chat");
     }
-    // console.log(response_log);
     res.end();
 })
 
 httpServer.get("/test", async (req, res) => {
-    res.send({ str: "Hello, World!" });
+    res.send({ status: "ok" });
 });
 
 httpServer.listen({

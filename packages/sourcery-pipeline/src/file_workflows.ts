@@ -1,32 +1,35 @@
+import { FileStage } from "@sourcery/common/types/SourceryFile.type";
+
 export const fileTypeWorkflows: Record<string, { stages: string[] }> = {
     "pdf": {
         "stages": [
             // "pdf_to_image",
             // "easyocr",
             // "llama-mm",
-            "marker_pdf",
+            FileStage.MARKER_PDF,
             // "entities",
-            "chunking",
+            FileStage.CHUNKING,
             // "filename",
-            "vectorising",
-            "saving",
-            "done"
+            FileStage.CONTEXTUAL_CHUNKING,
+            FileStage.VECTORISING,
+            FileStage.SAVING,
+            FileStage.DONE
         ]
     },
     "text": {
         "stages": [
-            "virus_scanning",
-            "vectorising",
-            "saving",
-            "done"
+            FileStage.VIRUS_SCANNING,
+            FileStage.VECTORISING,
+            FileStage.SAVING,
+            FileStage.DONE
         ]
     },
     "default": {
         "stages": [
-            "virus_scanning",
-            "vectorising",
-            "saving",
-            "done"
+            FileStage.VIRUS_SCANNING,
+            FileStage.VECTORISING,
+            FileStage.SAVING,
+            FileStage.DONE
         ]
     }
 }
@@ -44,6 +47,7 @@ export const stages = [
     "filename",
     "text_extraction",
     "chunking",
+    "contextual-chunk",
     "vectorising",
     "saving",
     "done",

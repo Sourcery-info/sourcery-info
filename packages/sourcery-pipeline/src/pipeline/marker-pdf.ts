@@ -2,6 +2,9 @@ import { PipelineBase } from "./base";
 import path from "path";
 import { execCommand } from "../execCommand";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
+import { unload_model } from "@sourcery/common/src/ollama";
+import { unload_reranker } from "@sourcery/common/src/reranker";
+
 import fs from "fs";
 interface MarkerPDFOptions {
     outputFormat?: 'markdown' | 'json' | 'html';
@@ -81,6 +84,8 @@ export class MarkerPDFPipeline extends PipelineBase {
 
     async process() {
         try {
+            await unload_model();
+            await unload_reranker();
             const command = this.buildCommand();
             const result = await execCommand(command);
             console.log(result);

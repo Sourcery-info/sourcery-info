@@ -53,6 +53,19 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+  
+  sourcery-reranking:
+    image: jasony/document-reranking-api:latest
+    restart: unless-stopped
+    container_name: sourcery-reranking
+    privileged: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
   # sourcery-ocr:
   #   build:

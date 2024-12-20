@@ -1,12 +1,17 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import type { Message as MessageType } from '@sourcery/common/types/Message.type.js';
 	import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
 	import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
+	import { marked } from 'marked';
+
 	export let data: {
 		conversation: ConversationType;
 		project: ProjectType;
 	};
+
+	marked.setOptions({
+		gfm: true,
+		breaks: true
+	});
 
 	let content = '';
 	let input = '';
@@ -40,7 +45,7 @@
 					content = '';
 					break;
 				}
-				content += value.replace(/\n/g, '<br>');
+				content += value;
 			}
 		} catch (error) {
 			console.error('Error reading response', error);
@@ -49,6 +54,10 @@
 			data.conversation.messages = data.conversation.messages;
 			document.getElementById('input')?.focus();
 		}
+	}
+
+	function renderMarkdown(markdown: string) {
+		return marked(markdown);
 	}
 </script>
 
@@ -66,7 +75,9 @@
 			{#if message.role === 'assistant'}
 				<div class="flex justify-start">
 					<div class="bg-gray-800 text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]">
-						<p class="text-sm font-mono">{@html message.content}</p>
+						<p class="text-sm font-mono prose prose-invert prose-sm max-w-none">
+							{@html renderMarkdown(message.content)}
+						</p>
 					</div>
 				</div>
 			{/if}
@@ -81,7 +92,9 @@
 		{#if content}
 			<div class="flex justify-start">
 				<div class="bg-gray-800 text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]">
-					<p class="text-sm font-mono">{@html content}</p>
+					<p class="text-sm font-mono prose prose-invert prose-sm max-w-none">
+						{@html renderMarkdown(content)}
+					</p>
 				</div>
 			</div>
 		{/if}

@@ -19,8 +19,12 @@ export function mapDBFile(file: SourceryFile): SourceryFile {
     };
 }
 
-export async function getFiles(project_id: string): Promise<SourceryFile[]> {
-    const files = await FileModel.find({ project: project_id });
+export async function getFiles(project_id: string, file_ids?: string[]): Promise<SourceryFile[]> {
+    const query: any = { project: project_id };
+    if (file_ids) {
+        query._id = { $in: file_ids };
+    }
+    const files = await FileModel.find(query);
     return files.map(mapDBFile);
 }
 

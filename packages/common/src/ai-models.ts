@@ -1,4 +1,4 @@
-export type AIModelType = "embed" | "chat" | "mulitmodal";
+export type AIModelType = "embed" | "chat" | "mulitmodal" | "rerank";
 
 export type TAIModel = {
     name: string;
@@ -29,5 +29,10 @@ export const AIModels: TAIModel[] = [
         "name": "Llama3.2 Vision 7b",
         "value": "llama3.2-vision:7b",
         "type": "mulitmodal"
+    },
+    {
+        "name": "BGE Reranker v2 M3",
+        "value": "linux6200/bge-reranker-v2-m3",
+        "type": "rerank"
     }
 ]

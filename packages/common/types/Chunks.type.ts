@@ -7,4 +7,5 @@ export type TChunk = {
     parent: string | null;
     children: TChunk[] | null;
     vector?: number[];
+    context?: string;
 }

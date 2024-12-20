@@ -1,6 +1,6 @@
 // Define type for chunk
 export type TChunk = {
-    id: string;
+    _id?: string;
     title: string;
     level: number;
     content: string;

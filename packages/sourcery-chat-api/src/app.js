@@ -7,6 +7,7 @@ import { getProject } from "@sourcery/frontend/src/lib/classes/projects.ts";
 import { getFiles } from "@sourcery/frontend/src/lib/classes/files.ts";
 import { connectDB } from '@sourcery/frontend/src/lib/server/db';
 import dotenv from "dotenv";
+import { rerank } from "@sourcery/common/src/reranker";
 dotenv.config();
 
 export const httpServer = restify.createServer();
@@ -41,7 +42,7 @@ const rag_prompt_template = (context, question) => [
     },
 ];
 
-const get_rag_context = async (project_name, files, question, top_k = 10) => {
+const get_rag_context = async (project_name, files, question, top_k = 15) => {
     const qdrant = new Qdrant({
         url: process.env.QDRANT_URL || "http://localhost:6333",
     });
@@ -89,8 +90,11 @@ const get_rag_context = async (project_name, files, question, top_k = 10) => {
         }
         const parents = await get_parents(project_name, results);
         console.log(`Found ${parents.length} parents from ${results.length} results`);
-        const context = parents.map(result => `Filename: ${result.payload.original_name}\n${result.payload.content}`).join("\n\n---\n\n");
-        return context;
+        // console.log(results[0]);
+        const contexts = results.map(result => `Filename: ${result.payload.original_name}\n<context>${result.payload.context || ""}</context>\n<content>${result.payload.content}</content>`);
+        const reranked = await rerank(question, contexts);
+        console.log(reranked);
+        return reranked.ranked_documents.map(d => `<document>${d.document}</document>`).join("\n\n---\n\n");
     } catch (err) {
         console.error(err);
         throw new restifyErrors.InternalServerError("Error processing chat");

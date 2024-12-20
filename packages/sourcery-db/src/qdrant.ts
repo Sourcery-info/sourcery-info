@@ -139,6 +139,22 @@ export class Qdrant implements SourceryDB {
         await response.json();
     }
 
+    async deleteFile(collection: string, file_id: string): Promise<void> {
+        const response = await fetch(`${this.url}/collections/${collection}/points/delete`, {
+            method: 'POST',
+            body: JSON.stringify({
+                "filter": {
+                    "must": [
+                        {
+                            "key": "filename",
+                            "match": { "value": file_id } }
+                    ]
+                }
+            })
+        });
+        await response.json();
+    }
+
     async getInfo(collection: string): Promise<any> {
         const response = await fetch(`${this.url}/collections/${collection}`);
         const info = (await response.json()).result;

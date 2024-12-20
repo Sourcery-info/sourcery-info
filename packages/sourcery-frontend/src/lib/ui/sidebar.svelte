@@ -98,7 +98,9 @@
 				</li>
 				{#if selected_project}
 					<li>
-						<div class="text-xs/6 font-semibold text-gray-400">Files</div>
+						<div class="text-xs/6 font-semibold text-gray-400">
+							<a href="/files/{selected_project._id}">Files</a>
+						</div>
 						<ul role="list" class="-mx-2 mt-2 space-y-1">
 							<li>
 								<label

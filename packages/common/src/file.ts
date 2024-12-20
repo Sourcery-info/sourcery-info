@@ -19,6 +19,9 @@ export class File implements SourceryFile {
     stage_logs: StageLog[] | undefined;
     created_at: Date;
     updated_at: Date | null;
+    stage_queue: FileStage[];
+    completed_stages: FileStage[];
+    processing: boolean;
 
     constructor(project: string, _id: string | null = null, filename: string | null = null) {
         this.project = project;
@@ -37,9 +40,12 @@ export class File implements SourceryFile {
         this.project = sourceryfile.project;
         this.status = sourceryfile.status;
         this.stage = sourceryfile.stage;
-        this.stage_logs = sourceryfile.stage_logs;
+        // this.stage_logs = sourceryfile.stage_logs;
         this.created_at = sourceryfile.created_at;
         this.updated_at = sourceryfile.updated_at;
+        this.stage_queue = sourceryfile.stage_queue;
+        this.completed_stages = sourceryfile.completed_stages;
+        this.processing = !!sourceryfile.processing;
     }
 
     load_metadata(_id: string): SourceryFile {
@@ -64,7 +70,9 @@ export class File implements SourceryFile {
             project: json.project,
             status: json.status,
             stage: json.stage,
-            stage_logs: json.stage_logs,
+            stage_queue: json.stage_queue,
+            completed_stages: json.completed_stages,
+            processing: json.processing,
             created_at: new Date(json.created_at),
             updated_at: new Date(json.updated_at)
         }
@@ -78,13 +86,13 @@ export class File implements SourceryFile {
         if (!fs.existsSync(filename)) {
             throw new Error(`File ${filename} does not exist`);
         }
-        const uid = this.generateUID(filename);
-        this.uid = uid;
+        // const uid = this.generateUID(filename);
+        // this.uid = uid;
         // const dirname = path.join(process.env.PROJECT_DIR, this.project, uid);
-        const metadata = path.join(this.dirname(), `metadata.json`);
-        if (fs.existsSync(metadata)) {
-            return this.load_metadata(uid);
-        }
+        // const metadata = path.join(this.dirname(), `metadata.json`);
+        // if (fs.existsSync(metadata)) {
+        //     return this.load_metadata(uid);
+        // }
         const original_name = path.basename(filename);
         const status = FileStatus.ACTIVE;
         const stage = FileStage.UNPROCESSED;
@@ -96,19 +104,22 @@ export class File implements SourceryFile {
         fs.copyFileSync(filename, path.join(this.dirname(), stage, path.basename(filename)));
         filename = path.join(this.dirname(), stage, path.basename(filename));
         const sourceryfile = {
-            uid,
+            // uid,
             filename,
             original_name,
-            metadata,
+            // metadata,
             filetype,
             project: this.project,
             status,
             stage,
             stage_logs,
             created_at,
-            updated_at
+            updated_at,
+            stage_queue: [],
+            completed_stages: [],
+            processing: false
         }
-        fs.writeFileSync(metadata, JSON.stringify(sourceryfile, null, 2));
+        // fs.writeFileSync(metadata, JSON.stringify(sourceryfile, null, 2));
         return sourceryfile;
     }
 
@@ -171,7 +182,10 @@ export class File implements SourceryFile {
             stage: this.stage,
             stage_logs: this.stage_logs,
             created_at: this.created_at,
-            updated_at: this.updated_at
+            updated_at: this.updated_at,
+            stage_queue: this.stage_queue,
+            completed_stages: this.completed_stages,
+            processing: this.processing
         }
     }
 
@@ -179,10 +193,10 @@ export class File implements SourceryFile {
         if (!process.env.PROJECT_DIR) {
             throw new Error("Environment variable PROJECT_DIR not set");
         }
-        if (!this.uid) {
-            throw new Error("UID not set");
+        if (!this._id) {
+            throw new Error("ID not set");
         }
-        return path.join(process.env.PROJECT_DIR, this.project, "files", this.uid);
+        return path.join(process.env.PROJECT_DIR, this.project, "files", this._id);
     }
 
     async read() {
@@ -210,6 +224,9 @@ export class File implements SourceryFile {
             throw new Error("Original name not set");
         }
         this.stage = FileStage.UNPROCESSED;
+        this.completed_stages = [];
+        this.processing = false;
+        this.stage_queue = [];
         this.filename = path.join(this.dirname(), this.stage, path.basename(this.original_name));
         this.save();
     }

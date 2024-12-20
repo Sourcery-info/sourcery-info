@@ -3,6 +3,7 @@ import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import { Validate } from "./pipeline/validate";
 import { ExtractText } from "./pipeline/extract_text";
 import { ChunkingPipeline } from "./pipeline/chunk";
+import { ContextualChunkPipeline } from "./pipeline/contextual-chunk";
 import { VectorizePipeline } from "./pipeline/vectorize";
 import { DoclingPipeline } from "./pipeline/docling";
 import { SavePipeline } from "./pipeline/save";
@@ -45,6 +46,9 @@ async function handleFile(file: SourceryFile) {
             break;
         case FileStage.CHUNKING:
             stage_instance = new ChunkingPipeline(file);
+            break;
+        case FileStage.CONTEXTUAL_CHUNKING:
+            stage_instance = new ContextualChunkPipeline(file);
             break;
         case FileStage.VECTORISING:
             stage_instance = new VectorizePipeline(file);

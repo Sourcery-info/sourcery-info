@@ -28,6 +28,7 @@ export enum FileStage {
     MONTAGE = 'montage',
     FILENAME = 'filename',
     MARKER_PDF = 'marker_pdf',
+    CONTEXTUAL_CHUNKING = 'contextual-chunk',
 }
 
 export enum FileTypes {
@@ -98,4 +99,5 @@ export type SourceryFile = {
     created_at: Date;
     updated_at: Date | null;
     checked?: boolean;
+    stage_logs?: StageLog[];
 }

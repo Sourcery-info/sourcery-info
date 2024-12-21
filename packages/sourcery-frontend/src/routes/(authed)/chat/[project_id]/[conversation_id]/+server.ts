@@ -1,7 +1,7 @@
 /** @type {import('./$types').RequestHandler} */
 import fetch from 'node-fetch';
 import { Readable } from "node:stream";
-import { getConversation, createConversation, deleteConversation, updateConversation } from '$lib/classes/conversations';
+import { getConversation, updateConversation } from '$lib/classes/conversations';
 
 export async function POST({ params, request }) {
     const { project_id, conversation_id } = params;
@@ -14,13 +14,20 @@ export async function POST({ params, request }) {
         });
     }
     messages.push(...conversation.messages || []);
-    await updateConversation({ _id: conversation_id, messages });
+    const savedConversation = await updateConversation({ _id: conversation_id, messages });
+    // console.log(savedConversation);
+    if (!savedConversation.messages) {
+        return new Response("Error", {
+            status: 500
+        });
+    }
+    const message_id = savedConversation.messages[savedConversation.messages.length - 1]._id;
     const buffer: Buffer[] = [];
     // console.log(JSON.stringify({ input, conversation }));
     // console.log(`http://localhost:9101/chat/${project_id}`);
     const response = await fetch(`http://localhost:9101/chat/${project_id}`, {
         method: 'POST',
-        body: JSON.stringify({ input, conversation_id }),
+        body: JSON.stringify({ input, conversation_id, message_id }),
         headers: { 
             'Content-Type': 'application/json',
             'Response-Type': 'text/event-stream'

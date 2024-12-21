@@ -28,8 +28,7 @@ export class SavePipeline extends PipelineBase {
             points.push({
                 id: chunk.id,
                 vectors: chunk.vector,
-                data: chunk,
-                ...file
+                data: { ...chunk, ...file },
             });
         }
         await this.client.addRecords(collection, points);

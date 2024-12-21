@@ -11,16 +11,19 @@ function mapDBConversation(conversation: ConversationType): ConversationType {
         description: conversation.description || conversation.messages?.[0]?.content || conversation.created_at?.toLocaleString(),
         messages: conversation.messages?.map(message => {
             return {
+                _id: message._id?.toString() || undefined,
                 role: message.role,
                 content: message.content,
-                created_at: message.created_at || new Date()
+                created_at: message.created_at || new Date(),
+                chunks: message.chunks || [],
+                files: message.files || []
             };
         }).sort((a, b) => a.created_at.getTime() - b.created_at.getTime()) || [],
     }
 }
 
 export async function getConversations(project_id: string): Promise<ConversationType[]> {
-    const conversations = await ConversationModel.find({ project_id: project_id.toString() });
+    const conversations = await ConversationModel.find({ project_id: project_id.toString(), messages: { $ne: [] } }).sort({ updated_at: -1 });
     return conversations.map(mapDBConversation);
 }
 

@@ -14,6 +14,9 @@ export const httpServer = restify.createServer();
 httpServer.use(bodyParser.json());
 const MODEL = "llama3.2:latest"
 const VECTOR_MODEL = "nomic-embed-text:latest"
+const TEMPERATURE = 0.1
+const TOP_K = 20
+const RERANK_TOP_K = 10
 
 const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
 
@@ -42,7 +45,7 @@ const rag_prompt_template = (context, question) => [
     },
 ];
 
-const get_rag_context = async (project_name, files, question, top_k = 15) => {
+const get_rag_context = async (project_name, files, question, top_k = TOP_K) => {
     const qdrant = new Qdrant({
         url: process.env.QDRANT_URL || "http://localhost:6333",
     });
@@ -90,7 +93,7 @@ const get_rag_context = async (project_name, files, question, top_k = 15) => {
         const parents = await get_parents(project_name, results);
         console.log(`Found ${parents.length} parents from ${results.length} results`);
         const contexts = results.map(result => `Filename: ${result.payload.original_name}\n<context>${result.payload.context || ""}</context>\n<content>${result.payload.content}</content>`);
-        const reranked = await rerank(question, contexts);
+        const reranked = await rerank(question, contexts, RERANK_TOP_K);
         return reranked.ranked_documents.map(d => `<document>${d.document}</document>`).join("\n\n---\n\n");
     } catch (err) {
         console.error(err);
@@ -129,7 +132,7 @@ httpServer.post("/chat/:project_id", async (req, res) => {
         console.error(err);
         throw new restifyErrors.InternalServerError("Error processing chat");
     }
-    const chatStream = await ollama.chat({ model: MODEL, messages, stream: true, options: { temperature: 0.1 } }).catch(err => {
+    const chatStream = await ollama.chat({ model: MODEL, messages, stream: true, options: { temperature: TEMPERATURE } }).catch(err => {
         console.error(err);
         throw new restifyErrors.InternalServerError("Error processing chat");
     });

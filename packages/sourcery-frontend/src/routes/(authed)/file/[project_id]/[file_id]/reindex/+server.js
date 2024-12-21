@@ -1,23 +1,14 @@
 /** @type {import('./$types').RequestHandler} */
-import { getFile, updateFile } from "$lib/classes/files";
-import { error } from "@sveltejs/kit";
-import { FileStage, FileStatus } from "@sourcery/common/types/SourceryFile.type";
-import { SourceryPub } from "@sourcery/queue/src/pub";
+import { reindexFile } from "$lib/classes/files";
 
-const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 export async function GET({ params }) {
     const { file_id } = params;
-    const file = await getFile(file_id);
+    const file = await reindexFile(file_id);
     if (!file) {
-        return error(404, 'File not found');
+        return new Response("File not found", {
+            status: 404
+        });
     }
-    file.stage = FileStage.UNPROCESSED;
-    file.status = FileStatus.PENDING;
-    file.stage_queue = [];
-    file.completed_stages = [];
-    file.processing = false;
-    await updateFile(file);
-    await pub.addJob(`file-${FileStage.UNPROCESSED}-${file_id}`, file);
     return new Response(JSON.stringify({ success: true, file: file }), {
         status: 200,
         headers: {

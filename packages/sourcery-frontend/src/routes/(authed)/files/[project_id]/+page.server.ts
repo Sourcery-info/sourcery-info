@@ -1,16 +1,14 @@
 /** @type {import('./$types').PageServerLoad} */
-import { getFiletype, uploadFile, deleteFile as deleteFileUtils } from '$lib/utils/files';
-import { File as SourceryFile } from '@sourcery/common/src/file';
-import { SourceryPub } from '@sourcery/queue/src/pub';
+import { uploadFile, deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error } from '@sveltejs/kit';
 import { WEBSOCKET_PORT } from '$lib/variables.js';
-import { updateFile, deleteFile, createFile, getFile, getFiles } from '$lib/classes/files';
+import { updateFile, deleteFile, createFile, getFile, getFiles, reindexFile } from '$lib/classes/files';
 import { FileStatus, FileTypes } from '@sourcery/common/types/SourceryFile.type';
 import { FileStage } from '@sourcery/common/types/SourceryFile.type';
+import { SourceryPub } from '@sourcery/queue/src/pub';
 
 const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
-
 const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export async function load({ params }) {
@@ -115,10 +113,12 @@ export const actions = {
 	reindexFiles: async ({ request, params }) => {
 		console.log('Reindex files');
 		const formData = await request.formData();
-		for (const uid of formData.values()) {
-			await qdrant.deleteRecord(params.project_id, uid.toString());
-			const file = new SourceryFile(params.project_id, uid.toString());
-			await file.reindex();
+		for (const _id of formData.values()) {
+			const file = await getFile(_id.toString());
+			if (!file) {
+				return error(404, 'File not found');
+			}
+			await reindexFile(_id.toString());
 		}
 		return {
 			status: 200,

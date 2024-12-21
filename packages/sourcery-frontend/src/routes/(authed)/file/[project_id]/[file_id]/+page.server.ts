@@ -1,17 +1,11 @@
 /** @type {import('./$types').PageServerLoad} */
-import { getFiletype, uploadFile, deleteFile as deleteFileUtils } from '$lib/utils/files';
-import { File as SourceryFile } from '@sourcery/common/src/file';
-import { SourceryPub } from '@sourcery/queue/src/pub';
+import { deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error, redirect } from '@sveltejs/kit';
 import { WEBSOCKET_PORT } from '$lib/variables.js';
-import { updateFile, deleteFile, createFile, getFile, getFiles } from '$lib/classes/files';
-import { FileStatus, FileTypes } from '@sourcery/common/types/SourceryFile.type';
-import { FileStage } from '@sourcery/common/types/SourceryFile.type';
+import { deleteFile, getFile, reindexFile } from '$lib/classes/files';
 
 const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
-
-const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export async function load({ params }) {
 	const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
@@ -56,15 +50,10 @@ export const actions = {
 	},
 	reindex: async ({ params }) => {
 		const { file_id } = params;
-		const file = await getFile(file_id);
+		const file = await reindexFile(file_id);
 		if (!file) {
 			return error(404, 'File not found');
 		}
-		file.stage = FileStage.UNPROCESSED;
-		file.status = FileStatus.PENDING;
-		file.processing = false;
-		await updateFile(file);
-		await pub.addJob(`file-${FileStage.UNPROCESSED}-${file_id}`, file);
 		return {
 			success: true,
 			file: file

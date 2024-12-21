@@ -1,5 +1,9 @@
+import { FileStatus, FileStage } from '@sourcery/common/types/SourceryFile.type';
 import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { SourceryFile } from '@sourcery/common/types/SourceryFile.type.js';
+import { SourceryPub } from '@sourcery/queue/src/pub';
+
+const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export function mapDBFile(file: SourceryFile): SourceryFile {
     return {
@@ -49,4 +53,19 @@ export async function updateFile(file: SourceryFile): Promise<SourceryFile | nul
 export async function deleteFile(file_id: string): Promise<boolean> {
     const deletedFile = await FileModel.findByIdAndDelete(file_id);
     return deletedFile ? true : false;
+}
+
+export async function reindexFile(file_id: string): Promise<SourceryFile | null> {
+    const file = await getFile(file_id);
+    if (!file) {
+        return null;
+    }
+    file.stage = FileStage.UNPROCESSED;
+    file.status = FileStatus.PENDING;
+    file.stage_queue = [];
+    file.completed_stages = [];
+    file.processing = false;
+    await updateFile(file);
+    await pub.addJob(`file-${FileStage.UNPROCESSED}-${file_id}`, file);
+    return file;
 }

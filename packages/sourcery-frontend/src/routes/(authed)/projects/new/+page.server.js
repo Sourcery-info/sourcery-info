@@ -15,8 +15,12 @@ export async function load() {
 export const actions = {
     default: async ({ request, locals }) => {
         const formData = await request.formData();
+        const user_id = locals?.session?.user_id;
+        if (!user_id) {
+            return fail(400, { errors: [error(400, "User not logged in")] });
+        }
         const newProjectScheme = zfd.formData({
-            name: zfd.text(z.string().min(3).max(50).refine(checkUniqueName, { message: "Project name already exists" })),
+            name: zfd.text(z.string().min(3).max(50).refine(async (name) => await checkUniqueName(name, user_id), { message: "Project name already exists" })),
             description: zfd.text(z.string().optional()),
             tags: zfd.text(z.string().optional()),
             notes: zfd.text(z.string().optional()),

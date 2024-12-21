@@ -1,5 +1,6 @@
 // Define type for chunk
 export type TChunk = {
+    id?: string;
     _id?: string;
     title: string;
     level: number;
@@ -8,4 +9,6 @@ export type TChunk = {
     children: TChunk[] | null;
     vector?: number[];
     context?: string;
+    created_at?: Date;
+    updated_at?: Date;
 }

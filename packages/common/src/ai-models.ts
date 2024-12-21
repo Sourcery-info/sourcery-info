@@ -31,6 +31,11 @@ export const AIModels: TAIModel[] = [
         "type": "mulitmodal"
     },
     {
+        "name": "Llama3.2 Uncensored 3b",
+        "value": "artifish/llama3.2-uncensored:3b",
+        "type": "chat"
+    },
+    {
         "name": "BGE Reranker v2 M3",
         "value": "linux6200/bge-reranker-v2-m3",
         "type": "rerank"

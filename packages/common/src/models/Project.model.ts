@@ -36,6 +36,8 @@ const ProjectSchema = new Schema<Project & Document>({
     }
 });
 
+ProjectSchema.index({ name: 1, owner: 1 }, { unique: true });
+
 ProjectSchema.pre('save', function(this: Project & Document, next) {
     this.updated_at = new Date();
     next();

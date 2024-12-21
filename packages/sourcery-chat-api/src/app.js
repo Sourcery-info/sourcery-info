@@ -8,6 +8,8 @@ import { getFiles } from "@sourcery/frontend/src/lib/classes/files.ts";
 import { connectDB } from '@sourcery/frontend/src/lib/server/db';
 import dotenv from "dotenv";
 import { rerank } from "@sourcery/common/src/reranker";
+import { ensure_model } from "@sourcery/common/src/ollama";
+
 dotenv.config();
 
 export const httpServer = restify.createServer();
@@ -19,16 +21,6 @@ const TOP_K = 20
 const RERANK_TOP_K = 10
 
 const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
-
-const ensure_model = async (model) => {
-    const response = await ollama.list();
-    const models = response.models;
-    // console.log(JSON.stringify(models, null, 2))
-    if (!models.map(m => m.model).includes(model)) {
-        console.log(`Pulling model ${model}`)
-        await ollama.pull({ model: model, force: true });
-    }
-}
 
 httpServer.get("/", async () => {
     return { status: "ok" };
@@ -71,9 +63,9 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K) => 
         await ensure_model(VECTOR_MODEL);
         const vector = await ollama.embeddings({ model: VECTOR_MODEL, prompt: question });
         const file_query = {
-            key: "_id",
+            key: "filename",
             match: {
-                any: files.map(f => f._id),
+                any: files.map(f => f.filename),
             }
         }
 

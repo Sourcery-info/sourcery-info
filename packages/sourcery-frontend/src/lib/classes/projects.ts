@@ -3,8 +3,8 @@ import type { Project as ProjectType } from '@sourcery/common/types/Project.type
 import { ProjectModel } from '@sourcery/common/src/models/Project.model';
 // import type { User } from '@sourcery/common/types/User.type.js';
 
-export async function checkUniqueName(name: string) {
-    const existingProject = await ProjectModel.findOne({ name });
+export async function checkUniqueName(name: string, user_id: string) {
+    const existingProject = await ProjectModel.findOne({ name, owner: user_id });
     return !existingProject;
 }
 

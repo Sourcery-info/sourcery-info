@@ -26,10 +26,11 @@ COPY package.json .
 COPY packages ./packages
 COPY jest.config.js .
 COPY tsconfig.json .
+COPY requirements.txt .
 RUN yarn install
 
 # Set up Python environment
 RUN python3 -m venv sourcery-ocr-env
-RUN sourcery-ocr-env/bin/pip3 install --no-cache-dir -r packages/sourcery-ocr/requirements.txt
+RUN sourcery-ocr-env/bin/pip3 install --no-cache-dir -r requirements.txt
 
 CMD npm run start

@@ -67,26 +67,6 @@ services:
               count: 1
               capabilities: [gpu]
 
-  # sourcery-ocr:
-  #   build:
-  #     context: ./
-  #     dockerfile: ./packages/sourcery-ocr/Dockerfile
-  #   tty: true
-  #   restart: unless-stopped
-  #   container_name: sourcery-ocr
-  #   privileged: true
-  #   volumes:
-  #     - ./packages/sourcery-ocr:/app/packages/sourcery-ocr
-  #   ports:
-  #     - 3001:3000
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - driver: nvidia
-  #             count: 1
-  #             capabilities: [gpu]
-
   sourcery:
     build:
       dockerfile: Dockerfile

@@ -18,14 +18,6 @@ function createProjectsStore() {
         ),
         // Reset store
         reset: () => set([]),
-        // Initialize store with projects
-        init: async () => {
-            const response = await fetch('/api/projects');
-            if (response.ok) {
-                const projects = await response.json();
-                set(projects);
-            }
-        }
     };
 }
 

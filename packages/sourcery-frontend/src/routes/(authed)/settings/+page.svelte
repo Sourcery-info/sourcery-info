@@ -1,6 +1,5 @@
 <script>
 	// @ts-nocheck
-	import Cardcontainer from '$lib/ui/cardcontainer.svelte';
 	import ModelSettings from '$lib/ui/modelsettings.svelte';
 	import { enhance } from '$app/forms';
 
@@ -9,14 +8,12 @@
 	console.log(data.props.settings);
 </script>
 
-<Cardcontainer>
-	<div slot="title">
-		<h1 class="text-base/7 font-semibold text-white">Default Settings</h1>
-		<p class="text-sm/6 text-gray-400 mb-3">
-			These settings will be applied by default to new projects. They will not affect the settings
-			of existing projects.
-		</p>
-	</div>
+<div>
+	<h1 class="text-base/7 font-semibold text-white">Default Settings</h1>
+	<p class="text-sm/6 text-gray-400 mb-3">
+		These settings will be applied by default to new projects. They will not affect the settings of
+		existing projects.
+	</p>
 	<form method="POST" use:enhance class="mt-10">
 		<ModelSettings
 			bind:form
@@ -32,4 +29,4 @@
 			Submit
 		</button>
 	</form>
-</Cardcontainer>
+</div>

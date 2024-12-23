@@ -25,6 +25,7 @@ const ProjectSchema = new Schema<Project & Document>({
     chat_model: String,
     tags: [String],
     security: String,
+    temperature: Number,
     conversations: [String],
     created_at: { 
         type: Date, 

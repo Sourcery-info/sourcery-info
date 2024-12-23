@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import { filesStore } from '$lib/stores/files';
+	import { projectsStore } from '$lib/stores/projects';
 	import { onMount } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
 	import { connect, subscribe } from '@sourcery/common/src/ws.js';
@@ -26,18 +27,19 @@
 	function connect_ws() {
 		connect(data.origin).then(() => {
 			ws_connected = true;
-			subscribe('file', (message) => {
-				console.log('File update:', message);
-				// Find the associated file in the filesStore
-				const files = $filesStore;
-				const file = files.find((f) => f._id === message.id);
-				if (file) {
-					console.log('File found:', file);
-					file.status = message.status;
-					file.stage = message.stage;
-					filesStore.set(files);
-				}
-			});
+			if (data.project) {
+				subscribe('file', (message) => {
+					if (!message.id) return;
+					const files = $filesStore;
+					const file = files.find((f) => f._id === message.id);
+					if (file) {
+						console.log('File found:', file);
+						file.status = message.status;
+						file.stage = message.stage;
+						filesStore.set(files);
+					}
+				});
+			}
 		});
 	}
 
@@ -47,6 +49,10 @@
 
 	$: if (data.project?.files) {
 		filesStore.set(data.project.files);
+	}
+
+	$: if (data.projects) {
+		projectsStore.set(data.projects);
 	}
 
 	let isMobileMenuOpen = false;

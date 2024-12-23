@@ -2,7 +2,6 @@
 import { uploadFile, deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error } from '@sveltejs/kit';
-import { WEBSOCKET_PORT } from '$lib/variables.js';
 import { updateFile, deleteFile, createFile, getFile, getFiles, reindexFile } from '$lib/classes/files';
 import { FileStatus, FileTypes } from '@sourcery/common/types/SourceryFile.type';
 import { FileStage } from '@sourcery/common/types/SourceryFile.type';
@@ -17,12 +16,10 @@ export async function load({ params }) {
 	// const manifest = getManifest(project);
 	const files = await getFiles(project_id);
 	const db_info = await qdrant.getInfo(project_id);
-	const websocket_port = WEBSOCKET_PORT || 3001;
 	return {
 		props: {
 			files,
 			db_info,
-			websocket_port,
 			project_id
 		}
 	};

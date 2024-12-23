@@ -105,3 +105,10 @@ services:
       - 27017:27017
     volumes:
       - ./data/mongodb:/data/db
+
+  sourcery-ws:
+    image: jasony/ws-subscribe-broadcast:latest
+    restart: unless-stopped
+    container_name: sourcery-ws
+    ports:
+      - 9001:3000

@@ -3,5 +3,12 @@ import { defineConfig } from 'vite';
 
 
 export default defineConfig({
-	plugins: [sveltekit()]
+	plugins: [sveltekit()],
+	server: {
+		host: "web.sourcery.info",
+		hmr: {
+			// overlay: false,
+			host: "web.sourcery.info"
+		}
+	}
 });

@@ -3,6 +3,9 @@
 	import { filesStore } from '$lib/stores/files';
 	import { onMount } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
+	import { connect, subscribe } from '@sourcery/common/src/ws.js';
+
+	let ws_connected = false;
 
 	export let data = {
 		projects: [],
@@ -10,8 +13,37 @@
 		conversations: [],
 		session: null,
 		user: null,
-		alerts: []
+		alerts: [],
+		origin: ''
 	};
+
+	// subscribe('file', (message) => {
+	// 	console.log('File update:', message);
+	// });
+
+	console.log(`Origin: ${data.origin}`);
+
+	function connect_ws() {
+		connect(data.origin).then(() => {
+			ws_connected = true;
+			subscribe('file', (message) => {
+				console.log('File update:', message);
+				// Find the associated file in the filesStore
+				const files = $filesStore;
+				const file = files.find((f) => f._id === message.id);
+				if (file) {
+					console.log('File found:', file);
+					file.status = message.status;
+					file.stage = message.stage;
+					filesStore.set(files);
+				}
+			});
+		});
+	}
+
+	$: if (!ws_connected) {
+		connect_ws();
+	}
 
 	$: if (data.project?.files) {
 		filesStore.set(data.project.files);
@@ -43,6 +75,7 @@
 	onMount(() => {
 		return () => {
 			filesStore.reset();
+			console.log(`Connecting to websocket: ${data.origin}`);
 		};
 	});
 </script>

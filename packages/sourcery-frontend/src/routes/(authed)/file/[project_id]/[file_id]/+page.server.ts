@@ -2,7 +2,6 @@
 import { deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error, redirect } from '@sveltejs/kit';
-import { WEBSOCKET_PORT } from '$lib/variables.js';
 import { deleteFile, getFile, reindexFile } from '$lib/classes/files';
 
 const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
@@ -13,12 +12,10 @@ export async function load({ params }) {
 	const file_id = params.file_id;
 	const file = await getFile(file_id);
 	const db_info = await qdrant.getInfo(project_id);
-	const websocket_port = WEBSOCKET_PORT || 3001;
 	return {
 		props: {
 			file,
 			db_info,
-			websocket_port,
 			project_id
 		}
 	};

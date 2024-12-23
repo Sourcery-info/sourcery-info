@@ -7,6 +7,7 @@ import type { Project as ProjectType } from '@sourcery/common/types/Project.type
 import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
 import { error } from '@sveltejs/kit';
 import type { SourceryFile } from '$lib/types/SourceryFile.type';
+import { ORIGIN } from '$env/static/private';
 
 type response = {
     project: ProjectType | null,
@@ -14,6 +15,7 @@ type response = {
     conversations: ConversationType[] | null,
     // session: any,
     // user: any
+    origin: string;
 }
 
 export async function load({ params, locals }): Promise<response> {
@@ -27,6 +29,7 @@ export async function load({ params, locals }): Promise<response> {
         conversations: [],
         // session: locals.session,
         // user: locals.user
+        origin: ORIGIN
     }
     if (params?.project_id) {
         response.project = await getProject(params.project_id);
@@ -39,6 +42,5 @@ export async function load({ params, locals }): Promise<response> {
             });
         }
     }
-    // console.log(response);
     return response;
 };

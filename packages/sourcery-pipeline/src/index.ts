@@ -22,6 +22,7 @@ import { LLAMAMMPipeline } from "./pipeline/llama-mm";
 import { EntitiesPipeline } from "./pipeline/entities";
 import { MontagePipeline } from "./pipeline/montage";
 import { FilenamePipeline } from "./pipeline/filename";
+import { connect, broadcast } from "@sourcery/common/src/ws.js";
 dotenv.config();
 
 async function handleFile(file: SourceryFile) {
@@ -31,6 +32,14 @@ async function handleFile(file: SourceryFile) {
         stage = FileStage.UNPROCESSED;
     }
     console.log(`Processing ${stage} Pipeline`);
+    
+    // Broadcast initial state
+    broadcast('file', { 
+        id: file._id, 
+        stage: stage,
+        status: 'processing'
+    });
+
     switch (stage) {
         case FileStage.UNPROCESSED:
             stage_instance = new UnprocessedPipeline(file);
@@ -85,11 +94,23 @@ async function handleFile(file: SourceryFile) {
             break;
         default:
             console.error(`No file workflow found for stage ${stage}`);
+            broadcast('file', { 
+                id: file._id, 
+                stage: stage,
+                status: 'error',
+                error: 'No workflow found'
+            });
             return false;
     }
     // console.log({ stage_instance });
     if (!stage_instance) {
         console.error(`No file workflow found for stage ${stage}`);
+        broadcast('file', { 
+            id: file._id, 
+            stage: stage,
+            status: 'error',
+            error: 'No workflow found'
+        });
         return false;
     }
     try {
@@ -97,8 +118,23 @@ async function handleFile(file: SourceryFile) {
         await stage_instance.process();
         console.log(`Finished ${stage} Pipeline`);
         await stage_instance.done();
-    } catch (error) {
+
+        // Broadcast success
+        broadcast('file', { 
+            id: file._id, 
+            stage: stage,
+            status: 'complete'
+        });
+
+    } catch (error: any) {
         console.error(error);
+        // Broadcast error
+        broadcast('file', { 
+            id: file._id, 
+            stage: stage,
+            status: 'error',
+            error: error.message
+        });
     }
     return true;
 }
@@ -108,9 +144,19 @@ async function main() {
         throw new Error("Environment variable MONGO_URL not set");
     }
     await connectDB(process.env.MONGO_URL);
-    for (const stage of stages) {
-        console.log(`Subscribing to ${stage} queue`);
-        new SourcerySub((file: SourceryFile) => handleFile(file), `file-${stage}`);
+    
+    // Connect to WebSocket server and wait for connection
+    try {
+        await connect('https://web.sourcery.info');
+        console.log('WebSocket connection established');
+        
+        for (const stage of stages) {
+            console.log(`Subscribing to ${stage} queue`);
+            new SourcerySub((file: SourceryFile) => handleFile(file), `file-${stage}`);
+        }
+    } catch (error) {
+        console.error('Failed to connect to WebSocket server:', error);
+        process.exit(1);
     }
 }
 

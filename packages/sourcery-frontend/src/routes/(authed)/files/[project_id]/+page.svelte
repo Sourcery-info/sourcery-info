@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { filesStore } from '$lib/stores/files';
 	import { onMount, onDestroy } from 'svelte';
-	import { connect, subscribe, unsubscribe } from '@sourcery/ws/src/client';
 	import { enhance } from '$app/forms';
 
 	export let data;
@@ -25,21 +24,21 @@
 
 	onMount(async () => {
 		console.log('mounted');
-		await connect(Number(data.props.websocket_port));
-		try {
-			await subscribe(`${data.props.project_id}-file`, (msg) => {
-				if (msg.file) {
-					filesStore.updateFile(msg.file._id, msg.file);
-				}
-			});
-		} catch (error) {
-			console.error(error);
-		}
+		// await connect(Number(data.props.websocket_port));
+		// try {
+		// 	await subscribe(`${data.props.project_id}-file`, (msg) => {
+		// 		if (msg.file) {
+		// 			filesStore.updateFile(msg.file._id, msg.file);
+		// 		}
+		// 	});
+		// } catch (error) {
+		// 	console.error(error);
+		// }
 	});
 
 	onDestroy(() => {
 		try {
-			unsubscribe('files');
+			// unsubscribe('files');
 		} catch (error) {
 			console.error(error);
 		}

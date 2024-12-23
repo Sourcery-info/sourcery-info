@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { TChunk } from '@sourcery/common/types/Chunks.type';
+import { FileModel } from './File.model';
 
 if (mongoose.models.Chunk) {
     mongoose.deleteModel('Chunk');
@@ -14,11 +15,14 @@ const ChunkSchema = new Schema<TChunk & Document>({
         type: String,
         index: true
     },
+    file_id: { type: Schema.Types.ObjectId, ref: 'File', index: true },
     title: String,
     level: Number,
     content: String,
     parent: [{ type: Schema.Types.ObjectId, ref: 'Chunk', index: true }],
     context: String,
+    tokens: Number,
+    children: [{ type: Schema.Types.ObjectId, ref: 'Chunk', index: true }],
     created_at: { 
         type: Date, 
         default: Date.now,

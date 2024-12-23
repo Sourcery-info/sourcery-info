@@ -23,9 +23,9 @@
 	function connect_ws() {
 		connect(data.origin).then(() => {
 			ws_connected = true;
-			if (data.project) {
+			if (data.project?._id) {
 				subscribe(`${data.project._id}:file`, (message) => {
-					if (!message.id) return;
+					if (!message?.id) return;
 					const files = $filesStore;
 					const file = files.find((f) => f._id === message.id);
 					if (file) {

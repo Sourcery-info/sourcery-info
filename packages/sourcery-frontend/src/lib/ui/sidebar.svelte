@@ -202,7 +202,7 @@
 												? 'bg-gray-800 text-white'
 												: 'text-gray-400 hover:bg-gray-800 hover:text-white'}"
 										>
-											{#if file.processing}
+											{#if file.stage !== 'done'}
 												<svg
 													class="size-5 shrink-0 animate-spin text-gray-400"
 													fill="none"

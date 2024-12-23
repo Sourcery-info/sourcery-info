@@ -2,6 +2,7 @@
 export type TChunk = {
     id?: string;
     _id?: string;
+    file_id?: string;
     title: string;
     level: number;
     content: string;
@@ -11,4 +12,5 @@ export type TChunk = {
     context?: string;
     created_at?: Date;
     updated_at?: Date;
+    tokens?: number;
 }

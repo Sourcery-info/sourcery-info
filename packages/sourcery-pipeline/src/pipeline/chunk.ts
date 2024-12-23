@@ -4,6 +4,7 @@ import type { TChunk } from "@sourcery/common/types/Chunks.type";
 import * as fs from 'node:fs';
 import path from "node:path";
 import { randomUUID } from 'crypto';
+import { encodingForModel } from "js-tiktoken";
 export class ChunkingPipeline extends PipelineBase {
 
     constructor(file: SourceryFile) {
@@ -54,13 +55,16 @@ export class ChunkingPipeline extends PipelineBase {
             const content = `${parts[i]}`;
             const title = parts[i].split('\n')[0];
             const id = randomUUID();
+            const encoding = encodingForModel("gpt-4o");
+            const tokens = encoding.encode(content);
             const chunk: TChunk = {
                 id: id,
                 level: level,
                 title: title,
                 content: content,
-                parent: parent.id,
-                children: []
+                parent: parent.id || null,
+                children: [],
+                tokens: tokens.length
             }
             chunk.children = this.chunkByLevel(chunk);
             chunks.push(chunk);

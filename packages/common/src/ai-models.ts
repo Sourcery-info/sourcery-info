@@ -5,6 +5,7 @@ export type TAIModel = {
     value: string;
     type: AIModelType;
     dimensions?: number;
+    default?: boolean;
 }
 
 export const AIModels: TAIModel[] = [
@@ -18,12 +19,14 @@ export const AIModels: TAIModel[] = [
         "name": "Nomic Embed Text",
         "value": "nomic-embed-text",
         "type": "embed",
-        "dimensions": 768
+        "dimensions": 768,
+        "default": true
     },
     {
         "name": "Llama3.2 7b",
         "value": "llama3.2:7b",
-        "type": "chat"
+        "type": "chat",
+        "default": true
     },
     {
         "name": "Llama3.2 Vision 7b",

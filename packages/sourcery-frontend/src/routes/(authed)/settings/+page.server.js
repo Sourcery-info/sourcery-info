@@ -16,7 +16,7 @@ export async function load({ locals }) {
     const settings = new Settings(locals?.session?.user_id);
     return {
         props: {
-            settings: settings.get()
+            settings: await settings.get()
         }
     };
 };

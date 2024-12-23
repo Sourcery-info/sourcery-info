@@ -7,8 +7,10 @@ const UserSettingsSchema = new Schema<UserSettings>({
     theme: String,
     language: String,
     notifications: Boolean,
-    default_vector_model: String,
-    default_chat_model: String
+    vector_model: String,
+    chat_model: String,
+    temperature: Number,
+    security: String
 }, { strict: false, _id: false });
 
 const UserSchema = new Schema<User & Document>({

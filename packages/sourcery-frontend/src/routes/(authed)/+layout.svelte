@@ -18,17 +18,13 @@
 		origin: ''
 	};
 
-	// subscribe('file', (message) => {
-	// 	console.log('File update:', message);
-	// });
-
 	console.log(`Origin: ${data.origin}`);
 
 	function connect_ws() {
 		connect(data.origin).then(() => {
 			ws_connected = true;
 			if (data.project) {
-				subscribe('file', (message) => {
+				subscribe(`${data.project._id}:file`, (message) => {
 					if (!message.id) return;
 					const files = $filesStore;
 					const file = files.find((f) => f._id === message.id);

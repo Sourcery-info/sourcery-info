@@ -25,20 +25,26 @@ import { FilenamePipeline } from "./pipeline/filename";
 import { connect, broadcast } from "@sourcery/common/src/ws.js";
 dotenv.config();
 
+function send_ws_message(file: SourceryFile, stage: FileStage, status: string, message?: string) {
+    const project_id = file.project;
+    broadcast(`${project_id}:file`, { 
+        id: file._id,
+        stage: stage,
+        status: status,
+        message: message
+    });
+}
+
 async function handleFile(file: SourceryFile) {
     let stage_instance = null;
-    let stage = file.stage;
+    let stage = file.stage as FileStage;
     if (!stage) {
         stage = FileStage.UNPROCESSED;
     }
     console.log(`Processing ${stage} Pipeline`);
     
     // Broadcast initial state
-    broadcast('file', { 
-        id: file._id, 
-        stage: stage,
-        status: 'processing'
-    });
+    send_ws_message(file, stage, 'processing');
 
     switch (stage) {
         case FileStage.UNPROCESSED:
@@ -94,23 +100,13 @@ async function handleFile(file: SourceryFile) {
             break;
         default:
             console.error(`No file workflow found for stage ${stage}`);
-            broadcast('file', { 
-                id: file._id, 
-                stage: stage,
-                status: 'error',
-                error: 'No workflow found'
-            });
+            send_ws_message(file, stage, 'error', 'No workflow found');
             return false;
     }
     // console.log({ stage_instance });
     if (!stage_instance) {
         console.error(`No file workflow found for stage ${stage}`);
-        broadcast('file', { 
-            id: file._id, 
-            stage: stage,
-            status: 'error',
-            error: 'No workflow found'
-        });
+        send_ws_message(file, stage, 'error', 'No workflow found');
         return false;
     }
     try {
@@ -120,21 +116,12 @@ async function handleFile(file: SourceryFile) {
         await stage_instance.done();
 
         // Broadcast success
-        broadcast('file', { 
-            id: file._id, 
-            stage: stage,
-            status: 'complete'
-        });
+        send_ws_message(file, stage, 'complete');
 
     } catch (error: any) {
         console.error(error);
         // Broadcast error
-        broadcast('file', { 
-            id: file._id, 
-            stage: stage,
-            status: 'error',
-            error: error.message
-        });
+        send_ws_message(file, stage, 'error', error.message);
     }
     return true;
 }
@@ -148,8 +135,6 @@ async function main() {
     // Connect to WebSocket server and wait for connection
     try {
         await connect('https://web.sourcery.info');
-        console.log('WebSocket connection established');
-        
         for (const stage of stages) {
             console.log(`Subscribing to ${stage} queue`);
             new SourcerySub((file: SourceryFile) => handleFile(file), `file-${stage}`);

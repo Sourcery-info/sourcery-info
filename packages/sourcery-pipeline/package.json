@@ -10,26 +10,27 @@
   "author": "Jason Norwood-Young <jason@10layer.com>",
   "license": "MIT",
   "dependencies": {
-    "bullmq": "^5.2.1",
-    "dotenv": "^16.4.4",
-    "tsx": "^4.7.1",
-    "typescript": "^5.3.3",
+    "bullmq": "^5.34.5",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
     "is-utf8": "^0.2.1",
-    "ollama": "^0.5.10",
-    "llm-chunk": "^0.0.1",
-    "@hyzyla/pdfium": "^1.0.2",
-    "sharp": "^0.33.4",
+    "ollama": "^0.5.11",
+    "@hyzyla/pdfium": "^2.1.2",
+    "sharp": "^0.33.5",
     "he": "^1.2.0",
-    "js-tiktoken": "^1.0.16"
+    "js-tiktoken": "^1.0.16",
+    "zod-to-json-schema": "^3.24.1",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.19",
-    "@types/dotenv": "^8.2.0",
-    "@types/is-utf8": "^0.2.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.2",
+    "@types/dotenv": "^8.2.3",
+    "@types/is-utf8": "^0.2.3",
     "@types/he": "^1.2.3",
     "jest": "^29.7.0",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.2.5"
   },
   "type": "module"
 }

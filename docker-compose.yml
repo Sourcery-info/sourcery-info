@@ -1,12 +1,12 @@
 services:
   sourcery-qdrant:
     image: qdrant/qdrant:latest
-    restart: unless-stopped
+    restart: always
     container_name: sourcery-qdrant
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
-      interval: 1m30s
-      timeout: 30s
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
+      interval: 30s
+      timeout: 5s
       retries: 5
       start_period: 30s
     ports:
@@ -17,7 +17,7 @@ services:
 
   sourcery-keydb:
     image: eqalpha/keydb:latest
-    restart: unless-stopped
+    restart: always
     container_name: sourcery-keydb
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
@@ -31,7 +31,7 @@ services:
 
   sourcery-ollama:
     image: ollama/ollama:latest
-    restart: unless-stopped
+    restart: always
     container_name: sourcery-ollama
     ports:
       - 11435:11434
@@ -56,7 +56,7 @@ services:
   
   sourcery-reranking:
     image: jasony/document-reranking-api:latest
-    restart: unless-stopped
+    restart: always
     container_name: sourcery-reranking
     privileged: true
     deploy:
@@ -71,7 +71,7 @@ services:
     build:
       dockerfile: Dockerfile
     tty: true
-    restart: unless-stopped
+    restart: always
     container_name: sourcery
     ports:
       - 9000:9000
@@ -99,7 +99,7 @@ services:
 
   sourcery-mongodb:
     image: mongo:latest
-    restart: unless-stopped
+    restart: always
     container_name: sourcery-mongodb
     ports:
       - 27017:27017
@@ -108,7 +108,8 @@ services:
 
   sourcery-ws:
     image: jasony/ws-subscribe-broadcast:latest
-    restart: unless-stopped
+    restart: always
     container_name: sourcery-ws
     ports:
       - 9001:3000
+

@@ -1,3 +1,5 @@
+import type { Entity } from "./Entities.type";
+
 // Define type for chunk
 export type TChunk = {
     id?: string;
@@ -13,4 +15,5 @@ export type TChunk = {
     created_at?: Date;
     updated_at?: Date;
     tokens?: number;
+    entities?: Entity[];
 }

@@ -113,3 +113,7 @@ services:
     ports:
       - 9001:3000
 
+  sourcery-ner:
+    image: jasony/sourcery-ner-api:latest
+    restart: always
+    container_name: sourcery-ner

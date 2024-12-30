@@ -92,6 +92,7 @@ export type SourceryFile = {
     status: FileStatus;
     stage: FileStage | string;
     stage_queue: FileStage[];
+    stage_paths: { [key: string]: { directory: string; files: string[] } };
     completed_stages: FileStage[];
     last_filename?: string;
     processing: Boolean;

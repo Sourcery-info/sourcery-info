@@ -27,7 +27,7 @@ import { connect, broadcast } from "@sourcery/common/src/ws.js";
 dotenv.config();
 
 function send_ws_message(file: SourceryFile, stage: FileStage, status: string, message?: string) {
-    return;
+    // return;
     const project_id = file.project;
     broadcast(`${project_id}:file`, { 
         id: file._id,

@@ -1,4 +1,4 @@
-import type { SourceryFile, StageLog, FileStage } from "@sourcery/common/types/SourceryFile.type.ts"
+import type { SourceryFile, StageLog, FileStage } from "@sourcery/common/types/SourceryFile.type"
 import { StageState, StageResult } from "@sourcery/common/types/SourceryFile.type"
 import { SourceryPub } from "@sourcery/queue/src/pub";
 import { updateFile } from "@sourcery/frontend/src/lib/classes/files";
@@ -53,6 +53,7 @@ export class PipelineBase {
         this.directory_name = directory_name || file.stage;
         this.filename = path.join(this.filepath, this.directory_name, file.filename + "." + this.extension);
         this.last_filename = this.file.last_filename || this.filename;
+        PipelineBase.stage_paths = this.file.stage_paths || {};
         // Ensure that directory for this stage exists
         const project_dir = process.env.PROJECT_DIR;
         if (!project_dir) {
@@ -95,6 +96,7 @@ export class PipelineBase {
             directory: path.join(this.filepath, this.directory_name),
             files: await fs.readdir(path.join(this.filepath, this.directory_name))
         };
+        this.file.stage_paths = PipelineBase.stage_paths;
         this.file.completed_stages.push(this.file.stage as FileStage);
         this.file.stage = this.file.stage_queue.shift() as FileStage;
         updateFile(this.file);

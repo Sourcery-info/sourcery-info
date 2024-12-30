@@ -30,6 +30,7 @@ const FileSchema = new Schema<SourceryFile & Document>({
     status: { type: String, enum: FileStatus, index: true },
     stage: { type: String, enum: FileStage, index: true },
     stage_queue: { type: [String], default: [] },
+    stage_paths: { type: Object, default: {} },
     completed_stages: { type: [String], default: [] },
     last_filename: String,
     processing: { type: Boolean, default: false, index: true },

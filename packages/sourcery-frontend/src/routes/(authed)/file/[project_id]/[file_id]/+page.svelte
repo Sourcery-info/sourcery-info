@@ -7,6 +7,7 @@
 	import { enhance } from '$app/forms';
 	import Original from './original.svelte';
 	import Entities from './entities.svelte';
+	import Pipeline from './pipeline.svelte';
 	import Text from './text.svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
 	import Dialog from '$lib/ui/dialog.svelte';
@@ -183,7 +184,7 @@
 		{:else if activeTab === 'summary'}
 			<div>Summary content here</div>
 		{:else if activeTab === 'pipeline'}
-			<div>Pipeline content here</div>
+			<Pipeline {data} />
 		{/if}
 	</div>
 </div>

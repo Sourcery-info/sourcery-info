@@ -20,6 +20,7 @@ export function mapDBFile(file: SourceryFile): SourceryFile {
         stage_queue: file.stage_queue,
         completed_stages: file.completed_stages,
         processing: file.processing,
+        stage_paths: file.stage_paths,
     };
 }
 
@@ -55,17 +56,26 @@ export async function deleteFile(file_id: string): Promise<boolean> {
     return deletedFile ? true : false;
 }
 
-export async function reindexFile(file_id: string): Promise<SourceryFile | null> {
+export async function reindexFile(file_id: string, stage_name: string = FileStage.UNPROCESSED): Promise<SourceryFile | null> {
     const file = await getFile(file_id);
     if (!file) {
         return null;
     }
-    file.stage = FileStage.UNPROCESSED;
+    file.stage = stage_name;
     file.status = FileStatus.PENDING;
-    file.stage_queue = [];
-    file.completed_stages = [];
+    // Pop from completed_stages and push onto stage_queue until stage_name is found
+    while (file.completed_stages.length > 0) {
+        const stage = file.completed_stages.pop();
+        if (stage === stage_name) {
+            break;
+        }
+        file.stage_queue.unshift(stage!);
+    }
+    // Remove stage_name from completed_stages
+    file.completed_stages = file.completed_stages.filter(stage => stage !== stage_name);
     file.processing = false;
+    console.log({ stage_name, completed_stages: file.completed_stages, stage_queue: file.stage_queue });
     await updateFile(file);
-    await pub.addJob(`file-${FileStage.UNPROCESSED}-${file_id}`, file);
+    await pub.addJob(`file-${stage_name}-${file_id}`, file);
     return file;
 }

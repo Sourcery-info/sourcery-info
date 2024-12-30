@@ -6,6 +6,7 @@ import { error } from '@sveltejs/kit';
 import { getFile } from "$lib/classes/files";
 import { marked } from 'marked';
 import { readFile } from "fs/promises";
+import { FileModel } from "@sourcery/common/src/models/File.model";
 
 const CONTENT_TYPES = {
     pdf: 'application/pdf',
@@ -53,6 +54,16 @@ async function getEntities(project_id, file_id, filename) {
     return JSON.parse(entities);
 }
 
+async function getChunks(project_id, file_id, filename) {
+    const chunks = await readFile(`${PROJECT_DIR}/${project_id}/files/${file_id}/chunks/${filename}.json`, 'utf8');
+    return JSON.parse(chunks);
+}
+
+async function getFileDB(file_id) {
+    const file = await FileModel.findById(file_id);
+    return file;
+}
+
 export async function GET({ params }) {
     const file_id = params.file_id;
     const format = params.format; // Extract the format from the params
@@ -74,9 +85,9 @@ export async function GET({ params }) {
             const html = marked(md); // Convert markdown to HTML
             response = {
                 headers: {
-                    'content-type': 'text/markdown',
+                    'content-type': 'text/html',
                 },
-                body: md
+                body: html
             };
             break;
         case 'entities':
@@ -86,6 +97,24 @@ export async function GET({ params }) {
                     'content-type': 'application/json',
                 },
                 body: JSON.stringify(entities, null, 2)
+            };
+            break;
+        case 'file_db':
+            const file_db = await getFileDB(file_id);
+            response = {
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify(file_db, null, 2)
+            };
+            break;
+        case 'chunks':
+            const chunks = await getChunks(project_id, file_id, file.filename);
+            response = {
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify(chunks, null, 2)
             };
             break;
         // case 'html':

@@ -5,6 +5,7 @@ import fs from "fs";
 import { error } from '@sveltejs/kit';
 import { getFile } from "$lib/classes/files";
 import { marked } from 'marked';
+import { readFile } from "fs/promises";
 
 const CONTENT_TYPES = {
     pdf: 'application/pdf',
@@ -47,6 +48,11 @@ async function format_original(filename, filetype) {
     };
 }
 
+async function getEntities(project_id, file_id, filename) {
+    const entities = await readFile(`${PROJECT_DIR}/${project_id}/files/${file_id}/entities/${filename}.json`, 'utf8');
+    return JSON.parse(entities);
+}
+
 export async function GET({ params }) {
     const file_id = params.file_id;
     const format = params.format; // Extract the format from the params
@@ -68,9 +74,18 @@ export async function GET({ params }) {
             const html = marked(md); // Convert markdown to HTML
             response = {
                 headers: {
-                    'content-type': 'text/html',
+                    'content-type': 'text/markdown',
                 },
-                body: html
+                body: md
+            };
+            break;
+        case 'entities':
+            const entities = await getEntities(project_id, file_id, file.filename);
+            response = {
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify(entities, null, 2)
             };
             break;
         // case 'html':

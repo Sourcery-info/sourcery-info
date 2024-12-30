@@ -1,5 +1,6 @@
 import { SourcerySub } from "@sourcery/queue/src/sub";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
+import { updateFile, getFile } from "@sourcery/frontend/src/lib/classes/files";
 import { Validate } from "./pipeline/validate";
 import { ExtractText } from "./pipeline/extract_text";
 import { ChunkingPipeline } from "./pipeline/chunk";
@@ -11,21 +12,22 @@ import { DonePipeline } from "./pipeline/done";
 import { PDFToImagePipeline } from "./pipeline/pdftoimage";
 import { EasyOCRPipeline } from "./pipeline/easyocr";
 import { MarkerPDFPipeline } from "./pipeline/marker-pdf";
-import { LlamaIndexPipeline } from "./pipeline/llamaindex";
 import { UnprocessedPipeline } from "./pipeline/unprocessed";
 import { ErrorPipeline } from "./pipeline/error";
 import { connectDB } from '@sourcery/frontend/src/lib/server/db';
 import { stages } from "./file_workflows";
-import { FileStage } from "@sourcery/common/types/SourceryFile.type";
+import { FileStage, FileStatus } from "@sourcery/common/types/SourceryFile.type";
 import dotenv from "dotenv";
 import { LLAMAMMPipeline } from "./pipeline/llama-mm";
 import { EntitiesPipeline } from "./pipeline/entities";
 import { MontagePipeline } from "./pipeline/montage";
 import { FilenamePipeline } from "./pipeline/filename";
 import { connect, broadcast } from "@sourcery/common/src/ws.js";
+
 dotenv.config();
 
 function send_ws_message(file: SourceryFile, stage: FileStage, status: string, message?: string) {
+    return;
     const project_id = file.project;
     broadcast(`${project_id}:file`, { 
         id: file._id,
@@ -36,12 +38,12 @@ function send_ws_message(file: SourceryFile, stage: FileStage, status: string, m
 }
 
 async function handleFile(file: SourceryFile) {
+    const start_time = Date.now();
     let stage_instance = null;
     let stage = file.stage as FileStage;
     if (!stage) {
         stage = FileStage.UNPROCESSED;
     }
-    console.log(`Processing ${stage} Pipeline`);
     
     // Broadcast initial state
     send_ws_message(file, stage, 'processing');
@@ -110,18 +112,38 @@ async function handleFile(file: SourceryFile) {
         return false;
     }
     try {
-        console.log(`Processing ${stage} Pipeline`);
         await stage_instance.process();
-        console.log(`Finished ${stage} Pipeline`);
         await stage_instance.done();
-
+        const end_time = Date.now();
+        console.log(`File ${file._id} stage ${stage} took ${end_time - start_time}ms`);
         // Broadcast success
         send_ws_message(file, stage, 'complete');
 
     } catch (error: any) {
         console.error(error);
+        // Change file status to error
+        if (!file._id) {
+            console.error("File ID is undefined");
+        } else {
+            const errfile = await getFile(file._id);
+            if (errfile) {
+                errfile.status = FileStatus.ERROR;
+                await updateFile(errfile);
+            }
+        }
         // Broadcast error
         send_ws_message(file, stage, 'error', error.message);
+    } finally {
+        // Change file status to error
+        if (!file._id) {
+            console.error("File ID is undefined");
+        } else {
+            const donefile = await getFile(file._id);
+            if (donefile) {
+                donefile.status = FileStatus.ACTIVE;
+                await updateFile(donefile);
+            }
+        }
     }
     return true;
 }
@@ -136,7 +158,7 @@ async function main() {
     try {
         await connect('https://web.sourcery.info');
         for (const stage of stages) {
-            console.log(`Subscribing to ${stage} queue`);
+            // console.log(`Subscribing to ${stage} queue`);
             new SourcerySub((file: SourceryFile) => handleFile(file), `file-${stage}`);
         }
     } catch (error) {

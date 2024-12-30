@@ -7,10 +7,10 @@ export const fileTypeWorkflows: Record<string, { stages: string[] }> = {
             // "easyocr",
             // "llama-mm",
             FileStage.MARKER_PDF,
-            // "entities",
             FileStage.CHUNKING,
             // "filename",
             FileStage.CONTEXTUAL_CHUNKING,
+            FileStage.ENTITIES,
             FileStage.VECTORISING,
             FileStage.SAVING,
             FileStage.DONE

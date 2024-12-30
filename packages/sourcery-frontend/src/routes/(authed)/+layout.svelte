@@ -18,8 +18,6 @@
 		origin: ''
 	};
 
-	console.log(`Origin: ${data.origin}`);
-
 	function connect_ws() {
 		connect(data.origin).then(() => {
 			ws_connected = true;
@@ -29,7 +27,6 @@
 					const files = $filesStore;
 					const file = files.find((f) => f._id === message.id);
 					if (file) {
-						console.log('File found:', file);
 						file.status = message.status;
 						file.stage = message.stage;
 						filesStore.set(files);

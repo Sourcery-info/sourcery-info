@@ -1,13 +1,11 @@
 {
   "name": "@sourcery/sourcery-chat-api",
   "version": "0.1.0",
-  "description": "Use LlamaIndex to chat to Ollama including documents from Qdrant",
+  "description": "Sourcery,info chat API",
   "main": "src/app.ts",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:http": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=tests/http",
-    "test:llamaindex": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPattern=tests/llamaindex",
-    "test:dirreader": "tsx src/test.ts",
     "cli": "tsx src/cli.ts",
     "start": "tsx watch src/app.js"
   },

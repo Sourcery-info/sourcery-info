@@ -13,9 +13,20 @@ function createFilesStore() {
         // Remove a file
         remove: (fileId: string) => update(files => files.filter(f => f._id !== fileId)),
         // Update a file
-        updateFile: (fileId: string, data: Partial<SourceryFile>) => update(files => 
+        updateOne: (fileId: string, data: Partial<SourceryFile>) => update(files => 
             files.map(f => f._id === fileId ? { ...f, ...data } : f)
         ),
+        upsert: (file: SourceryFile) => {
+            update(files => {
+                const index = files.findIndex(f => f._id === file._id);
+                if (index !== -1) {
+                    files[index] = { ...files[index], ...file };
+                } else {
+                    files.unshift(file);
+                }
+                return files;
+            });
+        },
         // Reset store
         reset: () => set([])
     };

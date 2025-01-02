@@ -1,5 +1,15 @@
 import { ConversationModel } from '@sourcery/common/src/models/Conversation.model';
 import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type';
+import { SourceryPub } from '@sourcery/queue/src/pub.js';
+const pub = new SourceryPub(`sourcery.info-ws`);
+
+async function pubConversation(conversation: ConversationType): Promise<void> {
+    if (!conversation._id) {
+        return;
+    }
+    const conversation_db = await getConversation(conversation._id);
+    pub.addJob(`${conversation_db.project_id}:conversation`, { conversation: conversation_db });
+}
 
 function mapDBConversation(conversation: ConversationType): ConversationType {
     return {
@@ -37,9 +47,9 @@ export async function getConversation(conversation_id: string): Promise<Conversa
 
 export async function createConversation(conversation: ConversationType): Promise<ConversationType> {
     delete(conversation._id);
-
     const newConversation = await ConversationModel.create(conversation);
     console.log(newConversation);
+    pubConversation(newConversation);
     return mapDBConversation(newConversation);
 }
 
@@ -48,6 +58,7 @@ export async function updateConversation(conversation: ConversationType): Promis
     if (!updatedConversation) {
         throw new Error('Conversation not found');
     }
+    pubConversation(updatedConversation);
     return mapDBConversation(updatedConversation);
 }
 
@@ -56,4 +67,5 @@ export async function deleteConversation(conversation_id: string): Promise<void>
     if (!deletedConversation) {
         throw new Error('Conversation not found');
     }
+    pubConversation(deletedConversation);
 }

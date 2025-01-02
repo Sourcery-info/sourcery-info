@@ -14,7 +14,7 @@
 		const checked = (e.target as HTMLInputElement).checked;
 		for (let file of $filesStore) {
 			if (file._id) {
-				filesStore.updateFile(file._id, {
+				filesStore.updateOne(file._id, {
 					...file,
 					checked
 				});

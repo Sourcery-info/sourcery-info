@@ -3,9 +3,9 @@
 	/** @type {import('./$types').PageData} */
 	import { page } from '$app/stores';
 	import { filesStore } from '$lib/stores/files';
+	import { conversationsStore } from '$lib/stores/conversations';
 	import { FileStatus } from '@sourcery/common/types/SourceryFile.type';
 	export let selected_project;
-	export let conversations = [];
 	import { enhance } from '$app/forms';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
@@ -14,8 +14,8 @@
 
 	const MAX_CONVERSATIONS = 8;
 
-	$: visibleConversations = conversations.slice(0, MAX_CONVERSATIONS);
-	$: hasMoreConversations = conversations.length > MAX_CONVERSATIONS;
+	$: visibleConversations = $conversationsStore.slice(0, MAX_CONVERSATIONS);
+	$: hasMoreConversations = $conversationsStore.length > MAX_CONVERSATIONS;
 
 	// async function toggleActive(file) {
 	// 	file.status = file.status == 'active' ? 'inactive' : 'active';
@@ -122,6 +122,14 @@
 							{/each}
 						</div>
 					{/if}
+				</div>
+			{:else}
+				<div class="relative flex-1">
+					<button
+						class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-100 hover:text-white"
+					>
+						Sourcery.info
+					</button>
 				</div>
 			{/if}
 		</div>
@@ -314,7 +322,7 @@
 									New Conversation
 								</a>
 							</li>
-							{#if conversations.length > 0}
+							{#if $conversationsStore.length > 0}
 								{#each visibleConversations as conversation}
 									<li>
 										<a

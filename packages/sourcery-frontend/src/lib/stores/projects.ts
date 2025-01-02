@@ -13,9 +13,20 @@ function createProjectsStore() {
         // Remove a project
         remove: (projectId: string) => update(projects => projects.filter(p => p._id !== projectId)),
         // Update a project
-        updateProject: (projectId: string, data: Partial<Project>) => update(projects => 
+        updateOne: (projectId: string, data: Partial<Project>) => update(projects => 
             projects.map(p => p._id === projectId ? { ...p, ...data } : p)
         ),
+        upsert: (project: Project) => {
+            update(projects => {
+                const index = projects.findIndex(p => p._id === project._id);
+                if (index !== -1) {
+                    projects[index] = { ...projects[index], ...project };
+                } else {
+                    projects.unshift(project);
+                }
+                return projects;
+            });
+        },
         // Reset store
         reset: () => set([]),
     };

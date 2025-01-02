@@ -2,6 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { filesStore } from '$lib/stores/files';
 	import { projectsStore } from '$lib/stores/projects';
+	import { conversationsStore } from '$lib/stores/conversations';
 	import { onMount, onDestroy } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
 	import { connect, subscribe, unsubscribe, unsubscribe_all } from '@sourcery/ws/src/client.js';
@@ -12,8 +13,8 @@
 	export let data = {
 		projects: [],
 		project: null,
-		conversations: [],
 		session: null,
+		conversations: [],
 		user: null,
 		alerts: [],
 		origin: ''
@@ -31,29 +32,23 @@
 		}
 
 		if (data.project?._id) {
-			console.log('Subscribing to file updates', `${data.project._id}:file`);
 			await subscribe(`${data.project._id}:file`, (message) => {
-				console.log('Received file update', message);
 				if (!message.file?._id) return;
-				const files = $filesStore;
-				const index = files.findIndex((f) => f._id === message.file._id);
-				const current_file = files[index];
-				if (index !== -1) {
-					files.splice(index, 1, { ...current_file, ...message.file });
-					filesStore.set(files);
-				}
+				filesStore.upsert(message.file);
+			});
+			await subscribe(`${data.project._id}:conversation`, (message) => {
+				if (!message.conversation?._id) return;
+				if (!message.conversation?.messages?.length) return;
+				conversationsStore.upsert(message.conversation);
 			});
 		}
 	}
 
 	$: if (!ws_connected && data.project?._id) {
-		console.log('Checking project change', current_project_id, data.project._id);
 		if (current_project_id !== data.project._id) {
 			if (current_project_id) {
-				console.log('Unsubscribing from previous project', current_project_id);
 				unsubscribe(`${current_project_id}:file`);
 			}
-			console.log('Connecting to websocket for project', data.project._id);
 			current_project_id = data.project._id;
 			connect_ws();
 		}
@@ -65,6 +60,10 @@
 
 	$: if (data.projects) {
 		projectsStore.set(data.projects);
+	}
+
+	$: if (data.conversations) {
+		conversationsStore.set(data.conversations);
 	}
 
 	let isMobileMenuOpen = false;
@@ -93,7 +92,6 @@
 	onMount(() => {
 		return async () => {
 			await connect_ws();
-			filesStore.reset();
 		};
 	});
 
@@ -120,11 +118,7 @@
 					transition:fly={{ x: -100, duration: 300 }}
 				>
 					<div class="flex h-full w-full flex-col overflow-y-auto">
-						<Sidebar
-							selected_project={data.project}
-							conversations={data.conversations || []}
-							on:menuItemClick={handleSidebarClick}
-						/>
+						<Sidebar selected_project={data.project} on:menuItemClick={handleSidebarClick} />
 					</div>
 					<div class="absolute left-full top-0 flex w-16 justify-center pt-5">
 						<button type="button" class="-m-2.5 p-2.5" on:click={toggleMobileMenu}>
@@ -150,11 +144,7 @@
 	<!-- Desktop sidebar -->
 	<div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
 		<div class="flex h-full flex-col overflow-y-auto">
-			<Sidebar
-				selected_project={data.project}
-				conversations={data.conversations || []}
-				on:menuItemClick={() => {}}
-			/>
+			<Sidebar selected_project={data.project} on:menuItemClick={() => {}} />
 		</div>
 	</div>
 

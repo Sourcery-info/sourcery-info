@@ -3,7 +3,7 @@ import { getProject } from '$lib/classes/projects'
 import { fail } from '@sveltejs/kit';
 import { updateConversation, getConversation } from '$lib/classes/conversations';
 
-export async function load({ locals, params }) {
+export async function load({ locals, params }: { locals: any, params: any }) {
     if (!locals?.session?.user_id) {
         return fail(401, { message: 'Unauthorized' });
     }
@@ -24,7 +24,7 @@ export async function load({ locals, params }) {
 };
 
 export const actions = {
-    message_complete: async ({ request, params }) => {
+    message_complete: async ({ request, params }: { request: any, params: any }) => {
         const { conversation_id } = params;
         const { message } = await request.json();
         const conversation = await getConversation(conversation_id);

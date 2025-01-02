@@ -3,7 +3,6 @@
 	/** @type {import('./$types').PageData} */
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { connect, subscribe, unsubscribe } from '@sourcery/ws/src/client';
 	import { enhance } from '$app/forms';
 	import Original from './original.svelte';
 	import Entities from './entities.svelte';

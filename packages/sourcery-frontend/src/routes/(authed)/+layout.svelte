@@ -4,7 +4,7 @@
 	import { projectsStore } from '$lib/stores/projects';
 	import { onMount } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
-	import { connect, subscribe } from '@sourcery/common/src/ws.js';
+	import { connect, subscribe, ping } from '@sourcery/ws/src/client.js';
 
 	let ws_connected = false;
 
@@ -18,22 +18,30 @@
 		origin: ''
 	};
 
-	function connect_ws() {
-		connect(data.origin).then(() => {
-			ws_connected = true;
-			if (data.project?._id) {
-				subscribe(`${data.project._id}:file`, (message) => {
-					if (!message?.id) return;
-					const files = $filesStore;
-					const file = files.find((f) => f._id === message.id);
-					if (file) {
-						file.status = message.status;
-						file.stage = message.stage;
-						filesStore.set(files);
-					}
-				});
-			}
+	async function connect_ws() {
+		await connect(`${data.origin.replace('https://', 'wss://')}`).catch((error) => {
+			console.error('Error connecting to websocket server', error);
+			ws_connected = false;
+			return;
 		});
+		ws_connected = true;
+		// ping();
+
+		if (data.project?._id) {
+			console.log('Subscribing to file updates', `${data.project._id}:file`);
+			subscribe(`${data.project._id}:file`, (message) => {
+				console.log('Received file update', message);
+				if (!message.id) return;
+				const files = $filesStore;
+				const file = files.find((f) => f._id === message.id);
+				if (file) {
+					console.log('Updating file');
+					file.status = message.status;
+					file.stage = message.stage;
+					filesStore.set(files);
+				}
+			});
+		}
 	}
 
 	$: if (!ws_connected) {

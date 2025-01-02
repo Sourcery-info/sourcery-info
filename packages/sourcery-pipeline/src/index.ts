@@ -22,14 +22,15 @@ import { LLAMAMMPipeline } from "./pipeline/llama-mm";
 import { EntitiesPipeline } from "./pipeline/entities";
 import { MontagePipeline } from "./pipeline/montage";
 import { FilenamePipeline } from "./pipeline/filename";
-import { connect, broadcast } from "@sourcery/common/src/ws.js";
+import { SourceryPub } from "@sourcery/queue/src/pub";
 
 dotenv.config();
 
+const ws_pub = new SourceryPub("sourcery.info-ws");
+
 function send_ws_message(file: SourceryFile, stage: FileStage, status: string, message?: string) {
     // return;
-    const project_id = file.project;
-    broadcast(`${project_id}:file`, { 
+    ws_pub.addJob(`${file.project}:file`, { 
         id: file._id,
         stage: stage,
         status: status,
@@ -156,7 +157,6 @@ async function main() {
     
     // Connect to WebSocket server and wait for connection
     try {
-        await connect('https://web.sourcery.info');
         for (const stage of stages) {
             // console.log(`Subscribing to ${stage} queue`);
             new SourcerySub((file: SourceryFile) => handleFile(file), `file-${stage}`);

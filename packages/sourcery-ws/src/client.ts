@@ -5,11 +5,19 @@ let socket: any = null;
 let subscribed_channels = new Set<string>();
 let connected = false;
 
-export function connect(port: number = 3001) {
-    console.log(`Connecting to websocket server on port ${port}`);
-    socket = io(`http://localhost:${port}`);
-    socket.on("connect", () => {
-        connected = true;
+export async function connect(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        console.log(`Connecting to websocket server on ${url}`);
+        socket = io(url);
+        socket.on("connect", () => {
+            console.log("Connected to websocket server");
+            connected = true;
+            resolve();
+        });
+        socket.on("error", (error: any) => {
+            console.error("Error connecting to websocket server", error);
+            reject(error);
+        });
     });
 }
 

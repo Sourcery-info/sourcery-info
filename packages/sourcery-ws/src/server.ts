@@ -1,41 +1,59 @@
 import { Server as WSServer } from "socket.io";
-import { SourceryWorker } from "@sourcery/pipeline/src/worker.ts";
+import { SourcerySub } from "@sourcery/queue/src/sub.ts";
 
 import dotenv from "dotenv";
 dotenv.config();
 
-export const io = new WSServer({
+const port = Number(process.env.WEBSOCKET_PORT) || 3001;
+const debug = process.env.NODE_ENV !== "production";
+
+export const io = new WSServer(port, {
     cors: {
         origin: "*",
-    },
+    }
 });
-io.listen(Number(process.env.WEBSOCKET_PORT) || 3001);
+console.log(`Websocket server listening on port ${port}`);
 
 io.on("connection", (socket) => {
-    console.log("Client connected");
+    if (debug) {
+        console.log("Client connected", socket.id);
+    }
     socket.on("disconnect", () => {
-        // console.log("Client disconnected");
+        if (debug) {
+            console.log("Client disconnected", socket.id);
+        }
     });
     socket.on("ping", () => {
-        // console.log("Received ping");
+        if (debug) {
+            console.log("Received ping");
+        }
         socket.emit("pong");
     });
     socket.on("subscribe", (channel: string) => {
-        // console.log(`Subscribing to ${channel}`);
+        if (debug) {
+            console.log(`Subscribing to ${channel}`);
+        }
         socket.join(channel);
     });
     socket.on("unsubscribe", (channel: string) => {
-        // console.log(`Unsubscribing from ${channel}`);
+        if (debug) {
+            console.log(`Unsubscribing from ${channel}`);
+        }
         socket.leave(channel);
     });
 });
 
-const worker = new SourceryWorker(async (data: any) => {
+new SourcerySub(async (data: any) => {
+    if (debug) {
+        console.log("Received message", data);
+    }
     emit(data.channel, data);
     return true;
 }, "sourcery.info-ws");
 
 export function emit(channel: string, data: any) {
-    console.log(`Emitting to ${channel}`, data);
+    if (debug) {
+        console.log(`Emitting to ${channel}`, data);
+    }
     io.to(channel).emit(channel, data);
 }

@@ -2,11 +2,12 @@
 	import { fade, fly } from 'svelte/transition';
 	import { filesStore } from '$lib/stores/files';
 	import { projectsStore } from '$lib/stores/projects';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
-	import { connect, subscribe, ping } from '@sourcery/ws/src/client.js';
+	import { connect, subscribe, unsubscribe, unsubscribe_all } from '@sourcery/ws/src/client.js';
 
 	let ws_connected = false;
+	let current_project_id: string | null = null;
 
 	export let data = {
 		projects: [],
@@ -19,33 +20,43 @@
 	};
 
 	async function connect_ws() {
-		await connect(`${data.origin.replace('https://', 'wss://')}`).catch((error) => {
-			console.error('Error connecting to websocket server', error);
-			ws_connected = false;
-			return;
-		});
-		ws_connected = true;
-		// ping();
+		if (!ws_connected) {
+			try {
+				await connect(`${data.origin.replace('https://', 'wss://')}`);
+				ws_connected = true;
+			} catch (error) {
+				console.error('Error connecting to websocket server', error);
+				ws_connected = false;
+			}
+		}
 
 		if (data.project?._id) {
 			console.log('Subscribing to file updates', `${data.project._id}:file`);
-			subscribe(`${data.project._id}:file`, (message) => {
+			await subscribe(`${data.project._id}:file`, (message) => {
 				console.log('Received file update', message);
-				if (!message.id) return;
+				if (!message.file?._id) return;
 				const files = $filesStore;
-				const file = files.find((f) => f._id === message.id);
-				if (file) {
-					console.log('Updating file');
-					file.status = message.status;
-					file.stage = message.stage;
+				const index = files.findIndex((f) => f._id === message.file._id);
+				const current_file = files[index];
+				if (index !== -1) {
+					files.splice(index, 1, { ...current_file, ...message.file });
 					filesStore.set(files);
 				}
 			});
 		}
 	}
 
-	$: if (!ws_connected) {
-		connect_ws();
+	$: if (!ws_connected && data.project?._id) {
+		console.log('Checking project change', current_project_id, data.project._id);
+		if (current_project_id !== data.project._id) {
+			if (current_project_id) {
+				console.log('Unsubscribing from previous project', current_project_id);
+				unsubscribe(`${current_project_id}:file`);
+			}
+			console.log('Connecting to websocket for project', data.project._id);
+			current_project_id = data.project._id;
+			connect_ws();
+		}
 	}
 
 	$: if (data.project?.files) {
@@ -80,10 +91,14 @@
 	}
 
 	onMount(() => {
-		return () => {
+		return async () => {
+			await connect_ws();
 			filesStore.reset();
-			console.log(`Connecting to websocket: ${data.origin}`);
 		};
+	});
+
+	onDestroy(() => {
+		unsubscribe_all();
 	});
 </script>
 

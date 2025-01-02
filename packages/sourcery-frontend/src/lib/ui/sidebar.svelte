@@ -3,6 +3,7 @@
 	/** @type {import('./$types').PageData} */
 	import { page } from '$app/stores';
 	import { filesStore } from '$lib/stores/files';
+	import { FileStatus } from '@sourcery/common/types/SourceryFile.type';
 	export let selected_project;
 	export let conversations = [];
 	import { enhance } from '$app/forms';
@@ -201,7 +202,7 @@
 												? 'bg-gray-800 text-white'
 												: 'text-gray-400 hover:bg-gray-800 hover:text-white'}"
 										>
-											{#if file.status === 'processing'}
+											{#if file.status === FileStatus.PROCESSING}
 												<svg
 													class="size-5 shrink-0 animate-spin text-gray-400"
 													fill="none"
@@ -221,7 +222,7 @@
 														d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
 													/>
 												</svg>
-											{:else if file.status === 'pending'}
+											{:else if file.status === FileStatus.PENDING}
 												<svg
 													class="size-5 shrink-0 text-yellow-500"
 													fill="none"
@@ -235,7 +236,7 @@
 														d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
 													/>
 												</svg>
-											{:else if file.status === 'error'}
+											{:else if file.status === FileStatus.ERROR}
 												<svg
 													class="size-5 shrink-0 text-red-500"
 													fill="none"
@@ -251,7 +252,7 @@
 												</svg>
 											{:else}
 												<svg
-													class="size-5 shrink-0 {file.status === 'active'
+													class="size-5 shrink-0 {file.status === FileStatus.ACTIVE
 														? 'text-green-400'
 														: 'text-gray-400'}"
 													fill="none"
@@ -268,6 +269,15 @@
 											{/if}
 											<span class="truncate">{file.original_name || file.filename}</span>
 										</a>
+										{#if file.status === FileStatus.PROCESSING}
+											{@const totalStages =
+												file.completed_stages.length + file.stage_queue.length + 1}
+											{@const completedStages = file.completed_stages.length}
+											{@const progress = (completedStages / totalStages) * 100}
+											<div class="progress-bar mx-2">
+												<div class="progress-bar-fill" style="width: {progress}%" />
+											</div>
+										{/if}
 									</li>
 								{/each}
 							{/if}
@@ -387,4 +397,10 @@
 </div>
 
 <style>
+	.progress-bar {
+		@apply h-1 bg-gray-700 rounded-full overflow-hidden mt-1;
+	}
+	.progress-bar-fill {
+		@apply h-full bg-blue-500 transition-all duration-300;
+	}
 </style>

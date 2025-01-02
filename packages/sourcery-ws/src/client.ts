@@ -14,6 +14,10 @@ export async function connect(url: string): Promise<void> {
             connected = true;
             resolve();
         });
+        socket.on("disconnect", () => {
+            console.log("Disconnected from websocket server");
+            connected = false;
+        });
         socket.on("error", (error: any) => {
             console.error("Error connecting to websocket server", error);
             reject(error);
@@ -38,7 +42,16 @@ export async function unsubscribe(channel: string) {
     if (subscribed_channels.has(channel)) {
         socket.emit("unsubscribe", channel);
         subscribed_channels.delete(channel);
+        socket.off(channel);
     }
+}
+
+export async function unsubscribe_all() {
+    subscribed_channels.forEach((channel) => {
+        socket.emit("unsubscribe", channel);
+        socket.off(channel);
+    });
+    subscribed_channels.clear();
 }
 
 export async function ping() {

@@ -28,12 +28,11 @@ dotenv.config();
 
 const ws_pub = new SourceryPub("sourcery.info-ws");
 
-function send_ws_message(file: SourceryFile, stage: FileStage, status: string, message?: string) {
+function send_ws_message(file: SourceryFile, message?: string) {
     // return;
     ws_pub.addJob(`${file.project}:file`, { 
         id: file._id,
-        stage: stage,
-        status: status,
+        file: file,
         message: message
     });
 }
@@ -46,8 +45,11 @@ async function handleFile(file: SourceryFile) {
         stage = FileStage.UNPROCESSED;
     }
     
-    // Broadcast initial state
-    send_ws_message(file, stage, 'processing');
+    // Set file status to processing
+    file.status = FileStatus.PROCESSING;
+    file.stage = stage;
+    await updateFile(file);
+    send_ws_message(file, `Processing ${stage}`);
 
     switch (stage) {
         case FileStage.UNPROCESSED:
@@ -103,13 +105,19 @@ async function handleFile(file: SourceryFile) {
             break;
         default:
             console.error(`No file workflow found for stage ${stage}`);
-            send_ws_message(file, stage, 'error', 'No workflow found');
+            file.status = FileStatus.ERROR;
+            file.stage = stage;
+            await updateFile(file);
+            send_ws_message(file, 'No workflow found');
             return false;
     }
     // console.log({ stage_instance });
     if (!stage_instance) {
         console.error(`No file workflow found for stage ${stage}`);
-        send_ws_message(file, stage, 'error', 'No workflow found');
+        file.status = FileStatus.ERROR;
+        file.stage = stage;
+        await updateFile(file);
+        send_ws_message(file, 'No workflow found');
         return false;
     }
     try {
@@ -117,8 +125,14 @@ async function handleFile(file: SourceryFile) {
         await stage_instance.done();
         const end_time = Date.now();
         console.log(`File ${file._id} stage ${stage} took ${end_time - start_time}ms`);
+        if (stage === FileStage.DONE) {
+            file.status = FileStatus.ACTIVE;
+            file.stage = FileStage.DONE;
+            await updateFile(file);
+            send_ws_message(file, `Pipeline complete`);
+        }
         // Broadcast success
-        send_ws_message(file, stage, 'complete');
+        send_ws_message(file, `${stage} complete`);
 
     } catch (error: any) {
         console.error(error);
@@ -129,22 +143,24 @@ async function handleFile(file: SourceryFile) {
             const errfile = await getFile(file._id);
             if (errfile) {
                 errfile.status = FileStatus.ERROR;
+                errfile.stage = stage;
                 await updateFile(errfile);
+                send_ws_message(errfile, error.message);
             }
         }
-        // Broadcast error
-        send_ws_message(file, stage, 'error', error.message);
-    } finally {
-        // Change file status to error
-        if (!file._id) {
-            console.error("File ID is undefined");
-        } else {
-            const donefile = await getFile(file._id);
-            if (donefile) {
-                donefile.status = FileStatus.ACTIVE;
-                await updateFile(donefile);
-            }
-        }
+    // } finally {
+    //     // Change file status to error
+    //     if (!file._id) {
+    //         console.error("File ID is undefined");
+    //     } else {
+    //         const donefile = await getFile(file._id);
+    //         if (donefile) {
+    //             // donefile.status = FileStatus.ACTIVE;
+    //             donefile.stage = FileStage.DONE;
+    //             await updateFile(donefile);
+    //             send_ws_message(donefile, `Pipeline complete`);
+    //         }
+    //     }
     }
     return true;
 }

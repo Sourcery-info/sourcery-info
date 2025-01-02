@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { filesStore } from '$lib/stores/files';
 	export let data: any;
 
-	let file_db: any = {};
+	let file: any = {};
 	let queued_stages: string[] = [];
 	let processing_stage: string | null = null;
 	let completed_stages: string[] = [];
@@ -13,16 +14,16 @@
 		completed: true
 	};
 
-	onMount(async () => {
-		const response = await fetch(
-			`/file/${data.props.project_id}/${data.props.file._id}/view/file_db`
-		);
-		file_db = await response.json();
-		queued_stages = file_db.stage_queue.filter((stage: string) => stage !== 'done');
-		processing_stage = file_db.stage !== 'done' ? file_db.stage : null;
-		completed_stages = file_db.completed_stages.filter((stage: string) => stage !== 'done');
-		console.log({ file_db, queued_stages, processing_stage, completed_stages });
-	});
+	$: if (data.props.file) {
+		const files = $filesStore;
+		file = files.find((f) => f._id === data.props.file._id);
+		if (file) {
+			queued_stages = file.stage_queue.filter((stage: string) => stage !== 'done');
+			processing_stage = file.stage !== 'done' ? file.stage : null;
+			completed_stages = file.completed_stages.filter((stage: string) => stage !== 'done');
+		}
+		console.log({ file, queued_stages, processing_stage, completed_stages });
+	}
 
 	function toggleSection(section: string) {
 		expanded[section] = !expanded[section];
@@ -30,11 +31,6 @@
 
 	async function reindexFromStage(stage: string) {
 		await fetch(`/file/${data.props.project_id}/${data.props.file._id}/reindex/stage/${stage}`);
-		// Refresh the file_db data
-		const response = await fetch(
-			`/file/${data.props.project_id}/${data.props.file._id}/view/file_db`
-		);
-		file_db = await response.json();
 	}
 </script>
 

@@ -44,6 +44,7 @@ export const actions = {
 				stage_queue: [],
 				completed_stages: [],
 				processing: false,
+				stage_paths: {},
 			});
 			if (!file_record._id) {
 				return error(500, 'Failed to create file record');

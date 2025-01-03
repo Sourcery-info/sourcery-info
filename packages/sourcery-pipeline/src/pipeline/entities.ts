@@ -2,19 +2,14 @@ import { PipelineBase } from "./base";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import fs from "fs/promises";
 import path from "path";
-import { Ollama } from "ollama";
+
 import { ensure_model } from "@sourcery/common/src/ollama";
-import { setTimeout } from "timers/promises";
+
 import { ChunkingPipeline } from "./chunk";
 import { TChunk } from "@sourcery/common/types/Chunks.type";
 import { Entity } from "@sourcery/common/types/Entities.type";
 import { writeFile } from "node:fs/promises";
-const ollama = new Ollama({
-    host: process.env.OLLAMA_URL || "http://localhost:9100",
-});
 
-const OLLAMA_TIMEOUT = parseInt(process.env.OLLAMA_TIMEOUT || "5") * 1000;
-const OLLAMA_RETRIES = parseInt(process.env.OLLAMA_RETRIES || "3");
 const MODEL = process.env.OLLAMA_ENTITIES_MODEL || "llama3.2";
 
 export class EntitiesPipeline extends PipelineBase {
@@ -22,89 +17,21 @@ export class EntitiesPipeline extends PipelineBase {
         super(file, "json", "entities");
     }
 
-    private async extractEntitiesDEPRECATED(content: string, context: string): Promise<Entity[]> {
-        let retries = OLLAMA_RETRIES;
-        
-        const prompt = `Extract named entities from the following text and its context in the document. Possible entity types are: PERSON, ORGANIZATION, LOCATION, DATE, MONEY, EMAIL, ID, PHONE, URL. Include a brief description for each entity. If you do not find any entities, respond with an empty array. Respond in well-formed JSON.
-
-<example>
-[
-    {
-        "type": "PERSON",
-        "value": "John Doe",
-        "description": "The person who is the main character in the story."
-    }
-]
-</example>
-
-<document>
-${content}
-</document>
-
-<context>
-${context}
-</context>`;
-        // console.log(zodToJsonSchema(EntityListSchema));
-        // console.log(prompt);
-        while (retries > 0) {
-            try {
-                const timeoutPromise = setTimeout(OLLAMA_TIMEOUT, 'timeout');
-                const response = await Promise.race([
-                    ollama.generate({
-                        model: MODEL,
-                        prompt: prompt,
-                        system: "You are an expert at extracting named entities (NER) from text. All output must be in valid JSON. Don’t add explanation beyond the JSON",
-                        format: 'json',
-                        options: {
-                            temperature: 0,
-                        },
-                        stream: false
-                    }),
-                    timeoutPromise.then(() => {
-                        ollama.abort();
-                        throw new Error('Ollama request timed out');
-                    })
-                ]);
-
-                try {
-                    // console.log(response.response);
-                    const entities = JSON.parse(response.response.trim());
-                    // console.log(entities);
-                    if (Array.isArray(entities.entities)) {
-                        return entities.entities;
-                    }
-                    throw new Error('Response is not an array');
-                } catch (parseError) {
-                    console.warn('Failed to parse JSON response:', response.response);
-                    throw parseError;
-                }
-            } catch (error: any) {
-                retries--;
-                if (retries === 0) {
-                    // throw new Error(`Failed to extract entities after ${OLLAMA_RETRIES} attempts: ${error.message}`);
-                    return [];
-                }
-                console.warn(`Attempt failed, ${retries} retries remaining. Error: ${error.message}`);
-                await setTimeout(1000);
-            }
-        }
-        
-        return [];
-    }
-
-    private async extractEntities(content: string, context: string): Promise<Entity[]> {
+    private async extractEntities(chunk: TChunk): Promise<Entity[]> {
         const response = await fetch(`http://sourcery-ner:8000/ner`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ text: content })
+            body: JSON.stringify({ text: chunk.content })
         });
         const data = await response.json();
-        // console.log(data);
         return this.consolidateEntities(data.entities.map((entity: any) => ({
             type: entity.label,
-            value: entity.text
+            value: entity.text,
+            chunk_ids: [chunk.id],
+            start: entity.start,
+            end: entity.end
         })));
     }
 
@@ -113,11 +40,12 @@ ${context}
         const consolidated_entities_1: Entity[] = [];
         for (const entity of entities) {
             // If no type or value, skip
-            if (!entity.type || !entity.value ) {
+            if (!entity.type || !entity.value || !entity.chunk_ids) {
                 continue;
             }
-            const existing = consolidated_entities_1.find(e => e.value.toLowerCase() === entity.value.toLowerCase() && e.type === entity.type);
+            const existing: any = consolidated_entities_1.find(e => e.value.toLowerCase() === entity.value.toLowerCase() && e.type === entity.type);
             if (existing) {
+                existing.chunk_ids = Array.from(new Set([...existing.chunk_ids, ...entity.chunk_ids]));
                 continue;
             }
             consolidated_entities_1.push(entity);
@@ -127,7 +55,7 @@ ${context}
         const consolidated_entities_2: Entity[] = [];
         for (const entity of consolidated_entities_1) {
             if (entity.type === "PERSON" && entity.value.split(" ").length === 1) {
-                const exists = consolidated_entities_1.find(e => {
+                const exists: any = consolidated_entities_1.find(e => {
                     if (e.type !== "PERSON") {
                         return false;
                     }
@@ -138,6 +66,7 @@ ${context}
                     return parts[0].toLowerCase() === entity.value.toLowerCase()
                 });
                 if (exists) {
+                    exists.chunk_ids = Array.from(new Set([...exists.chunk_ids, ...entity.chunk_ids]));
                     continue;
                 }
             }
@@ -166,7 +95,7 @@ ${context}
                     continue;
                 }
                 // Extract entities using Ollama
-                const extracted_entities = await this.extractEntities(chunk.content, chunk.context || "");
+                const extracted_entities = await this.extractEntities(chunk);
                 entities.push(...extracted_entities);
                 chunk.entities = extracted_entities;
                 console.log(`Processed chunk ${chunk_count} of ${allChunks.length}`);

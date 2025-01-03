@@ -7,7 +7,8 @@ import path from "path";
 import type { TChunk } from "@sourcery/common/types/Chunks.type";
 import { ChunkModel } from "@sourcery/common/src/models/Chunk.model";
 import { FileModel } from "@sourcery/common/src/models/File.model";
-
+import { EntityModel } from "@sourcery/common/src/models/Entity.model";
+import { Entity } from "@sourcery/common/types/Entities.type";
 export class SavePipeline extends PipelineBase {
     private client: Qdrant;
 
@@ -71,6 +72,24 @@ export class SavePipeline extends PipelineBase {
             }
         }
     }
+
+    async save_to_entities(entities: Entity[], file: SourceryFile) {
+        const chunks = await ChunkModel.find({ file_id: file._id });
+        for (const entity of entities) {
+            const matching_chunks = chunks.filter(chunk => entity.chunk_ids.includes(chunk.id));
+            if (matching_chunks.length === 0) {
+                continue;
+            }
+            console.log(matching_chunks);
+            const entity_data = {
+                project_id: file.project,
+                type: entity.type,
+                value: entity.value,
+                chunk_ids: matching_chunks.map(chunk => chunk._id)
+            }
+            await EntityModel.updateOne({ project_id: file.project, type: entity.type, value: entity.value }, { $set: entity_data }, { upsert: true });
+        }
+    }
     
     async process() {
         const collection = this.file.project;
@@ -79,10 +98,16 @@ export class SavePipeline extends PipelineBase {
         const data = await readFile(inputPath, "utf8");
         const root: TChunk = JSON.parse(data);
         const chunks = ChunkingPipeline.flattenChunks(root);
+        const entityFile = SavePipeline.stage_paths.entities.files[0];
+        const entityPath = path.join(this.filepath, "entities", entityFile);
+        const entities = await readFile(entityPath, "utf8");
+        const entities_data = JSON.parse(entities);
         await Promise.all([
             this.save_to_qdrant(collection, chunks, this.file),
-            this.save_to_mongo(chunks, this.file)
+            this.save_to_mongo(chunks, this.file),
         ]);
+        await this.save_to_entities(entities_data, this.file);
         return this.file;
     }
 }
+// 6777e4d72635e0d9a998fe62

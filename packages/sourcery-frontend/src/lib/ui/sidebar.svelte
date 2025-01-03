@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { filesStore } from '$lib/stores/files';
 	import { conversationsStore } from '$lib/stores/conversations';
+	import { entitiesStore } from '$lib/stores/entities';
 	import { FileStatus } from '@sourcery/common/types/SourceryFile.type';
 	export let selected_project;
 	import { enhance } from '$app/forms';
@@ -13,9 +14,14 @@
 	import logo from '$lib/assets/Sourcery Logo.png';
 
 	const MAX_CONVERSATIONS = 8;
+	const MAX_ENTITIES = 8;
 
 	$: visibleConversations = $conversationsStore.slice(0, MAX_CONVERSATIONS);
 	$: hasMoreConversations = $conversationsStore.length > MAX_CONVERSATIONS;
+	$: visibleEntities = $entitiesStore.slice(0, MAX_ENTITIES);
+	$: hasMoreEntities = $entitiesStore.length > MAX_ENTITIES;
+
+	console.log($entitiesStore);
 
 	// async function toggleActive(file) {
 	// 	file.status = file.status == 'active' ? 'inactive' : 'active';
@@ -283,11 +289,61 @@
 											{@const completedStages = file.completed_stages.length}
 											{@const progress = (completedStages / totalStages) * 100}
 											<div class="progress-bar mx-2">
-												<div class="progress-bar-fill" style="width: {progress}%" />
+												<div class="progress-bar-fill" style="width: {progress}%"></div>
 											</div>
 										{/if}
 									</li>
 								{/each}
+							{/if}
+						</ul>
+					</li>
+					<li>
+						<div class="text-xs/6 font-semibold text-gray-400">
+							<a href="/entities/{selected_project._id}">Entities</a>
+						</div>
+						<ul role="list" class="-mx-2 mt-2 space-y-1 max-h-[40vh] overflow-y-auto">
+							{#if $entitiesStore.length > 0}
+								{#each visibleEntities as entity}
+									<li>
+										<a
+											href={`/entity/${selected_project._id}/${entity._id}`}
+											class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-regular text-gray-400 hover:bg-gray-800 hover:text-white {entity._id ===
+											$page.params.entity_id
+												? 'bg-gray-800 text-white'
+												: ''}"
+										>
+											<svg
+												class="size-5 shrink-0 text-gray-400"
+												fill="none"
+												viewBox="0 0 24 24"
+												stroke-width="1.5"
+												stroke="currentColor"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"
+												/>
+											</svg>
+											<span class="truncate">{entity.value}</span>
+										</a>
+									</li>
+								{/each}
+								{#if hasMoreEntities}
+									<li>
+										<a
+											href="/entities/{selected_project._id}"
+											on:click={handleItemClick}
+											class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+										>
+											<span
+												class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white"
+												>+</span
+											>
+											<span class="truncate">Show more...</span>
+										</a>
+									</li>
+								{/if}
 							{/if}
 						</ul>
 					</li>

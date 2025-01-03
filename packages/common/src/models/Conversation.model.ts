@@ -7,10 +7,6 @@ if (mongoose.models.Conversation) {
 }
 
 const ChunkSchema = new Schema<TChunk & Document>({
-    _id: {
-        type: String,
-        default: () => new mongoose.Types.ObjectId().toString()
-    },
     title: String,
     level: Number,
     content: String,

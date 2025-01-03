@@ -6,10 +6,6 @@ if (mongoose.models.Entity) {
 }
 
 const EntitySchema = new Schema<Entity & Document>({
-    _id: {
-        type: String,
-        default: () => new mongoose.Types.ObjectId().toString()
-    },
     id: {
         type: String,
         index: true

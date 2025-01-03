@@ -1,16 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { TChunk } from '@sourcery/common/types/Chunks.type';
-import { FileModel } from './File.model';
 
 if (mongoose.models.Chunk) {
     mongoose.deleteModel('Chunk');
 }
 
 const ChunkSchema = new Schema<TChunk & Document>({
-    _id: {
-        type: String,
-        default: () => new mongoose.Types.ObjectId().toString()
-    },
     id: {
         type: String,
         index: true

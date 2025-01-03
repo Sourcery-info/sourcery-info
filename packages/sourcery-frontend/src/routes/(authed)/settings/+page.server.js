@@ -31,11 +31,11 @@ export const actions = {
         const settingsSchema = zfd.formData({
             vector_model: zfd.text(z.string()),
             chat_model: zfd.text(z.string()),
-            temperature: zfd.numeric(z.number().min(0).max(1)),
-            security: zfd.text(z.enum(["secure", "insecure"])), // It would be nice if the values were derived from the SourcerySecurity enum
+            temperature: zfd.numeric(z.number().min(0).max(1))
         });
         const validation = await validate(formData, settingsSchema);
         if (validation.errors) {
+            console.error(validation.errors);
             return fail(400, validation);
         }
         try {

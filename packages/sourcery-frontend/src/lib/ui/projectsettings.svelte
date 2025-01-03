@@ -1,7 +1,9 @@
-<script>
+<script lang="ts">
+	import Tags from '$lib/ui/tags.svelte';
+
 	export let form;
 	export let name = '';
-	export let tags = '';
+	export let tags: string = '';
 	export let description = '';
 	export let notes = '';
 	export let is_public = false;
@@ -28,7 +30,7 @@
 		{/if}
 	</div>
 
-	<div class="flex gap-3">
+	<div class="flex gap-x-3">
 		<div class="flex h-6 shrink-0 items-center">
 			<div class="group grid size-4 grid-cols-1">
 				<input
@@ -54,29 +56,17 @@
 				</svg>
 			</div>
 		</div>
-		<div class="text-sm/6">
-			<label for="is_public" class="font-medium text-white">Public Project</label>
+		<div class="flex flex-col gap-y-1">
+			<label for="is_public" class="font-medium text-white text-sm/6">Public Project</label>
+			<p class="text-sm/6 text-gray-400">
+				Public projects are visible to everyone. They will be listed on the projects page.
+			</p>
 		</div>
 	</div>
 
-	<div>
-		<label for="tags" class="block text-sm font-medium leading-6 text-white">Tags</label>
-		<div class="mt-2">
-			<input
-				type="text"
-				name="tags"
-				id="tags"
-				bind:value={tags}
-				class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 {form
-					?.errors?.tags
-					? 'outline-red-500'
-					: ''}"
-			/>
-		</div>
-		{#if form?.errors?.tags}
-			<p class="mt-2 text-sm text-red-500">{form.errors.tags}</p>
-		{/if}
-	</div>
+	<Tags bind:value={tags} error={!!form?.errors?.tags}>
+		<p slot="error" class="mt-2 text-sm text-red-500">{form?.errors?.tags || ''}</p>
+	</Tags>
 
 	<div>
 		<label for="description" class="block text-sm font-medium leading-6 text-white"

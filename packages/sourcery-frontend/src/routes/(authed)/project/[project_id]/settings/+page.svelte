@@ -21,6 +21,8 @@
 					bind:tags={data.project.tags}
 					bind:description={data.project.description}
 					bind:notes={data.project.notes}
+					bind:is_public={data.project.is_public}
+					bind:security={data.project.security}
 				/>
 				<div class="mt-5">
 					<ModelSettings
@@ -28,7 +30,6 @@
 						bind:chat_model={data.project.chat_model}
 						bind:vector_model={data.project.vector_model}
 						bind:temperature={data.project.temperature}
-						bind:security={data.project.security}
 						allow_vector_model_change={$filesStore.length === 0}
 					/>
 				</div>

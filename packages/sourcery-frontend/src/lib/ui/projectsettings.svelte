@@ -5,6 +5,7 @@
 	export let description = '';
 	export let notes = '';
 	export let is_public = false;
+	export let security;
 </script>
 
 <div class="space-y-6">
@@ -35,6 +36,7 @@
 					id="is_public"
 					name="is_public"
 					bind:checked={is_public}
+					value="true"
 					class="col-start-1 row-start-1 appearance-none rounded border border-white/10 bg-white/5 checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 				/>
 				<svg
@@ -113,6 +115,39 @@
 		</div>
 		{#if form?.errors?.notes}
 			<p class="mt-2 text-sm text-red-500">{form.errors.notes}</p>
+		{/if}
+	</div>
+
+	<div>
+		<label for="security" class="block text-sm/6 font-medium text-white">Security</label>
+		<div class="mt-2 space-y-1">
+			<div class="flex items-center gap-x-3">
+				<input
+					id="security-secure"
+					name="security"
+					type="radio"
+					bind:group={security}
+					value="secure"
+					class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 [&:not(:checked)]:before:hidden"
+				/>
+				<label for="security-secure" class="block text-sm/6 font-medium text-white">Secure</label>
+			</div>
+			<div class="flex items-center gap-x-3">
+				<input
+					id="security-insecure"
+					name="security"
+					type="radio"
+					bind:group={security}
+					value="insecure"
+					class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 [&:not(:checked)]:before:hidden"
+				/>
+				<label for="security-insecure" class="block text-sm/6 font-medium text-white"
+					>Insecure - Internet access</label
+				>
+			</div>
+		</div>
+		{#if form?.errors?.security}
+			<p class="mt-2 text-sm text-red-500">{form.errors.security}</p>
 		{/if}
 	</div>
 </div>

@@ -1,6 +1,9 @@
 <script>
 	/** @type {import('./$types').PageData} */
 	export let data;
+	import dayjs from 'dayjs';
+	import relativeTime from 'dayjs/plugin/relativeTime';
+	dayjs.extend(relativeTime);
 </script>
 
 <div class="bg-gray-900 py-10">
@@ -32,9 +35,18 @@
 						class="group relative rounded-lg bg-gray-800/50 p-6 ring-1 ring-white/10 hover:bg-gray-800/70"
 					>
 						<div>
-							<h3 class="text-lg font-semibold leading-6 text-white">
-								{project.name}
-							</h3>
+							<div class="flex items-center gap-2">
+								<h3 class="text-lg font-semibold leading-6 text-white">
+									{project.name}
+								</h3>
+								{#if project.is_public}
+									<span
+										class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20"
+									>
+										Public
+									</span>
+								{/if}
+							</div>
 							{#if project.description}
 								<p class="mt-2 text-sm text-gray-300">
 									{project.description}
@@ -42,7 +54,12 @@
 							{/if}
 							{#if project.created_at}
 								<p class="mt-4 text-sm text-gray-500">
-									Created {project.created_at}
+									{#if project.is_public}
+										Created by {project.owner_name || project.owner_username}
+										{dayjs(project.created_at).fromNow()}
+									{:else}
+										Created {dayjs(project.created_at).fromNow()}
+									{/if}
 								</p>
 							{/if}
 						</div>

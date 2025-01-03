@@ -34,18 +34,22 @@ export const actions = {
         const _id = params.project_id;
         const settingsSchema = zfd.formData({
             name: zfd.text(z.string().trim().min(3).max(50)),
-            // tags: zfd.text(z.string()),
-            // description: zfd.text(z.string()),
-            // notes: zfd.text(z.string()),
-            vector_model: zfd.text(z.string()),
+            tags: zfd.text(z.string().optional()),
+            description: zfd.text(z.string().optional()),
+            notes: zfd.text(z.string().optional()),
+            is_public: zfd.checkbox({ trueValue: "true" }),
+            vector_model: zfd.text(z.string().optional()),
             chat_model: zfd.text(z.string()),
             temperature: zfd.numeric(z.number().min(0).max(1)),
             security: zfd.text(z.enum(["secure", "insecure"])), // It would be nice if the values were derived from the SourcerySecurity enum
         });
+        console.log(formData);
         const validation = await validate(formData, settingsSchema);
         if (validation.errors) {
+            console.log(validation.errors);
             return fail(400, validation);
         }
+        console.log(validation.data);
         try {
             updateProject(Object.assign(validation.data, { _id, updated_at: new Date() }));
         } catch (err) {

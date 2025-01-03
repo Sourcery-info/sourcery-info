@@ -35,8 +35,13 @@ export async function getProjects(user_id: string): Promise<ProjectType[]> {
             { is_public: true },
             { shared_with: user_id }
         ]
-    });
-    return projects.map(mapDBProject);
+    }).populate('owner', 'username');
+    
+    return projects.map(project => ({
+        ...mapDBProject(project),
+        owner_username: (project.owner as any).username,
+        owner_name: (project.owner as any).name
+    }));
 }
 
 export async function getProject(project_id: string): Promise<ProjectType | null> {

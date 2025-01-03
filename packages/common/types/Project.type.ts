@@ -7,6 +7,8 @@ export type Project = {
     description?: string;
     notes?: string;
     owner: string;
+    owner_username?: string;
+    owner_name?: string;
     is_public: boolean;
     shared_with?: string[];
     created_at: Date | null;

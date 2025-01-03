@@ -35,8 +35,7 @@ export async function getProjects(user_id: string): Promise<ProjectType[]> {
             { is_public: true },
             { shared_with: user_id }
         ]
-    }).populate('owner', 'username');
-    
+    }).sort({ created_at: -1 }).populate('owner', 'username name');
     return projects.map(project => ({
         ...mapDBProject(project),
         owner_username: (project.owner as any).username,

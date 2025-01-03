@@ -45,17 +45,18 @@ export async function getUserCount(): Promise<number> {
     return count;
 }
 
-export async function createUser(user: SourceryAccount) {
-    const hashedPassword = await hashPassword(user.password);
+export async function createUser(account: SourceryAccount) {
+    const hashedPassword = await hashPassword(account.password);
     await UserModel.create({
-        email: user.username,
-        name: user.username,  // Using username as name for now
+        username: account.username,
+        name: account.name,
+        email: account.email,
         password_hash: hashedPassword,
         settings: {
-            admin: user.admin,
-            approved: user.approved,
-            avatar: user.avatar,
-            otp: user.otp
+            admin: account.admin,
+            approved: account.approved,
+            avatar: account.avatar,
+            otp: account.otp
         }
     });
 }

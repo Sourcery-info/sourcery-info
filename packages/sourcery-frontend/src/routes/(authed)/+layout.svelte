@@ -2,6 +2,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { filesStore } from '$lib/stores/files';
 	import { projectsStore } from '$lib/stores/projects';
+	import { entitiesStore } from '$lib/stores/entities';
 	import { conversationsStore } from '$lib/stores/conversations';
 	import { onMount, onDestroy } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar.svelte';
@@ -17,7 +18,8 @@
 		conversations: [],
 		user: null,
 		alerts: [],
-		origin: ''
+		origin: '',
+		entities: []
 	};
 
 	async function connect_ws() {
@@ -64,6 +66,10 @@
 
 	$: if (data.conversations) {
 		conversationsStore.set(data.conversations);
+	}
+
+	$: if (data.entities) {
+		entitiesStore.set(data.entities);
 	}
 
 	let isMobileMenuOpen = false;

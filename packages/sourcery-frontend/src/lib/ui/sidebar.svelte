@@ -21,8 +21,6 @@
 	$: visibleEntities = $entitiesStore.slice(0, MAX_ENTITIES);
 	$: hasMoreEntities = $entitiesStore.length > MAX_ENTITIES;
 
-	console.log($entitiesStore);
-
 	// async function toggleActive(file) {
 	// 	file.status = file.status == 'active' ? 'inactive' : 'active';
 	// 	selected_project = selected_project;

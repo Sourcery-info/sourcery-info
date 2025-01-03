@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 export interface Entity {
     _id?: string;
     id?: string;
-    chunk_ids: [string | mongoose.Types.ObjectId];
+    chunk_ids: (string | mongoose.Types.ObjectId)[];
     project_id: string | mongoose.Types.ObjectId;
     type: string;
     value: string;

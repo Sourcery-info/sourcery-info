@@ -13,6 +13,7 @@ async function pubEntity(entity: Entity): Promise<void> {
 }
 
 function mapDBEntity(entity: Entity): Entity {
+    const chunk_ids = entity.chunk_ids.map(chunk_id => chunk_id.toString());
     return {
         _id: entity._id?.toString(),
         id: entity.id?.toString(),
@@ -21,7 +22,7 @@ function mapDBEntity(entity: Entity): Entity {
         value: entity.value,
         description: entity.description,
         aliases: entity.aliases,
-        chunk_ids: [entity.chunk_ids[0]?.toString()],
+        chunk_ids: chunk_ids,
         created_at: entity.created_at,
         updated_at: entity.updated_at
     }
@@ -29,7 +30,8 @@ function mapDBEntity(entity: Entity): Entity {
 
 export async function getEntities(project_id: string): Promise<Entity[]> {
     const entities = await EntityModel.find({ project_id: project_id }).sort({ updated_at: -1 });
-    console.log(entities);
+    entities.sort((a, b) => a.type.localeCompare(b.type) || a.value.localeCompare(b.value));
+    entities.sort((a, b) => b.chunk_ids.length - a.chunk_ids.length);
     return entities.map(mapDBEntity);
 }
 
@@ -50,7 +52,6 @@ export async function createEntity(entity: Entity): Promise<Entity> {
         entityData.chunk_ids = [new mongoose.Types.ObjectId(entityData.chunk_ids[0])];
     }
     const newEntity = await EntityModel.create(entityData);
-    console.log(newEntity);
     pubEntity(newEntity);
     return mapDBEntity(newEntity);
 }

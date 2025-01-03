@@ -80,7 +80,6 @@ export class SavePipeline extends PipelineBase {
             if (matching_chunks.length === 0) {
                 continue;
             }
-            console.log(matching_chunks);
             const entity_data = {
                 project_id: file.project,
                 type: entity.type,

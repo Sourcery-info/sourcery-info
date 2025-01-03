@@ -16,7 +16,8 @@ services:
       - ./data/qdrant_data:/qdrant/storage
 
   sourcery-keydb:
-    image: eqalpha/keydb:latest
+    # image: eqalpha/keydb:latest
+    image: redis:latest
     restart: always
     container_name: sourcery-keydb
     healthcheck:

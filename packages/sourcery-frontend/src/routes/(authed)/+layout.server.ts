@@ -16,21 +16,24 @@ type response = {
     projects: ProjectType[] | null,
     conversations: ConversationType[] | null,
     entities: EntityType[] | null,
+    token: string | null,
     // session: any,
     // user: any
     origin: string;
 }
 
-export async function load({ params, locals }): Promise<response> {
+export async function load({ params, locals, cookies }): Promise<response> {
     if (!locals?.session?.user_id) {
         return error(401, 'Unauthorized');
     }
     const projects = await getProjects(locals?.session?.user_id);
+    const token = cookies.get("session") ?? null;
     let response: response = {
         project: null,
         projects: projects,
         conversations: [],
         entities: [],
+        token: token,
         // session: locals.session,
         // user: locals.user
         origin: ORIGIN

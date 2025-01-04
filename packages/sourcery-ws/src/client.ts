@@ -2,16 +2,26 @@ import { io } from "socket.io-client";
 
 let socket: any = null;
 
-let subscribed_channels = new Set<string>();
+let subscribed_channels = new Map<string, (data: any) => void>();
 let connected = false;
 
-export async function connect(url: string): Promise<void> {
+export async function connect(url: string, sessionToken: string): Promise<void> {
     return new Promise((resolve, reject) => {
         console.log(`Connecting to websocket server on ${url}`);
-        socket = io(url);
+        socket = io(url, {
+            auth: {
+                token: sessionToken
+            }
+        });
         socket.on("connect", () => {
             console.log("Connected to websocket server");
             connected = true;
+            for (const channel of subscribed_channels.keys()) {
+                socket.emit("subscribe", channel);
+                socket.on(channel, (data: any) => {
+                    subscribed_channels.get(channel)?.(data);
+                });
+            }
             resolve();
         });
         socket.on("disconnect", () => {
@@ -31,7 +41,7 @@ export async function subscribe(
 ) {
     if (!subscribed_channels.has(channel)) {
         socket.emit("subscribe", channel);
-        subscribed_channels.add(channel);
+        subscribed_channels.set(channel, callback);
         socket.on(channel, (data: any) => {
             callback(data);
         });
@@ -47,10 +57,9 @@ export async function unsubscribe(channel: string) {
 }
 
 export async function unsubscribe_all() {
-    subscribed_channels.forEach((channel) => {
+    for (const channel of subscribed_channels.keys()) {
         socket.emit("unsubscribe", channel);
-        socket.off(channel);
-    });
+    }
     subscribed_channels.clear();
 }
 

@@ -103,7 +103,7 @@ export class EntitiesPipeline extends PipelineBase {
             await writeFile(chunks_filename, JSON.stringify(root, null, 2));
             const consolidated_entities = await this.consolidateEntities(entities);
             // console.log(consolidated_entities);
-            console.log(`Writing ${consolidated_entities.length} entities to ${this.filename.replace("chunks", "entities")}`);
+            // console.log(`Writing ${consolidated_entities.length} entities to ${this.filename.replace("chunks", "entities")}`);
             await writeFile(this.filename, JSON.stringify(consolidated_entities, null, 2));
             return this.file;
         } catch (error) {

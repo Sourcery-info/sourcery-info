@@ -1,9 +1,8 @@
 /** @type {import('./$types').PageServerLoad} */
-import { uploadFile, deleteFile as deleteFileUtils } from '$lib/utils/files';
+import { deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error } from '@sveltejs/kit';
-import { updateFile, deleteFile, createFile, getFile, getFiles, reindexFile } from '$lib/classes/files';
-import { FileStatus, FileTypes } from '@sourcery/common/types/SourceryFile.type';
+import { updateFile, deleteFile, createFile, getFile, getFiles, reindexFile, uploadFile } from '$lib/classes/files';
 import { FileStage } from '@sourcery/common/types/SourceryFile.type';
 import { SourceryPub } from '@sourcery/queue/src/pub';
 
@@ -26,45 +25,16 @@ export async function load({ params }) {
 }
 
 export const actions = {
-	upload: async ({ request, params }) => {
-		const formData = await request.formData();
-		const files = formData.getAll('files');
-		const project_id = params.project_id;
-		let res_data = [];
-		for (const file of files) {
-			const file_record = await createFile({
-				project: project_id,
-				original_name: "",
-				filename: "",
-				filetype: FileTypes.UNKNOWN,
-				stage: FileStage.UNPROCESSED,
-				status: FileStatus.PENDING,
-				created_at: new Date(),
-				updated_at: new Date(),
-				stage_queue: [],
-				completed_stages: [],
-				processing: false,
-				stage_paths: {},
-			});
-			if (!file_record._id) {
-				return error(500, 'Failed to create file record');
-			}
-			const { original_name, filename, filetype } = await uploadFile(project_id, file_record._id, file as File);
-			const stage = FileStage.UNPROCESSED;
-			const data = {
-				...file_record,
-				original_name: original_name,
-				filename: filename,
-				filetype,
-				stage,
+	upload: async ({ request, params, locals }) => {
+		try {
+			const res_data = await uploadFile(request, params, locals);
+			return {
+				data: res_data
 			};
-			await updateFile(data);
-			await pub.addJob(`file-${stage}-${file_record._id}`, data);
-			res_data.push(data);
+		} catch (err: any) {
+			console.error(err);
+			return error(500, `Failed to upload files: ${err.toString()}`);
 		}
-		return {
-			data: res_data
-		};
 	},
 	deleteCollection: async ({ params }) => {
 		console.log('Delete collection');

@@ -48,7 +48,6 @@ export async function load({ params, locals, cookies }): Promise<response> {
                 return conversation;
             });
             response.entities = await getEntities(params.project_id);
-            console.log(response.entities);
         }
     }
     return response;

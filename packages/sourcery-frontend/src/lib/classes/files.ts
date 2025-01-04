@@ -2,6 +2,7 @@ import { FileStatus, FileStage } from '@sourcery/common/types/SourceryFile.type'
 import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { SourceryFile } from '@sourcery/common/types/SourceryFile.type.js';
 import { SourceryPub } from '@sourcery/queue/src/pub';
+import { fileTypeWorkflows } from '@sourcery/pipeline/src/file_workflows';
 
 const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
@@ -61,18 +62,20 @@ export async function reindexFile(file_id: string, stage_name: string = FileStag
     if (!file) {
         return null;
     }
+    const workflow = fileTypeWorkflows[file.filetype];
+    if (!workflow) {
+        console.error(`No workflow found for file type ${file.filetype}`);
+        return null;
+    }
+    if (!workflow.stages.includes(stage_name)) {
+        console.error(`Stage ${stage_name} not found in workflow for file type ${file.filetype}`);
+        return null;
+    }
     file.stage = stage_name;
     file.status = FileStatus.PENDING;
-    // Pop from completed_stages and push onto stage_queue until stage_name is found
-    while (file.completed_stages.length > 0) {
-        const stage = file.completed_stages.pop();
-        if (stage === stage_name) {
-            break;
-        }
-        file.stage_queue.unshift(stage!);
-    }
-    // Remove stage_name from completed_stages
-    file.completed_stages = file.completed_stages.filter(stage => stage !== stage_name);
+    const current_stage_index = workflow.stages.indexOf(stage_name);
+    file.completed_stages = file.completed_stages.slice(0, current_stage_index) as FileStage[];
+    file.stage_queue = workflow.stages.slice(current_stage_index + 1) as FileStage[];
     file.processing = false;
     console.log({ stage_name, completed_stages: file.completed_stages, stage_queue: file.stage_queue });
     await updateFile(file);

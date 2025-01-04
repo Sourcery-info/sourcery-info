@@ -9,6 +9,9 @@ async function pubEntity(entity: Entity): Promise<void> {
         return;
     }
     const entity_db = await getEntity(entity._id);
+    if (!entity_db) {
+        return;
+    }
     pub.addJob(`${entity_db.project_id}:entity`, { entity: entity_db });
 }
 
@@ -35,10 +38,10 @@ export async function getEntities(project_id: string): Promise<Entity[]> {
     return entities.map(mapDBEntity);
 }
 
-export async function getEntity(entity_id: string): Promise<Entity> {
-    const entity = await EntityModel.findById(entity_id);
+export async function getEntity(entity_id: string): Promise<Entity | null> {
+    const entity = await EntityModel.findOne({ _id: new mongoose.Types.ObjectId(entity_id) });
     if (!entity) {
-        throw new Error('Entity not found');
+        return null;
     }
     return mapDBEntity(entity);
 }

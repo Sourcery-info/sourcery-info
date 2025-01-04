@@ -3,7 +3,7 @@ import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { SourceryFile } from '@sourcery/common/types/SourceryFile.type.js';
 import { SourceryPub } from '@sourcery/queue/src/pub';
 import { fileTypeWorkflows } from '@sourcery/pipeline/src/file_workflows';
-
+import mongoose from 'mongoose';
 const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export function mapDBFile(file: SourceryFile): SourceryFile {
@@ -35,7 +35,7 @@ export async function getFiles(project_id: string, file_ids?: string[]): Promise
 }
 
 export async function getFile(file_id: string): Promise<SourceryFile | null> {
-    const file = await FileModel.findById(file_id);
+    const file = await FileModel.findById(new mongoose.Types.ObjectId(file_id));
     return file ? mapDBFile(file) : null;
 }
 
@@ -57,27 +57,33 @@ export async function deleteFile(file_id: string): Promise<boolean> {
     return deletedFile ? true : false;
 }
 
-export async function reindexFile(file_id: string, stage_name: string = FileStage.UNPROCESSED): Promise<SourceryFile | null> {
+export async function reindexFile(file_id: string, stage_name: FileStage = FileStage.UNPROCESSED): Promise<SourceryFile | null> {
+    console.log('reindexFile', file_id, stage_name);
     const file = await getFile(file_id);
     if (!file) {
         return null;
     }
-    const workflow = fileTypeWorkflows[file.filetype];
+    const workflow = [...fileTypeWorkflows[file.filetype].stages];
     if (!workflow) {
         console.error(`No workflow found for file type ${file.filetype}`);
         return null;
     }
-    if (!workflow.stages.includes(stage_name)) {
+    console.log('workflow', workflow);
+    if (stage_name !== FileStage.UNPROCESSED && !workflow.includes(stage_name)) {
         console.error(`Stage ${stage_name} not found in workflow for file type ${file.filetype}`);
         return null;
     }
     file.stage = stage_name;
     file.status = FileStatus.PENDING;
-    const current_stage_index = workflow.stages.indexOf(stage_name);
-    file.completed_stages = file.completed_stages.slice(0, current_stage_index) as FileStage[];
-    file.stage_queue = workflow.stages.slice(current_stage_index + 1) as FileStage[];
+    file.stage_queue = [...workflow as FileStage[]];
+    file.completed_stages = [];
+    if (stage_name !== FileStage.UNPROCESSED) {
+        const stage_index = file.stage_queue.indexOf(stage_name);
+        file.stage_queue = file.stage_queue.slice(stage_index);
+    }
     file.processing = false;
     console.log({ stage_name, completed_stages: file.completed_stages, stage_queue: file.stage_queue });
+    await pub.clearJob(`file-${stage_name}-${file_id}`);
     await updateFile(file);
     await pub.addJob(`file-${stage_name}-${file_id}`, file);
     return file;

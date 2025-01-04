@@ -22,6 +22,10 @@ export class SourceryPub {
         await this.queue.add(jobName, data);
     }
 
+    async clearJob(jobName: string) {
+        await this.queue.remove(jobName);
+    }
+
     async close() {
         await this.queue.close();
     }

@@ -3,12 +3,8 @@ import { FileStage } from "@sourcery/common/types/SourceryFile.type";
 export const fileTypeWorkflows: Record<string, { stages: string[] }> = {
     "pdf": {
         "stages": [
-            // "pdf_to_image",
-            // "easyocr",
-            // "llama-mm",
             FileStage.MARKER_PDF,
             FileStage.CHUNKING,
-            // "filename",
             FileStage.CONTEXTUAL_CHUNKING,
             FileStage.ENTITIES,
             FileStage.VECTORISING,

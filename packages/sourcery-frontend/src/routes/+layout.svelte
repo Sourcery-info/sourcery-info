@@ -2,7 +2,6 @@
 	// @ts-nocheck
 	// import '$lib/sass/global.scss';
 	import '../app.css';
-	import Sidebar from '$lib/ui/sidebar.svelte';
 	import Alert from '$lib/ui/alert.svelte';
 
 	export let data = {

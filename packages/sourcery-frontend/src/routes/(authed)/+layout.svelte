@@ -5,7 +5,7 @@
 	import { entitiesStore } from '$lib/stores/entities';
 	import { conversationsStore } from '$lib/stores/conversations';
 	import { onMount, onDestroy } from 'svelte';
-	import Sidebar from '$lib/ui/sidebar.svelte';
+	import Sidebar from '$lib/ui/sidebar/sidebar.svelte';
 	import { connect, subscribe, unsubscribe, unsubscribe_all } from '@sourcery/ws/src/client.js';
 
 	let ws_connected = false;
@@ -19,13 +19,14 @@
 		user: null,
 		alerts: [],
 		origin: '',
-		entities: []
+		entities: [],
+		token: null
 	};
 
 	async function connect_ws() {
-		if (!ws_connected) {
+		if (!ws_connected && data.token) {
 			try {
-				await connect(`${data.origin.replace('https://', 'wss://')}`);
+				await connect(`${data.origin.replace('https://', 'wss://')}`, data.token);
 				ws_connected = true;
 			} catch (error) {
 				console.error('Error connecting to websocket server', error);

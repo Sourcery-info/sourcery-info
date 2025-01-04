@@ -8,7 +8,6 @@
 	import Entities from './entities.svelte';
 	import Pipeline from './pipeline.svelte';
 	import Text from './text.svelte';
-	import Sidebar from '$lib/ui/sidebar.svelte';
 	import Dialog from '$lib/ui/dialog.svelte';
 	import { filesStore } from '$lib/stores/files';
 	export let data;

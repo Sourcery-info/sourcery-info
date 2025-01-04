@@ -33,7 +33,7 @@
 	<div class="text-xs/6 font-semibold text-gray-400">
 		<a href="/files/{selected_project._id}" {onclick}>Files</a>
 	</div>
-	<ul role="list" class="-mx-2 mt-2 space-y-1 max-h-[40vh] overflow-y-auto">
+	<ul role="list" class="-mx-2 mt-2 space-y-0 max-h-[40vh] overflow-y-auto">
 		<li>
 			<label
 				class="group flex w-full cursor-pointer items-center gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"

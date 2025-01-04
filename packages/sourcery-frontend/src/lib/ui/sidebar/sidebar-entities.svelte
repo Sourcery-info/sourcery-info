@@ -13,7 +13,7 @@
 	<div class="text-xs/6 font-semibold text-gray-400">
 		<a href="/entity/{selected_project._id}" {onclick}>Entities</a>
 	</div>
-	<ul role="list" class="-mx-2 mt-2 space-y-1 max-h-[40vh] overflow-y-auto">
+	<ul role="list" class="-mx-2 mt-2 space-y-0 max-h-[40vh] overflow-y-auto">
 		{#if $entitiesStore.length > 0}
 			{#each visibleEntities as entity}
 				<li>

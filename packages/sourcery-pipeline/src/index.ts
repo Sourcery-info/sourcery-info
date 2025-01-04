@@ -130,10 +130,10 @@ async function handleFile(file: SourceryFile) {
             file.stage = FileStage.DONE;
             await updateFile(file);
             send_ws_message(file, `Pipeline complete`);
+            console.log('Pipeline complete');
         }
         // Broadcast success
         send_ws_message(file, `${stage} complete`);
-
     } catch (error: any) {
         console.error(error);
         // Change file status to error

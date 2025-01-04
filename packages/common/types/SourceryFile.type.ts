@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 export enum FileStatus {
     PENDING = 'pending',
     PROCESSING = 'processing',
@@ -89,7 +91,8 @@ export type SourceryFile = {
     filename: string;
     metadata?: string;
     filetype: FileTypes;
-    project: string;
+    project: string | mongoose.Schema.Types.ObjectId;
+    user_id: string | mongoose.Schema.Types.ObjectId;
     status: FileStatus;
     stage: FileStage | string;
     stage_queue: FileStage[];

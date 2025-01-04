@@ -1,9 +1,12 @@
-import { FileStatus, FileStage } from '@sourcery/common/types/SourceryFile.type';
+import { FileStatus, FileStage, FileTypes } from '@sourcery/common/types/SourceryFile.type';
 import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { SourceryFile } from '@sourcery/common/types/SourceryFile.type.js';
 import { SourceryPub } from '@sourcery/queue/src/pub';
 import { fileTypeWorkflows } from '@sourcery/pipeline/src/file_workflows';
+import { uploadFile as uploadFileUtils } from '@sourcery/frontend/src/lib/utils/files';
 import mongoose from 'mongoose';
+import { getProject } from './projects';
+import { error } from '@sveltejs/kit';
 const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export function mapDBFile(file: SourceryFile): SourceryFile {
@@ -22,6 +25,7 @@ export function mapDBFile(file: SourceryFile): SourceryFile {
         completed_stages: file.completed_stages,
         processing: file.processing,
         stage_paths: file.stage_paths,
+        user_id: file.user_id?.toString()
     };
 }
 
@@ -40,6 +44,9 @@ export async function getFile(file_id: string): Promise<SourceryFile | null> {
 }
 
 export async function createFile(file: SourceryFile): Promise<SourceryFile> {
+    if (!file.user_id) {
+        throw new Error('User ID is required');
+    }
     const newFile = await FileModel.create(file);
     return mapDBFile(newFile);
 }
@@ -58,7 +65,6 @@ export async function deleteFile(file_id: string): Promise<boolean> {
 }
 
 export async function reindexFile(file_id: string, stage_name: FileStage = FileStage.UNPROCESSED): Promise<SourceryFile | null> {
-    console.log('reindexFile', file_id, stage_name);
     const file = await getFile(file_id);
     if (!file) {
         return null;
@@ -82,9 +88,60 @@ export async function reindexFile(file_id: string, stage_name: FileStage = FileS
         file.stage_queue = file.stage_queue.slice(stage_index);
     }
     file.processing = false;
-    console.log({ stage_name, completed_stages: file.completed_stages, stage_queue: file.stage_queue });
+    // console.log({ stage_name, completed_stages: file.completed_stages, stage_queue: file.stage_queue });
     await pub.clearJob(`file-${stage_name}-${file_id}`);
     await updateFile(file);
     await pub.addJob(`file-${stage_name}-${file_id}`, file);
     return file;
+}
+
+export async function uploadFile(request: Request, params: any, locals: any) {
+    const formData = await request.formData();
+    const files = formData.getAll('files');
+    const project_id = params.project_id;
+    const user_id = locals.user.user_id;
+    if (!user_id) {
+        return error(401, 'Unauthorized');
+    }
+    const project = await getProject(project_id);
+    if (!project) {
+        return error(404, 'Project not found');
+    }
+    if (project.owner !== user_id) {
+        return error(403, 'Forbidden - you are not the owner of this project');
+    }
+    let res_data = [];
+    for (const file of files) {
+        const file_record = await createFile({
+            project: project_id,
+            user_id: user_id,
+            original_name: "",
+            filename: "",
+            filetype: FileTypes.UNKNOWN,
+            stage: FileStage.UNPROCESSED,
+            status: FileStatus.PENDING,
+            created_at: new Date(),
+            updated_at: new Date(),
+            stage_queue: [],
+            completed_stages: [],
+            processing: false,
+            stage_paths: {},
+        });
+        if (!file_record._id) {
+            return error(500, 'Failed to create file record');
+        }
+        const { original_name, filename, filetype } = await uploadFileUtils(project_id, file_record._id, file as File);
+        const stage = FileStage.UNPROCESSED;
+        const data = {
+            ...file_record,
+            original_name: original_name,
+            filename: filename,
+            filetype,
+            stage,
+        };
+        await updateFile(data);
+        await pub.addJob(`file-${stage}-${file_record._id}`, data);
+        res_data.push(data);
+    }
+    return res_data;
 }

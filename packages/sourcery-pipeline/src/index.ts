@@ -23,6 +23,7 @@ import { EntitiesPipeline } from "./pipeline/entities";
 import { MontagePipeline } from "./pipeline/montage";
 import { FilenamePipeline } from "./pipeline/filename";
 import { SourceryPub } from "@sourcery/queue/src/pub";
+import { createAlert } from "@sourcery/frontend/src/lib/classes/alerts";
 
 dotenv.config();
 
@@ -46,10 +47,12 @@ async function handleFile(file: SourceryFile) {
     }
     
     // Set file status to processing
-    file.status = FileStatus.PROCESSING;
-    file.stage = stage;
-    await updateFile(file);
-    send_ws_message(file, `Processing ${stage}`);
+    if (stage !== FileStage.DONE) {
+        file.status = FileStatus.PROCESSING;
+        file.stage = stage;
+        await updateFile(file);
+        send_ws_message(file, `Processing ${stage}`);
+    }
 
     switch (stage) {
         case FileStage.UNPROCESSED:
@@ -131,6 +134,13 @@ async function handleFile(file: SourceryFile) {
             await updateFile(file);
             send_ws_message(file, `Pipeline complete`);
             console.log('Pipeline complete');
+            console.log(file);
+            await createAlert({
+                user_id: file.user_id?.toString(),
+                message: `Pipeline complete for ${file.original_name}`,
+                type: 'info',
+                seen: false
+            });
         }
         // Broadcast success
         send_ws_message(file, `${stage} complete`);
@@ -146,21 +156,14 @@ async function handleFile(file: SourceryFile) {
                 errfile.stage = stage;
                 await updateFile(errfile);
                 send_ws_message(errfile, error.message);
+                await createAlert({
+                    user_id: errfile.user_id?.toString(),
+                    message: `Error processing ${errfile.original_name} at stage ${stage}: ${error.message}`,
+                    type: 'error',
+                    seen: false
+                });
             }
         }
-    // } finally {
-    //     // Change file status to error
-    //     if (!file._id) {
-    //         console.error("File ID is undefined");
-    //     } else {
-    //         const donefile = await getFile(file._id);
-    //         if (donefile) {
-    //             // donefile.status = FileStatus.ACTIVE;
-    //             donefile.stage = FileStage.DONE;
-    //             await updateFile(donefile);
-    //             send_ws_message(donefile, `Pipeline complete`);
-    //         }
-    //     }
     }
     return true;
 }

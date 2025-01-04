@@ -4,21 +4,22 @@ import { getProject, getProjects } from '$lib/classes/projects';
 import { getConversations } from '$lib/classes/conversations';
 import { getFiles } from '$lib/classes/files';
 import { getEntities } from '$lib/classes/entities';
+import { getAlerts } from '$lib/classes/alerts';
 import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
 import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
 import type { Entity as EntityType } from '@sourcery/common/types/Entities.type.ts';
 import { error } from '@sveltejs/kit';
 import type { SourceryFile } from '$lib/types/SourceryFile.type';
 import { ORIGIN } from '$env/static/private';
+import type { TAlert } from '@sourcery/common/types/Alert.type';
 
 type response = {
     project: ProjectType | null,
     projects: ProjectType[] | null,
     conversations: ConversationType[] | null,
     entities: EntityType[] | null,
+    alerts: TAlert[] | null,
     token: string | null,
-    // session: any,
-    // user: any
     origin: string;
 }
 
@@ -33,6 +34,7 @@ export async function load({ params, locals, cookies }): Promise<response> {
         projects: projects,
         conversations: [],
         entities: [],
+        alerts: [],
         token: token,
         // session: locals.session,
         // user: locals.user
@@ -48,6 +50,17 @@ export async function load({ params, locals, cookies }): Promise<response> {
                 return conversation;
             });
             response.entities = await getEntities(params.project_id);
+            response.alerts = await getAlerts(locals.session.user_id);
+            // Simulate alert
+            // response.alerts.push({
+            //     _id: '1',
+            //     user_id: locals.session.user_id,
+            //     seen: false,
+            //     message: 'Test alert',
+            //     type: 'info',
+            //     created_at: new Date(),
+            //     updated_at: new Date()
+            // });
         }
     }
     return response;

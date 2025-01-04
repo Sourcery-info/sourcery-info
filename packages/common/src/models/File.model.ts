@@ -26,7 +26,12 @@ const FileSchema = new Schema<SourceryFile & Document>({
         type: Schema.Types.ObjectId,
         ref: 'Project',
         index: true
-    } as any,
+    },
+    user_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        index: true
+    },
     status: { type: String, enum: FileStatus, index: true },
     stage: { type: String, enum: FileStage, index: true },
     stage_queue: { type: [String], default: [] },

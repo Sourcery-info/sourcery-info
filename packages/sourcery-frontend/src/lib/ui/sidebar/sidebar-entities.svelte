@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { entitiesStore } from '$lib/stores/entities';
 
 	let { selected_project, onclick } = $props();
@@ -11,7 +11,7 @@
 
 <div>
 	<div class="text-xs/6 font-semibold text-gray-400">
-		<a href="/entities/{selected_project._id}" {onclick}>Entities</a>
+		<a href="/entity/{selected_project._id}" {onclick}>Entities</a>
 	</div>
 	<ul role="list" class="-mx-2 mt-2 space-y-1 max-h-[40vh] overflow-y-auto">
 		{#if $entitiesStore.length > 0}
@@ -21,7 +21,7 @@
 						href={`/entity/${selected_project._id}/${entity._id}`}
 						{onclick}
 						class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-regular text-gray-400 hover:bg-gray-800 hover:text-white {entity._id ===
-						$page.params.entity_id
+						page.params.entity_id
 							? 'bg-gray-800 text-white'
 							: ''}"
 					>

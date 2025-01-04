@@ -2,7 +2,7 @@
 	import { conversationsStore } from '$lib/stores/conversations';
 </script>
 
-<div class="min-h-screen bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+<div class="min-h bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
 	<div class="max-w-7xl mx-auto">
 		<h1 class="text-2xl font-bold text-white mb-8">All Conversations</h1>
 

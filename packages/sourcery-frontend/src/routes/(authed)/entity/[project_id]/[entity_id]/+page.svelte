@@ -1,20 +1,26 @@
 <script lang="ts">
 	// @ts-nocheck
 	/** @type {import('./$types').PageData} */
-	import { goto } from '$app/navigation';
-	import { enhance } from '$app/forms';
-	import { entitiesStore } from '$lib/stores/entities';
 	export let data;
-	// Add tab state management
 </script>
 
 <div class="text-white">
-	<h1 class="text-3xl font-bold mb-4">Entity: {data.entity.value}</h1>
+	<div class="flex flex-row gap-2 mb-4">
+		<h1 class="text-2xl font-bold">
+			{data.entity.value}
+		</h1>
+		<div class="flex flex-row gap-2 items-center">
+			<div class="bg-blue-800 text-gray-300 text-sm px-2 py-1 rounded-md w-fit">Entity</div>
+			<div class="bg-red-800 text-white-300 text-sm px-2 py-1 rounded-md w-fit">
+				{data.entity.type}
+			</div>
+		</div>
+	</div>
 	<div class="flex flex-col gap-4">
 		{#each data.chunks as chunk}
 			<div class="bg-gray-800 rounded-lg p-4 shadow-lg">
-				<div class="text-md text-gray-300 mb-2">{chunk.content}</div>
-				<div class="text-xl text-white">{chunk.context}</div>
+				<div class="text-md text-white mb-2">{chunk.content}</div>
+				<div class="text-sm text-gray-400">{chunk.context}</div>
 			</div>
 		{/each}
 	</div>

@@ -16,6 +16,9 @@
 			</div>
 		</div>
 	</div>
+	<div class="text-white-300 text-md px-1 pb-5 rounded-md w-fit">
+		{data.entity.description}
+	</div>
 	<div class="flex flex-col gap-4">
 		{#each data.chunks as chunk}
 			<div class="bg-gray-800 rounded-lg p-4 shadow-lg">

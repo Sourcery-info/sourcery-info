@@ -201,6 +201,18 @@
 		}
 	}
 
+	function handleSearchFocusIn() {
+		showSearchResults = searchQuery.length > 0;
+	}
+
+	function handleSubmit(event: Event) {
+		event.preventDefault();
+		if (searchQuery.trim()) {
+			clearTimeout(searchTimeout);
+			performSearch();
+		}
+	}
+
 	onMount(() => {
 		return (async () => {
 			await connect_ws();
@@ -293,7 +305,12 @@
 			<div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
 
 			<div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-				<form class="grid flex-1 grid-cols-1 relative" action="#" method="GET">
+				<form
+					class="grid flex-1 grid-cols-1 relative"
+					action="#"
+					method="GET"
+					on:submit={handleSubmit}
+				>
 					<input
 						type="search"
 						name="search"
@@ -303,7 +320,7 @@
 						placeholder="Search"
 						value={searchQuery}
 						on:input={handleSearch}
-						on:focusin={() => (showSearchResults = true)}
+						on:focusin={handleSearchFocusIn}
 						on:focusout={handleSearchFocusOut}
 					/>
 					<svg

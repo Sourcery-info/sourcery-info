@@ -85,11 +85,17 @@ export async function reindexFile(file_id: string, stage_name: FileStage = FileS
     file.completed_stages = [];
     if (stage_name !== FileStage.UNPROCESSED) {
         const stage_index = file.stage_queue.indexOf(stage_name);
-        file.stage_queue = file.stage_queue.slice(stage_index);
+        file.completed_stages = file.stage_queue.slice(0, stage_index);
+        file.stage_queue = file.stage_queue.slice(stage_index + 1);
+        if (file.completed_stages[0] !== FileStage.UNPROCESSED) {
+            file.completed_stages.unshift(FileStage.UNPROCESSED);
+        }
     }
     file.processing = false;
     // console.log({ stage_name, completed_stages: file.completed_stages, stage_queue: file.stage_queue });
-    await pub.clearJob(`file-${stage_name}-${file_id}`);
+    for (const clear_stage of workflow) {
+        await pub.clearJob(`file-${clear_stage}-${file_id}`);
+    }
     await updateFile(file);
     await pub.addJob(`file-${stage_name}-${file_id}`, file);
     return file;

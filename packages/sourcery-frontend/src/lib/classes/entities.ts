@@ -33,10 +33,35 @@ function mapDBEntity(entity: Entity): Entity {
 }
 
 export async function getEntities(project_id: string): Promise<Entity[]> {
-    const entities = await EntityModel.find({ project_id: project_id }).sort({ updated_at: -1 });
+    const entities = await EntityModel.aggregate([
+        { $match: { project_id: new mongoose.Types.ObjectId(project_id) } },
+        { $unwind: '$chunk_ids' },
+        { $lookup: { from: 'chunks', localField: 'chunk_ids', foreignField: '_id', as: 'chunk' } },
+        { $unwind: '$chunk' },
+        { 
+            $group: {
+                _id: '$_id',
+                project_id: { $first: '$project_id' },
+                type: { $first: '$type' },
+                value: { $first: '$value' },
+                description: { $first: '$description' },
+                aliases: { $first: '$aliases' },
+                chunk_ids: { $addToSet: '$chunk_ids' },
+                file_ids: { $addToSet: '$chunk.file_id' },
+                created_at: { $first: '$created_at' },
+                updated_at: { $first: '$updated_at' }
+            }
+        },
+        { $sort: { updated_at: -1 } }
+    ]);
+
     entities.sort((a, b) => a.type.localeCompare(b.type) || a.value.localeCompare(b.value));
     entities.sort((a, b) => b.chunk_ids.length - a.chunk_ids.length);
-    return entities.map(mapDBEntity);
+
+    return entities.map(entity => ({
+        ...mapDBEntity(entity),
+        file_ids: entity.file_ids.map((id: mongoose.Types.ObjectId) => id.toString())
+    }));
 }
 
 export async function getEntity(entity_id: string): Promise<Entity | null> {

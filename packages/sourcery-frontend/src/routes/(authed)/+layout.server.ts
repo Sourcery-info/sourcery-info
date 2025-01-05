@@ -36,8 +36,6 @@ export async function load({ params, locals, cookies }): Promise<response> {
         entities: [],
         alerts: [],
         token: token,
-        // session: locals.session,
-        // user: locals.user
         origin: ORIGIN
     }
     if (params?.project_id) {
@@ -51,16 +49,6 @@ export async function load({ params, locals, cookies }): Promise<response> {
             });
             response.entities = await getEntities(params.project_id);
             response.alerts = await getAlerts(locals.session.user_id);
-            // Simulate alert
-            // response.alerts.push({
-            //     _id: '1',
-            //     user_id: locals.session.user_id,
-            //     seen: false,
-            //     message: 'Test alert',
-            //     type: 'info',
-            //     created_at: new Date(),
-            //     updated_at: new Date()
-            // });
         }
     }
     return response;

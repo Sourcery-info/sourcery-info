@@ -1,14 +1,18 @@
-<script>
-	import { onMount } from 'svelte';
-
-	export let data;
+<script lang="ts">
+	export let data: any;
 
 	let html = '';
-	onMount(async () => {
-		if (html !== '') return;
+
+	async function loadText() {
 		const res = await fetch(`/file/${data.props.project_id}/${data.props.file._id}/view/md`);
 		html = await res.text();
-	});
+	}
+
+	$: {
+		if (data?.props?.file?._id) {
+			loadText();
+		}
+	}
 </script>
 
 <div class="p-6">

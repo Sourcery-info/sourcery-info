@@ -1,25 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { Entity } from '@sourcery/common/types/Entities.type';
+	import { entitiesStore } from '$lib/stores/entities';
 	import EntityCard from '$lib/ui/entity-card.svelte';
+
 	export let data;
 
 	let entities: Entity[] = [];
-	let entities_by_type: Record<string, Entity[]> = {};
-	let expanded: Record<string, boolean> = {
-		PERSON: false,
-		ORGANIZATION: false,
-		LOCATION: false,
-		DATE: false,
-		OTHER: false
-	};
 
-	onMount(async () => {
-		const response = await fetch(
-			`/file/${data.props.project_id}/${data.props.file._id}/view/entities`
-		);
-		entities = await response.json();
-	});
+	$: entities = $entitiesStore.filter((entity) => entity.file_ids?.includes(data.props.file._id));
 </script>
 
 <div class="p-6">

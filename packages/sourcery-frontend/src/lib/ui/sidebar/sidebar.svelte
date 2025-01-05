@@ -114,6 +114,18 @@
 					<li>
 						<SidebarConversations {selected_project} onclick={handleItemClick} />
 					</li>
+				{:else}
+					{#each $projectsStore as project}
+						<li>
+							<a
+								href={`/project/${project._id}`}
+								class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+								onclick={handleItemClick}
+							>
+								{project.name}
+							</a>
+						</li>
+					{/each}
 				{/if}
 			</ul>
 		</nav>

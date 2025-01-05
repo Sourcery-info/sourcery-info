@@ -36,7 +36,7 @@
 </script>
 
 <div class="relative h-full">
-	<div class="flex h-full flex-col bg-gray-900 px-6 pb-20">
+	<div class="flex h-full flex-col bg-gray-900 px-6">
 		<div class="flex h-16 flex-shrink-0 items-center gap-x-3">
 			<a href="/" onclick={handleItemClick}
 				><img class="h-8 w-auto" src={logo} alt="Sourcery.info Logo" /></a
@@ -140,7 +140,7 @@
 				{/if}
 			</ul>
 		</nav>
-		<div class="flex-shrink-0 border-t border-gray-400 bg-gray-900 pt-1 pb-4">
+		<div class="flex-shrink-0 border-t border-gray-700 bg-gray-900 pt-4 pb-4">
 			<a
 				href={selected_project ? `/project/${selected_project._id}/settings` : '/settings'}
 				onclick={handleItemClick}

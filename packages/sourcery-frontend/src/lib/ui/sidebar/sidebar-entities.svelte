@@ -13,7 +13,7 @@
 	<div class="text-xs/6 font-semibold text-gray-400">
 		<a href="/entity/{selected_project._id}" {onclick}>Entities</a>
 	</div>
-	<ul role="list" class="-mx-2 mt-2 space-y-0 max-h-[40vh] overflow-y-auto">
+	<ul role="list" class="-mx-2 mt-2 space-y-0">
 		{#if $entitiesStore.length > 0}
 			{#each visibleEntities as entity}
 				<li>
@@ -109,7 +109,7 @@
 			{#if hasMoreEntities}
 				<li>
 					<a
-						href="/entities/{selected_project._id}"
+						href="/entity/{selected_project._id}"
 						{onclick}
 						class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
 					>

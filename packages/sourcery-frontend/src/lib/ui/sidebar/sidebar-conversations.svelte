@@ -13,7 +13,7 @@
 	<div class="text-xs/6 font-semibold text-gray-400">
 		<a href="/conversations/{selected_project._id}" {onclick}>Conversations</a>
 	</div>
-	<ul role="list" class="mt-2 space-y-0 max-h-[40vh] overflow-y-auto">
+	<ul role="list" class="mt-2 space-y-0">
 		<li>
 			<a
 				href="/chat/{selected_project._id}"

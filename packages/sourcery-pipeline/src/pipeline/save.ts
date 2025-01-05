@@ -19,12 +19,12 @@ export class SavePipeline extends PipelineBase {
 
     async delete_existing_file() {
         const collection = this.file.project;
-        await this.client.deleteFile(collection, this.file.filename);
+        await this.client.deleteFile(collection.toString(), this.file.filename);
     }
 
     async save_to_qdrant(collection: string, chunks: TChunk[], file: SourceryFile) {
         await this.client.createCollection(collection);
-        await this.client.deleteFile(collection, this.file.filename);
+        await this.client.deleteFile(collection.toString(), this.file.filename);
         const points: any[] = [];
         const local_chunks: any[] = [...chunks].map(chunk => {
             const children = chunk.children?.map(child => child.id);
@@ -84,6 +84,7 @@ export class SavePipeline extends PipelineBase {
                 project_id: file.project,
                 type: entity.type,
                 value: entity.value,
+                description: entity.description,
                 chunk_ids: matching_chunks.map(chunk => chunk._id)
             }
             await EntityModel.updateOne({ project_id: file.project, type: entity.type, value: entity.value }, { $set: entity_data }, { upsert: true });
@@ -102,7 +103,7 @@ export class SavePipeline extends PipelineBase {
         const entities = await readFile(entityPath, "utf8");
         const entities_data = JSON.parse(entities);
         await Promise.all([
-            this.save_to_qdrant(collection, chunks, this.file),
+            this.save_to_qdrant(collection.toString(), chunks, this.file),
             this.save_to_mongo(chunks, this.file),
         ]);
         await this.save_to_entities(entities_data, this.file);

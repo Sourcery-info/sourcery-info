@@ -2,9 +2,8 @@ import { PipelineBase } from "./base";
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import fs from "fs/promises";
 import path from "path";
-
+import { Ollama } from "ollama";
 import { ensure_model } from "@sourcery/common/src/ollama";
-
 import { ChunkingPipeline } from "./chunk";
 import { TChunk } from "@sourcery/common/types/Chunks.type";
 import { Entity } from "@sourcery/common/types/Entities.type";
@@ -79,9 +78,28 @@ export class EntitiesPipeline extends PipelineBase {
         return consolidated_entities_3;
     }
 
+    private chunkMap = (chunks: TChunk[]) => {
+        return chunks.map(chunk => `Chunk content: ${chunk.content}\nChunk context: ${chunk.context}`).join('\n\n');
+    }
+
+    private async generateDescription(entity: Entity, chunks: TChunk[]): Promise<string> {
+        const entity_chunks = chunks.filter(chunk => chunk.entities?.some(e => e.value === entity.value && e.type === entity.type));
+        const ollama = new Ollama({ host: process.env.OLLAMA_URL || "http://localhost:11434" });
+        const prompt = `The following is a set of chunks that include information about the named entity ${entity.value}, which is of type ${entity.type}. Generate a brief biography or description for ${entity.value} using the following chunks based on what you know about ${entity.value}. Describe the NAMED ENTITY, not the chunks. This description should be no more than 100 words.\n\n<CHUNKS>\n${this.chunkMap(entity_chunks.slice(0, 10))}</CHUNKS>\n\nRespond in JSON format with the following keys: "name", "type", "description".\n\nThe description should be something like "John Doe is a software engineer who works at Google."`;
+        const response = await ollama.generate({
+            model: MODEL,
+            prompt,
+            format: "json",
+            options: {
+                temperature: 0.1,
+            }
+        });
+        const result = JSON.parse(response.response);
+        return result.description;
+    }
+
     async process() {
         try {
-            await ensure_model(MODEL);
             const chunks_file = EntitiesPipeline.stage_paths.chunks.files[0];
             const chunks_filename = path.join((this.filepath), "chunks", chunks_file);
             const chunks_text = await fs.readFile(chunks_filename, 'utf8');
@@ -89,6 +107,7 @@ export class EntitiesPipeline extends PipelineBase {
             const allChunks = ChunkingPipeline.flattenChunks(root);
             const entities: Entity[] = [];
             let chunk_count = 0;
+            let entity_chunks: TChunk[] = [];
             for (const chunk of allChunks) {
                 chunk_count++;
                 if (chunk.children && chunk.children.length > 0) {
@@ -98,10 +117,15 @@ export class EntitiesPipeline extends PipelineBase {
                 const extracted_entities = await this.extractEntities(chunk);
                 entities.push(...extracted_entities);
                 chunk.entities = extracted_entities;
+                entity_chunks.push(chunk);
                 console.log(`Processed chunk ${chunk_count} of ${allChunks.length}`);
             }
             await writeFile(chunks_filename, JSON.stringify(root, null, 2));
             const consolidated_entities = await this.consolidateEntities(entities);
+            await ensure_model(MODEL);
+            for (const entity of consolidated_entities) {
+                entity.description = await this.generateDescription(entity, entity_chunks);
+            }
             // console.log(consolidated_entities);
             // console.log(`Writing ${consolidated_entities.length} entities to ${this.filename.replace("chunks", "entities")}`);
             await writeFile(this.filename, JSON.stringify(consolidated_entities, null, 2));

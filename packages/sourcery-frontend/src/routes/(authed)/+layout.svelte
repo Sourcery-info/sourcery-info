@@ -34,36 +34,49 @@
 				ws_connected = false;
 			}
 		}
-
-		if (data.project?._id) {
-			await subscribe(`${data.project._id}:file`, (message) => {
-				if (!message.file?._id) return;
-				filesStore.upsert(message.file);
-			});
-			await subscribe(`${data.project._id}:conversation`, (message) => {
-				if (!message.conversation?._id) return;
-				if (!message.conversation?.messages?.length) return;
-				conversationsStore.upsert(message.conversation);
-			});
-		}
 		await subscribe(`${data.user.user_id}:alert`, (message) => {
 			if (!message.alert?._id) return;
 			alertsStore.upsert(message.alert);
+		});
+		await subscribe(`${data.user.user_id}:entity`, (message) => {
+			if (!message.entity?._id) return;
+			if (message.entity.project !== data.project?._id) return;
+			entitiesStore.upsert(message.entity);
+		});
+		await subscribe(`${data.user.user_id}:file`, (message) => {
+			if (!message.file?._id) return;
+			if (message.file.project !== data.project?._id) return;
+			filesStore.upsert(message.file);
+		});
+		await subscribe(`${data.user.user_id}:conversation`, (message) => {
+			if (!message.conversation?._id) return;
+			if (!message.conversation?.messages?.length) return;
+			if (message.conversation.project !== data.project?._id) return;
+			conversationsStore.upsert(message.conversation);
 		});
 	}
 
 	$: if (!ws_connected && data.project?._id) {
 		if (current_project_id !== data.project._id) {
+			console.log(`Project changed to ${data.project._id}`);
 			if (current_project_id) {
 				unsubscribe(`${current_project_id}:file`);
 			}
 			current_project_id = data.project._id;
-			connect_ws();
+			subscribe(`${data.project._id}:file`, (message) => {
+				if (!message.file?._id) return;
+				filesStore.upsert(message.file);
+			});
+			subscribe(`${data.project._id}:conversation`, (message) => {
+				if (!message.conversation?._id) return;
+				if (!message.conversation?.messages?.length) return;
+				conversationsStore.upsert(message.conversation);
+			});
 		}
 	}
 
 	$: if (data.project?.files) {
-		filesStore.set(data.project.files);
+		filesStore.set(data.project.files.filter((f) => f.project === data.project?._id));
 	}
 
 	$: if (data.projects) {
@@ -71,7 +84,7 @@
 	}
 
 	$: if (data.conversations) {
-		conversationsStore.set(data.conversations);
+		conversationsStore.set(data.conversations.filter((c) => c.project_id === data.project?._id));
 	}
 
 	$: if (data.alerts) {
@@ -79,7 +92,7 @@
 	}
 
 	$: if (data.entities) {
-		entitiesStore.set(data.entities);
+		entitiesStore.set(data.entities.filter((e) => e.project_id === data.project?._id));
 	}
 
 	let isMobileMenuOpen = false;
@@ -126,9 +139,9 @@
 	}
 
 	onMount(() => {
-		return async () => {
+		return (async () => {
 			await connect_ws();
-		};
+		})();
 	});
 
 	onDestroy(() => {

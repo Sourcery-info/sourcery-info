@@ -30,8 +30,7 @@ dotenv.config();
 const ws_pub = new SourceryPub("sourcery.info-ws");
 
 function send_ws_message(file: SourceryFile, message?: string) {
-    // return;
-    ws_pub.addJob(`${file.project}:file`, { 
+    ws_pub.addJob(`${file.user_id}:file`, {
         id: file._id,
         file: file,
         message: message

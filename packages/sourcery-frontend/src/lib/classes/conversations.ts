@@ -1,6 +1,13 @@
 import { ConversationModel } from '@sourcery/common/src/models/Conversation.model';
 import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type';
 import { SourceryPub } from '@sourcery/queue/src/pub.js';
+import mongoose from 'mongoose';
+
+interface SearchConversation extends ConversationType {
+    title: string;
+    preview: string;
+}
+
 const pub = new SourceryPub(`sourcery.info-ws`);
 
 async function pubConversation(conversation: ConversationType): Promise<void> {
@@ -67,4 +74,34 @@ export async function deleteConversation(conversation_id: string): Promise<void>
         throw new Error('Conversation not found');
     }
     pubConversation(deletedConversation);
+}
+
+export async function searchConversations(project_id: string, query: string): Promise<SearchConversation[]> {
+    if (!query.trim()) {
+        return [];
+    }
+
+    const conversations = await ConversationModel.find(
+        {
+            project_id: new mongoose.Types.ObjectId(project_id),
+            $text: { $search: query }
+        },
+        { score: { $meta: "textScore" } }
+    )
+    .sort({ score: { $meta: "textScore" }, updated_at: -1 })
+    .limit(10);
+
+    // Get a preview of the matching message content
+    return conversations.map(conversation => {
+        const messages = conversation.messages || [];
+        const firstQuestion = messages.find(m => m.role === 'user')?.content || '';
+        const lastMessage = messages[messages.length - 1];
+        const preview = lastMessage ? lastMessage.content : '';
+        
+        return {
+            ...mapDBConversation(conversation),
+            title: conversation.description || firstQuestion || 'Untitled conversation',
+            preview: preview.substring(0, 100) + (preview.length > 100 ? '...' : '')
+        };
+    });
 }

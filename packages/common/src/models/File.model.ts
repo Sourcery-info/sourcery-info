@@ -56,4 +56,21 @@ FileSchema.pre('save', function(this: SourceryFile & Document, next) {
     next();
 });
 
+// Add text index for search
+FileSchema.index(
+    { 
+        original_name: 'text',
+        filename: 'text',
+        metadata: 'text'
+    },
+    {
+        weights: {
+            original_name: 10,    // Highest priority
+            filename: 5,          // Second priority
+            metadata: 1           // Lowest priority
+        },
+        name: "file_text_index"
+    }
+);
+
 export const FileModel = mongoose.model<SourceryFile & Document>('File', FileSchema);

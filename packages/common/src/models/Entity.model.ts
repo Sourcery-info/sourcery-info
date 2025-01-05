@@ -42,4 +42,21 @@ EntitySchema.pre('save', function(this: Entity & Document, next) {
 
 EntitySchema.index({ type: 1, value: 1, project_id: 1 }, { unique: true });
 
+// Add text index for search
+EntitySchema.index(
+    { 
+        value: 'text',
+        description: 'text',
+        aliases: 'text'
+    },
+    {
+        weights: {
+            value: 10,      // Highest priority
+            aliases: 5,     // Second priority
+            description: 1   // Lowest priority
+        },
+        name: "entity_text_index"
+    }
+);
+
 export const EntityModel = mongoose.model<Entity & Document>('Entity', EntitySchema);

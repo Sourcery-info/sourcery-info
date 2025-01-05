@@ -123,3 +123,20 @@ export async function getEntitiesByFile(project_id: string, file_id: string): Pr
     ]);
     return entities.map(mapDBEntity);
 }
+
+export async function searchEntities(project_id: string, query: string): Promise<Entity[]> {
+    if (!query.trim()) {
+        return [];
+    }
+
+    const entities = await EntityModel.find(
+        {
+            project_id: new mongoose.Types.ObjectId(project_id),
+            $text: { $search: query }
+        },
+        { score: { $meta: "textScore" } }
+    )
+    .sort({ score: { $meta: "textScore" }, type: 1, value: 1 })
+    .limit(10);
+    return entities.map(mapDBEntity);
+}

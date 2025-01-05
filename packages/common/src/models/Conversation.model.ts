@@ -65,4 +65,19 @@ ConversationSchema.pre('save', function(this: Conversation & Document, next) {
     next();
 });
 
+// Add text index for search
+ConversationSchema.index(
+    { 
+        description: 'text',
+        'messages.content': 'text'
+    },
+    {
+        weights: {
+            description: 10,           // Highest priority
+            'messages.content': 5      // Second priority
+        },
+        name: "conversation_text_index"
+    }
+);
+
 export const ConversationModel = mongoose.model<Conversation & Document>('Conversation', ConversationSchema);

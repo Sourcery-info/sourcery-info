@@ -7,10 +7,9 @@
 	import { alertsStore } from '$lib/stores/alertsStore';
 	import { onMount, onDestroy } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar/sidebar.svelte';
-	import { connect, subscribe, unsubscribe, unsubscribe_all } from '@sourcery/ws/src/client.js';
+	import { connect, subscribe, unsubscribe_all } from '@sourcery/ws/src/client.js';
 
 	let ws_connected = false;
-	let current_project_id: string | null = null;
 
 	export let data = {
 		projects: [],
@@ -56,43 +55,22 @@
 		});
 	}
 
-	$: if (!ws_connected && data.project?._id) {
-		if (current_project_id !== data.project._id) {
-			console.log(`Project changed to ${data.project._id}`);
-			if (current_project_id) {
-				unsubscribe(`${current_project_id}:file`);
-			}
-			current_project_id = data.project._id;
-			subscribe(`${data.project._id}:file`, (message) => {
-				if (!message.file?._id) return;
-				filesStore.upsert(message.file);
-			});
-			subscribe(`${data.project._id}:conversation`, (message) => {
-				if (!message.conversation?._id) return;
-				if (!message.conversation?.messages?.length) return;
-				conversationsStore.upsert(message.conversation);
-			});
+	$: {
+		if (data.project?.files) {
+			filesStore.set(data.project.files.filter((f) => f.project === data.project?._id));
 		}
-	}
-
-	$: if (data.project?.files) {
-		filesStore.set(data.project.files.filter((f) => f.project === data.project?._id));
-	}
-
-	$: if (data.projects) {
-		projectsStore.set(data.projects);
-	}
-
-	$: if (data.conversations) {
-		conversationsStore.set(data.conversations.filter((c) => c.project_id === data.project?._id));
-	}
-
-	$: if (data.alerts) {
-		alertsStore.set(data.alerts);
-	}
-
-	$: if (data.entities) {
-		entitiesStore.set(data.entities.filter((e) => e.project_id === data.project?._id));
+		if (data.projects) {
+			projectsStore.set(data.projects);
+		}
+		if (data.conversations) {
+			conversationsStore.set(data.conversations.filter((c) => c.project_id === data.project?._id));
+		}
+		if (data.entities) {
+			entitiesStore.set(data.entities.filter((e) => e.project_id === data.project?._id));
+		}
+		if (data.alerts) {
+			alertsStore.set(data.alerts);
+		}
 	}
 
 	let isMobileMenuOpen = false;
@@ -138,15 +116,100 @@
 		isMobileMenuOpen = false;
 	}
 
+	let searchQuery = '';
+	let showSearchResults = false;
+
+	interface SearchEntity {
+		id: string;
+		name: string;
+		type: string;
+		description: string;
+	}
+
+	interface SearchFile {
+		id: string;
+		name: string;
+		type: string;
+		metadata: string;
+	}
+
+	interface SearchConversation {
+		id: string;
+		name: string;
+		preview: string;
+	}
+
+	interface SearchResults {
+		entities: SearchEntity[];
+		files: SearchFile[];
+		conversations: SearchConversation[];
+	}
+
+	// Search results state
+	let searchResults: SearchResults = {
+		entities: [],
+		files: [],
+		conversations: []
+	};
+
+	async function performSearch() {
+		if (!searchQuery.trim()) {
+			searchResults = { entities: [], files: [], conversations: [] };
+			return;
+		}
+
+		try {
+			const response = await fetch('/search', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					query: searchQuery,
+					project_id: data.project?._id
+				})
+			});
+
+			if (!response.ok) {
+				throw new Error('Search failed');
+			}
+
+			const results = await response.json();
+			searchResults = results;
+		} catch (error) {
+			console.error('Search error:', error);
+			searchResults = { entities: [], files: [], conversations: [] };
+		}
+	}
+
+	// Debounce the search to avoid too many requests
+	let searchTimeout: NodeJS.Timeout;
+	function handleSearch(event: Event) {
+		const target = event.target as HTMLInputElement;
+		searchQuery = target.value;
+		showSearchResults = searchQuery.length > 0;
+
+		clearTimeout(searchTimeout);
+		searchTimeout = setTimeout(performSearch, 300);
+	}
+
+	function handleSearchFocusOut(event: FocusEvent) {
+		// Keep dropdown open if clicking inside it
+		const target = event.relatedTarget as HTMLElement;
+		if (!target?.closest('.search-results')) {
+			showSearchResults = false;
+		}
+	}
+
 	onMount(() => {
 		return (async () => {
 			await connect_ws();
 		})();
 	});
 
-	onDestroy(() => {
-		unsubscribe_all();
-	});
+	// onDestroy(() => {
+	// 	unsubscribe_all();
+	// });
 </script>
 
 <svelte:window on:click={handleClickOutside} />
@@ -230,13 +293,18 @@
 			<div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
 
 			<div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-				<form class="grid flex-1 grid-cols-1" action="#" method="GET">
+				<form class="grid flex-1 grid-cols-1 relative" action="#" method="GET">
 					<input
 						type="search"
 						name="search"
 						aria-label="Search"
+						autocomplete="off"
 						class="col-start-1 row-start-1 block size-full bg-white pl-8 text-base text-gray-900 outline-none placeholder:text-gray-400 sm:text-sm/6"
 						placeholder="Search"
+						value={searchQuery}
+						on:input={handleSearch}
+						on:focusin={() => (showSearchResults = true)}
+						on:focusout={handleSearchFocusOut}
 					/>
 					<svg
 						class="pointer-events-none col-start-1 row-start-1 size-5 self-center text-gray-400"
@@ -251,6 +319,62 @@
 							clip-rule="evenodd"
 						/>
 					</svg>
+
+					{#if showSearchResults}
+						<div
+							class="search-results absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-lg ring-1 ring-gray-900/5 max-h-96 overflow-y-auto z-50"
+							on:click={() => (showSearchResults = false)}
+						>
+							<!-- Entities -->
+							{#if searchResults.entities.length > 0}
+								<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">Entities</div>
+								{#each searchResults.entities as entity (entity.id)}
+									<a
+										href="/entity/{data.project?._id}/{entity.id}"
+										class="block px-4 py-2 hover:bg-gray-50"
+									>
+										<div class="text-sm font-medium text-gray-900">{entity.name}</div>
+										<div class="text-xs text-gray-500">{entity.type} • {entity.description}</div>
+									</a>
+								{/each}
+							{/if}
+
+							<!-- Files -->
+							{#if searchResults.files.length > 0}
+								<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">Files</div>
+								{#each searchResults.files as file (file.id)}
+									<a
+										href="/file/{data.project?._id}/{file.id}"
+										class="block px-4 py-2 hover:bg-gray-50"
+									>
+										<div class="text-sm font-medium text-gray-900">{file.name}</div>
+										<div class="text-xs text-gray-500">{file.type} • {file.metadata}</div>
+									</a>
+								{/each}
+							{/if}
+
+							<!-- Conversations -->
+							{#if searchResults.conversations.length > 0}
+								<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">
+									Conversations
+								</div>
+								{#each searchResults.conversations as conversation (conversation.id)}
+									<a
+										href="/chat/{data.project?._id}/{conversation.id}"
+										class="block px-4 py-2 hover:bg-gray-50"
+									>
+										<div class="text-sm font-medium text-gray-900">{conversation.name}</div>
+										<div class="text-xs text-gray-500">{conversation.preview}</div>
+									</a>
+								{/each}
+							{/if}
+
+							<!-- No results message -->
+							{#if searchResults.entities.length === 0 && searchResults.files.length === 0 && searchResults.conversations.length === 0}
+								<div class="px-4 py-2 text-sm text-gray-500">No results found</div>
+							{/if}
+						</div>
+					{/if}
 				</form>
 
 				<div class="flex items-center gap-x-4 lg:gap-x-6">

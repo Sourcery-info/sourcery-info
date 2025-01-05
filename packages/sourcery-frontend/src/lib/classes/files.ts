@@ -151,3 +151,21 @@ export async function uploadFile(request: Request, params: any, locals: any) {
     }
     return res_data;
 }
+
+export async function searchFiles(project_id: string, query: string): Promise<SourceryFile[]> {
+    if (!query.trim()) {
+        return [];
+    }
+
+    const files = await FileModel.find(
+        {
+            project: new mongoose.Types.ObjectId(project_id),
+            $text: { $search: query }
+        },
+        { score: { $meta: "textScore" } }
+    )
+    .sort({ score: { $meta: "textScore" }, filename: 1 })
+    .limit(10);
+
+    return files;
+}

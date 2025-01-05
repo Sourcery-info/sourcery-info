@@ -2,33 +2,51 @@
 	// @ts-nocheck
 	/** @type {import('./$types').PageData} */
 	export let data;
+
+	import EntityCard from '$lib/ui/entity-card.svelte';
+
+	let selectedType: string | null = null;
+	$: filteredEntities = selectedType
+		? data.entities.filter((entity) => entity.type === selectedType)
+		: data.entities;
+
+	const entityTypes = ['PERSON', 'ORGANIZATION', 'LOCATION', 'DATE'];
 </script>
 
 <div class="min-h bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
 	<div class="max-w-7xl mx-auto">
-		<h1 class="text-2xl font-bold text-white mb-8">All Entities for Project {data.project.name}</h1>
+		<h1 class="text-2xl font-bold text-white mb-8">Entities for Project {data.project.name}</h1>
+
+		<div class="flex gap-2 mb-6 flex-wrap">
+			<button
+				class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200
+					{selectedType === null ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}"
+				on:click={() => (selectedType = null)}
+			>
+				All
+			</button>
+			{#each entityTypes as type}
+				<button
+					class="px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200
+						{selectedType === type
+						? type === 'PERSON'
+							? 'bg-purple-600/30 text-purple-200'
+							: type === 'ORGANIZATION'
+								? 'bg-emerald-600/30 text-emerald-200'
+								: type === 'LOCATION'
+									? 'bg-amber-600/30 text-amber-200'
+									: 'bg-sky-600/30 text-sky-200'
+						: 'bg-gray-800 text-gray-400 hover:bg-gray-700'}"
+					on:click={() => (selectedType = type)}
+				>
+					{type}
+				</button>
+			{/each}
+		</div>
 
 		<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-			{#each data.entities as entity}
-				<a
-					href="/entity/{entity.project_id}/{entity._id}"
-					class="block p-6 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
-				>
-					<div class="text-md text-white mb-2">
-						<div class="flex flex-row gap-2 items-center">
-							<div class="bg-blue-800 text-gray-300 text-xs px-2 py-1 rounded-md w-fit">Entity</div>
-							<div class="bg-red-800 text-white-300 text-xs px-2 py-1 rounded-md w-fit">
-								{entity.type}
-							</div>
-						</div>
-						<div class="text-md text-white mt-2">
-							{entity.value}
-							<div class="text-sm text-gray-400 mt-1">
-								{entity.chunk_ids.length} chunk{entity.chunk_ids.length > 1 ? 's' : ''}
-							</div>
-						</div>
-					</div>
-				</a>
+			{#each filteredEntities as entity}
+				<EntityCard {entity} />
 			{/each}
 		</div>
 	</div>

@@ -1,4 +1,5 @@
 import { EntityModel } from '@sourcery/common/src/models/Entity.model';
+import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { Entity } from '@sourcery/common/types/Entities.type';
 import { SourceryPub } from '@sourcery/queue/src/pub.js';
 import mongoose from 'mongoose';
@@ -95,5 +96,30 @@ export async function getEntitiesByChunk(chunk_id: string): Promise<Entity[]> {
     const entities = await EntityModel.find({ 
         chunk_ids: new mongoose.Types.ObjectId(chunk_id) 
     }).sort({ type: 1, value: 1 });
+    return entities.map(mapDBEntity);
+}
+
+export async function getEntitiesByFile(project_id: string, file_id: string): Promise<Entity[]> {
+    const entities = await EntityModel.aggregate([
+        { $match: { project_id: new mongoose.Types.ObjectId(project_id) } },
+        { $unwind: '$chunk_ids' },
+        { $lookup: { from: 'chunks', localField: 'chunk_ids', foreignField: '_id', as: 'chunk' } },
+        { $match: { 'chunk.file_id': new mongoose.Types.ObjectId(file_id) } },
+        { 
+            $group: {
+                _id: '$_id',
+                project_id: { $first: '$project_id' },
+                type: { $first: '$type' },
+                value: { $first: '$value' },
+                description: { $first: '$description' },
+                aliases: { $first: '$aliases' },
+                chunk_ids: { $addToSet: '$chunk_ids' },
+                created_at: { $first: '$created_at' },
+                updated_at: { $first: '$updated_at' }
+            }
+        },
+        { $addFields: { chunk_count: { $size: '$chunk_ids' } } },
+        { $sort: { chunk_count: -1, type: 1, value: 1 } }
+    ]);
     return entities.map(mapDBEntity);
 }

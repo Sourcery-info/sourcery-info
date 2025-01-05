@@ -7,6 +7,7 @@ import { getFile } from "$lib/classes/files";
 import { marked } from 'marked';
 import { readFile } from "fs/promises";
 import { FileModel } from "@sourcery/common/src/models/File.model";
+import { getEntitiesByFile } from "$lib/classes/entities";
 
 const CONTENT_TYPES = {
     pdf: 'application/pdf',
@@ -49,11 +50,6 @@ async function format_original(filename, filetype) {
     };
 }
 
-async function getEntities(project_id, file_id, filename) {
-    const entities = await readFile(`${PROJECT_DIR}/${project_id}/files/${file_id}/entities/${filename}.json`, 'utf8');
-    return JSON.parse(entities);
-}
-
 async function getChunks(project_id, file_id, filename) {
     const chunks = await readFile(`${PROJECT_DIR}/${project_id}/files/${file_id}/chunks/${filename}.json`, 'utf8');
     return JSON.parse(chunks);
@@ -91,7 +87,7 @@ export async function GET({ params }) {
             };
             break;
         case 'entities':
-            const entities = await getEntities(project_id, file_id, file.filename);
+            const entities = await getEntitiesByFile(project_id, file_id);
             response = {
                 headers: {
                     'content-type': 'application/json',

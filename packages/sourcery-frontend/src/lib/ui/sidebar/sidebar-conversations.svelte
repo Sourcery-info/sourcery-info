@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { conversationsStore } from '$lib/stores/conversations';
+	import plusIcon from '$lib/assets/icons/plus.svg?raw';
+	import chatIcon from '$lib/assets/icons/chat.svg?raw';
 
 	let { selected_project, onclick } = $props();
 
@@ -29,7 +31,7 @@
 					aria-hidden="true"
 					data-slot="icon"
 				>
-					<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+					{@html plusIcon}
 				</svg>
 				New Conversation
 			</a>

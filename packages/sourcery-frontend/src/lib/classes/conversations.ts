@@ -48,7 +48,6 @@ export async function getConversation(conversation_id: string): Promise<Conversa
 export async function createConversation(conversation: ConversationType): Promise<ConversationType> {
     delete(conversation._id);
     const newConversation = await ConversationModel.create(conversation);
-    console.log(newConversation);
     pubConversation(newConversation);
     return mapDBConversation(newConversation);
 }

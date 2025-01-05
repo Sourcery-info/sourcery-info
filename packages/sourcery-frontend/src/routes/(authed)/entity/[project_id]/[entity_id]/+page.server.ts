@@ -5,7 +5,7 @@ import { getChunk } from '$lib/classes/chunks';
 import { error } from '@sveltejs/kit';
 import type { TChunk } from '@sourcery/common/types/Chunks.type';
 export async function load({ params }) {
-	const entity_id = params.entity_id;
+	const { entity_id } = params;
 	let entity;
 	try {
 		entity = await getEntity(entity_id);

@@ -17,6 +17,12 @@
 	let input = '';
 	let thinking = false;
 
+	async function handleSampleQuestion(question: string) {
+		input = question;
+		const event = new SubmitEvent('submit');
+		await handleSubmit(event);
+	}
+
 	async function handleSubmit(event: SubmitEvent) {
 		if (input === '') return;
 		event.preventDefault();
@@ -64,24 +70,68 @@
 <div class="flex flex-col bg-gray-900">
 	<!-- Chat messages -->
 	<div class="flex-1 overflow-y-auto p-6 space-y-4 mb-[76px]">
-		{#each data.conversation?.messages ?? [] as message}
-			{#if message.role === 'user'}
-				<div class="flex justify-end">
-					<div class="bg-blue-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
-						<p class="text-sm">{message.content}</p>
+		{#if !data.conversation?.messages?.length}
+			<div class="flex justify-center items-center h-full flex-col space-y-6">
+				<p class="text-gray-400 text-lg">Start a conversation with your documents.</p>
+				<div class="text-gray-500 text-sm space-y-2">
+					<p class="font-medium mb-2">Try asking:</p>
+					<div class="grid gap-2 w-full max-w-lg">
+						<button
+							class="w-full text-left px-4 py-3 rounded-lg bg-gray-800/50 hover:bg-gray-800
+							border border-gray-700 hover:border-gray-600 transition-all duration-200
+							text-gray-400 hover:text-gray-200"
+							on:click={() => handleSampleQuestion('What is this document about?')}
+						>
+							"What is this document about?"
+						</button>
+						<button
+							class="w-full text-left px-4 py-3 rounded-lg bg-gray-800/50 hover:bg-gray-800
+							border border-gray-700 hover:border-gray-600 transition-all duration-200
+							text-gray-400 hover:text-gray-200"
+							on:click={() =>
+								handleSampleQuestion('Who are the key people mentioned in this document?')}
+						>
+							"Who are the key people mentioned in this document?"
+						</button>
+						<button
+							class="w-full text-left px-4 py-3 rounded-lg bg-gray-800/50 hover:bg-gray-800
+							border border-gray-700 hover:border-gray-600 transition-all duration-200
+							text-gray-400 hover:text-gray-200"
+							on:click={() => handleSampleQuestion('What are the main topics discussed?')}
+						>
+							"What are the main topics discussed?"
+						</button>
+						<button
+							class="w-full text-left px-4 py-3 rounded-lg bg-gray-800/50 hover:bg-gray-800
+							border border-gray-700 hover:border-gray-600 transition-all duration-200
+							text-gray-400 hover:text-gray-200"
+							on:click={() => handleSampleQuestion('Can you summarize this document?')}
+						>
+							"Can you summarize this document?"
+						</button>
 					</div>
 				</div>
-			{/if}
-			{#if message.role === 'assistant'}
-				<div class="flex justify-start">
-					<div class="bg-gray-800 text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]">
-						<p class="text-sm font-mono prose prose-invert prose-sm max-w-none">
-							{@html renderMarkdown(message.content)}
-						</p>
+			</div>
+		{:else}
+			{#each data.conversation?.messages ?? [] as message}
+				{#if message.role === 'user'}
+					<div class="flex justify-end">
+						<div class="bg-blue-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
+							<p class="text-sm">{message.content}</p>
+						</div>
 					</div>
-				</div>
-			{/if}
-		{/each}
+				{/if}
+				{#if message.role === 'assistant'}
+					<div class="flex justify-start">
+						<div class="bg-gray-800 text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]">
+							<p class="text-sm font-mono prose prose-invert prose-sm max-w-none">
+								{@html renderMarkdown(message.content)}
+							</p>
+						</div>
+					</div>
+				{/if}
+			{/each}
+		{/if}
 		{#if thinking}
 			<div class="flex justify-start">
 				<div class="bg-gray-800 text-gray-300 rounded-lg py-2 px-4">

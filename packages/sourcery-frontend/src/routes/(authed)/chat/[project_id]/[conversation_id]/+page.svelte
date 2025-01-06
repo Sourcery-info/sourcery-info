@@ -117,6 +117,7 @@
 				class="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 placeholder-gray-400
                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                        disabled:bg-gray-700 disabled:text-gray-500"
+				autocomplete="off"
 			/>
 			{#if !thinking}
 				<button

@@ -7,8 +7,29 @@
 	import pendingIcon from '$lib/assets/icons/pending.svg?raw';
 	import errorIcon from '$lib/assets/icons/error.svg?raw';
 	import fileIcon from '$lib/assets/icons/file.svg?raw';
+	import Toggle from '$lib/ui/toggle.svelte';
 
 	let { selected_project, onclick } = $props();
+
+	async function toggleFileStatus(file: any, event: Event) {
+		event.preventDefault();
+		event.stopPropagation();
+		const newStatus = file.status === FileStatus.ACTIVE ? FileStatus.INACTIVE : FileStatus.ACTIVE;
+
+		const res = await fetch(`/file/${selected_project._id}/${file._id}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ status: newStatus })
+		});
+
+		if (res.ok) {
+			filesStore.update((files) =>
+				files.map((f) => (f._id === file._id ? { ...f, status: newStatus } : f))
+			);
+		}
+	}
 
 	async function handleFileUpload(event: Event) {
 		const uploaded_files = (event.target as HTMLInputElement).files;
@@ -65,16 +86,25 @@
 							? 'bg-gray-800 text-white'
 							: 'text-gray-400 hover:bg-gray-800 hover:text-white'}"
 					>
-						{#if file.status === FileStatus.PROCESSING}
-							{@html spinnerIcon}
-						{:else if file.status === FileStatus.PENDING}
-							{@html pendingIcon}
-						{:else if file.status === FileStatus.ERROR}
-							{@html errorIcon}
-						{:else}
-							{@html fileIcon}
+						<div class="flex items-center gap-x-3 min-w-0 flex-1">
+							{#if file.status === FileStatus.PROCESSING}
+								{@html spinnerIcon}
+							{:else if file.status === FileStatus.PENDING}
+								{@html pendingIcon}
+							{:else if file.status === FileStatus.ERROR}
+								{@html errorIcon}
+							{:else}
+								{@html fileIcon}
+							{/if}
+							<span class="truncate">{file.original_name || file.filename}</span>
+						</div>
+						{#if file.status === FileStatus.ACTIVE || file.status === FileStatus.INACTIVE}
+							<Toggle
+								checked={file.status === FileStatus.ACTIVE}
+								onChange={(e) => toggleFileStatus(file, e)}
+								label={`Toggle file active status for ${file.original_name || file.filename} - currently ${file.status}`}
+							/>
 						{/if}
-						<span class="truncate">{file.original_name || file.filename}</span>
 					</a>
 					{#if file.status === FileStatus.PROCESSING}
 						{@const totalStages = file.completed_stages.length + file.stage_queue.length + 1}

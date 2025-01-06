@@ -17,14 +17,28 @@ export class EntitiesPipeline extends PipelineBase {
     }
 
     private async extractEntities(chunk: TChunk): Promise<Entity[]> {
-        const response = await fetch(`http://sourcery-ner:8000/ner`, {
-            method: 'POST',
-            headers: {
+        let response: Response | null = null;
+        try {
+            response = await fetch(`http://sourcery-ner:8000/ner`, {
+                method: 'POST',
+                headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ text: chunk.content })
         });
+        } catch (error) {
+            console.error(`Error extracting entities for ${chunk.content}`);
+            if (response) {
+                console.error(await response.text());
+            }
+            console.error(error);
+            throw error;
+        }
         const data = await response.json();
+        if (!data.entities) {
+            console.error(`No entities found for ${chunk.content}`);
+            return [];
+        }
         return this.consolidateEntities(data.entities.map((entity: any) => ({
             type: entity.label,
             value: entity.text,

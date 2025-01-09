@@ -2,13 +2,15 @@
 	import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
 	import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
 	import { marked } from 'marked';
-	import type { TChunk } from '@sourcery/common/types/Chunks.type';
 	import SourceChunks from '$lib/ui/source-chunks.svelte';
+	import { conversationStore } from '$lib/stores/conversationStore';
 
 	export let data: {
 		conversation: ConversationType;
 		project: ProjectType;
 	};
+
+	$: conversationStore.set(data.conversation);
 
 	marked.setOptions({
 		gfm: true,
@@ -18,6 +20,7 @@
 	let content = '';
 	let input = '';
 	let thinking = false;
+	let lastQuery = '';
 
 	async function handleSampleQuestion(question: string) {
 		input = question;
@@ -29,39 +32,46 @@
 		if (input === '') return;
 		event.preventDefault();
 		const query = input;
+		lastQuery = query;
 		input = '';
 		thinking = true;
-		if (data.conversation.messages)
-			data.conversation.messages.push({ role: 'user', content: query });
-		data.conversation.messages = data.conversation.messages;
-		const response = await fetch(`/chat/${data.project?._id}/${data.conversation?._id}`, {
+
+		// Add user message to store
+		conversationStore.addMessage({ role: 'user', content: query });
+
+		const response = await fetch(`/chat/${data.project?._id}/${$conversationStore?._id}`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({ input: query })
 		});
+
 		try {
-			const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
-			if (!reader) throw new Error('No reader');
-			while (true) {
-				const { done, value } = await reader.read();
-				thinking = false;
-				if (done) {
-					if (data.conversation.messages)
-						data.conversation.messages.push({ role: 'assistant', content: content });
-					content = '';
-					break;
-				}
-				content += value;
+			const response_data = await response.json();
+			if (response_data?.message) {
+				conversationStore.addMessage(response_data.message);
+			} else {
+				throw new Error('No message in response');
 			}
 		} catch (error) {
 			console.error('Error reading response', error);
+			conversationStore.addMessage({
+				role: 'assistant',
+				content: 'Oh dear, I failed to get a response. Please try again.',
+				error: true,
+				failedQuery: query
+			});
 		} finally {
 			thinking = false;
-			data.conversation.messages = data.conversation.messages;
 			document.getElementById('input')?.focus();
 		}
+	}
+
+	async function resubmit(query: string) {
+		input = query;
+		const event = new SubmitEvent('submit');
+		await handleSubmit(event);
 	}
 
 	function renderMarkdown(markdown: string) {
@@ -72,7 +82,7 @@
 <div class="flex flex-col bg-gray-900">
 	<!-- Chat messages -->
 	<div class="flex-1 overflow-y-auto p-6 space-y-4 mb-[76px]">
-		{#if !data.conversation?.messages?.length}
+		{#if !$conversationStore?.messages?.length}
 			<div class="flex justify-center items-center h-full flex-col space-y-6">
 				<p class="text-gray-400 text-lg">Start a conversation with your documents.</p>
 				<div class="text-gray-500 text-sm space-y-2">
@@ -115,7 +125,7 @@
 				</div>
 			</div>
 		{:else}
-			{#each data.conversation?.messages ?? [] as message}
+			{#each $conversationStore?.messages ?? [] as message}
 				{#if message.role === 'user'}
 					<div class="flex justify-end">
 						<div class="bg-blue-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
@@ -132,6 +142,14 @@
 							<p class="text-sm font-mono prose prose-invert prose-sm max-w-none">
 								{@html renderMarkdown(message.content)}
 							</p>
+							{#if message.error}
+								<button
+									class="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+									on:click={() => resubmit(message.failedQuery ?? '')}
+								>
+									Try Again
+								</button>
+							{/if}
 						</div>
 					</div>
 				{/if}

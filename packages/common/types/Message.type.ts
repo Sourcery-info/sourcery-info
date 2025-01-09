@@ -12,4 +12,6 @@ export type Message = {
     files?: SourceryFile[];
     created_at?: Date;
     updated_at?: Date;
+    error?: boolean;
+    failedQuery?: string;
 }

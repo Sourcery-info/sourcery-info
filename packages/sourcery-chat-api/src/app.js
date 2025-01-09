@@ -130,16 +130,16 @@ httpServer.post("/chat/:project_id", async (req, res) => {
             files_to_search = (await getFiles(project_id)).filter(f => f.status === FileStatus.ACTIVE);
         }
         // Get the context
-        const chunks = await get_rag_context(project_id, files_to_search, input, top_k, vector_model);
+        const contextChunks = await get_rag_context(project_id, files_to_search, input, top_k, vector_model);
         let used_chunks = [];
-        for (const chunk of chunks) {
+        for (const chunk of contextChunks) {
             const id = chunk.document.match(/<id>(.*?)<\/id>/)?.[1];
             const c = await getChunkByQdrantID(id);
             if (c) {
                 used_chunks.push(c._id);
             }
         }
-        const context = chunks.map(c => `<document>${c.document}</document>`).join("\n\n---\n\n");
+        const context = contextChunks.map(c => `<document>${c.document}</document>`).join("\n\n---\n\n");
         // Get the history of messages
         const conversation = await getConversation(conversation_id);
         try {
@@ -149,40 +149,30 @@ httpServer.post("/chat/:project_id", async (req, res) => {
             throw new restifyErrors.InternalServerError("Error loading model");
         }
         const messages = rag_prompt_template(context, input, message_id, conversation);
-        const chatStream = await ollama.chat({
+        const chatResponse = await ollama.chat({
             model,
             messages,
-            stream: true,
+            stream: false,
             options: { temperature }
         }).catch(err => {
             console.error(err);
             throw new restifyErrors.InternalServerError("Error processing chat");
         });
-        res.setHeader("Content-Type", "text/event-stream");
-        res.setHeader("Cache-Control", "no-cache");
-        res.setHeader("Connection", "keep-alive");
-        res.setHeader("Transfer-Encoding", "chunked");
-        // res.write(`<chunks>${used_chunks.join(",")}</chunks>`);
-        // res.write("<response>");
-        const response_log = [];
-        let response_content = "";
-        try {
-            for await (const response of chatStream) {
-                res.write(response.message.content);
-                response_log.push(response.message.content);
-                response_content += response.message.content;
-                if (response.done) {
-                    // res.write("</response>");
-                    conversation.messages.push({ role: "assistant", content: response_content, chunk_ids: used_chunks });
-                    await updateConversation({ _id: conversation_id, messages: conversation.messages });
-                    return res.end();
-                }
-            }
-        } catch (error) {
-            console.error(error);
-            throw new restifyErrors.InternalServerError("Error processing chat");
-        }
-        res.end();
+
+        // Update conversation with the response
+        const newMessage = {
+            role: "assistant",
+            content: chatResponse.message.content,
+            chunk_ids: used_chunks,
+        };
+        conversation.messages.push(newMessage);
+        await updateConversation({ _id: conversation_id, messages: conversation.messages });
+
+        // Send minimal JSON response
+        res.send({
+            conversation_id,
+            message: newMessage
+        });
     } catch (error) {
         console.error(error);
         throw new restifyErrors.InternalServerError("Error processing chat");

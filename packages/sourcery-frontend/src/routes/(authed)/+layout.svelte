@@ -4,6 +4,7 @@
 	import { projectsStore } from '$lib/stores/projects';
 	import { entitiesStore } from '$lib/stores/entities';
 	import { conversationsStore } from '$lib/stores/conversations';
+	import { conversationStore } from '$lib/stores/conversationStore';
 	import { alertsStore } from '$lib/stores/alertsStore';
 	import { onMount, onDestroy } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar/sidebar.svelte';
@@ -52,6 +53,15 @@
 			if (!message.conversation?.messages?.length) return;
 			if (message.conversation.project !== data.project?._id) return;
 			conversationsStore.upsert(message.conversation);
+
+			// Update single conversation store if it matches the current conversation
+			conversationStore.update((current) => {
+				if (current?._id === message.conversation._id) {
+					console.log('Updating conversation store', message.conversation);
+					return message.conversation;
+				}
+				return current;
+			});
 		});
 	}
 

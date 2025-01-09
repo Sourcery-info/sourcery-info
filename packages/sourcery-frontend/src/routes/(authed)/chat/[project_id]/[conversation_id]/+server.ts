@@ -46,9 +46,9 @@ export async function POST({ params, request }) {
         buffer.push(chunk);
     });
     stream.on('close', async () => {
-        const content = buffer.join('');
-        messages.push({ role: 'assistant', content });
-        await updateConversation({ _id: conversation_id, messages });
+        // const content = buffer.join('');
+        // messages.push({ role: 'assistant', content });
+        // await updateConversation({ _id: conversation_id, messages });
     });
     // @ts-ignore:next-line
     return new Response(stream, {

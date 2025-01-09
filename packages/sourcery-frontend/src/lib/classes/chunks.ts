@@ -47,6 +47,14 @@ export async function getChunk(chunk_id: string | mongoose.Types.ObjectId): Prom
     return mapDBChunk(chunk);
 }
 
+export async function getChunkByQdrantID(qdrant_id: string): Promise<TChunk | null> {
+    const chunk = await ChunkModel.findOne({ id: qdrant_id });
+    if (!chunk) {
+        return null;
+    }
+    return mapDBChunk(chunk);
+}
+
 export async function getChunksByParent(parent_id: string): Promise<TChunk[]> {
     const chunks = await ChunkModel.find({ 
         parent: new mongoose.Types.ObjectId(parent_id) 

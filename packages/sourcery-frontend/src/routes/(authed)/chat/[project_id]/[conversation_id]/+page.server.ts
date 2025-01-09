@@ -13,7 +13,13 @@ export async function load({ locals, params }: { locals: any, params: any }) {
         return fail(404, { message: 'Project not found' });
     }
     const conversation = await getConversation(params.conversation_id);
-    console.log(`conversation: ${conversation?._id}`);
+    conversation.messages = conversation.messages?.map(message => {
+        return {
+            ...message,
+            chunk_ids: message.chunk_ids?.map(chunk_id => chunk_id.toString()),
+            file_ids: message.file_ids?.map(file_id => file_id.toString())
+        };
+    });
     if (!conversation?._id) {
         return fail(404, { message: 'Conversation not found' });
     }

@@ -21,8 +21,8 @@ const MessageSchema = new Schema<Message & Document>({
     },
     role: String,
     content: String,
-    files: [{ type: Schema.Types.ObjectId, ref: 'File' }],
-    chunks: [ChunkSchema],
+    file_ids: [{ type: Schema.Types.ObjectId, ref: 'File' }],
+    chunk_ids: [{ type: Schema.Types.ObjectId, ref: 'Chunk' }],
     created_at: { 
         type: Date, 
         default: Date.now,

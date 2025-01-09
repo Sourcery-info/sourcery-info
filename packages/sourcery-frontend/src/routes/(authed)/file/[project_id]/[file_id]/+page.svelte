@@ -8,8 +8,10 @@
 	import Entities from './entities.svelte';
 	import Pipeline from './pipeline.svelte';
 	import Text from './text.svelte';
+	import Chunks from './chunks.svelte';
 	import Dialog from '$lib/ui/dialog.svelte';
 	import { filesStore } from '$lib/stores/files';
+	import { page } from '$app/stores';
 	export let data;
 
 	// Add tab state management
@@ -17,13 +19,21 @@
 		{ id: 'original', name: 'Original' },
 		{ id: 'text', name: 'Text' },
 		{ id: 'entities', name: 'Entities' },
-		{ id: 'summary', name: 'Summary' },
+		{ id: 'chunks', name: 'Chunks' },
 		{ id: 'pipeline', name: 'Pipeline' }
 	];
-	let activeTab = 'original';
+
+	// Initialize activeTab from URL hash if it exists
+	const initialHash = typeof window !== 'undefined' ? window.location.hash.slice(1) : '';
+	let activeTab =
+		initialHash && tabs.some((tab) => tab.id === initialHash) ? initialHash : 'original';
 
 	const setActiveTab = (tabId) => {
 		activeTab = tabId;
+		// Update URL without page reload
+		const url = new URL(window.location);
+		url.hash = tabId;
+		history.replaceState({}, '', url.toString());
 	};
 
 	let showDeleteDialog = false;
@@ -76,7 +86,7 @@
 		}
 	}
 
-	onMount(async () => {});
+	onMount(() => {});
 	onDestroy(() => {});
 </script>
 
@@ -155,8 +165,9 @@
 			<div class="mt-4 sm:mt-0">
 				<nav class="-mb-px flex space-x-8">
 					{#each tabs as tab}
-						<button
-							on:click={() => setActiveTab(tab.id)}
+						<a
+							href="#{tab.id}"
+							on:click|preventDefault={() => setActiveTab(tab.id)}
 							class="whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium transition-colors
 								{activeTab === tab.id
 								? 'border-indigo-500 text-indigo-400'
@@ -164,7 +175,7 @@
 							aria-current={activeTab === tab.id ? 'page' : undefined}
 						>
 							{tab.name}
-						</button>
+						</a>
 					{/each}
 				</nav>
 			</div>
@@ -179,8 +190,8 @@
 			<Text {data} />
 		{:else if activeTab === 'entities'}
 			<Entities {data} />
-		{:else if activeTab === 'summary'}
-			<div>Summary content here</div>
+		{:else if activeTab === 'chunks'}
+			<Chunks {data} />
 		{:else if activeTab === 'pipeline'}
 			<Pipeline {data} />
 		{/if}

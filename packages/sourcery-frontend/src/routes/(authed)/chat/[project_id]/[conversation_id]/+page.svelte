@@ -2,6 +2,8 @@
 	import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
 	import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
 	import { marked } from 'marked';
+	import type { TChunk } from '@sourcery/common/types/Chunks.type';
+	import SourceChunks from '$lib/ui/source-chunks.svelte';
 
 	export let data: {
 		conversation: ConversationType;
@@ -47,7 +49,7 @@
 				thinking = false;
 				if (done) {
 					if (data.conversation.messages)
-						data.conversation.messages.push({ role: 'assistant', content });
+						data.conversation.messages.push({ role: 'assistant', content: content });
 					content = '';
 					break;
 				}
@@ -122,6 +124,9 @@
 					</div>
 				{/if}
 				{#if message.role === 'assistant'}
+					{#if message.chunks && message.chunks.length > 0}
+						<SourceChunks chunks={message.chunks} project_id={data.project?._id} />
+					{/if}
 					<div class="flex justify-start">
 						<div class="bg-gray-800 text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]">
 							<p class="text-sm font-mono prose prose-invert prose-sm max-w-none">

@@ -2,6 +2,8 @@ import { ConversationModel } from '@sourcery/common/src/models/Conversation.mode
 import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type';
 import { SourceryPub } from '@sourcery/queue/src/pub.js';
 import mongoose from 'mongoose';
+import { getChunk } from './chunks';
+import { getFile } from './files';
 
 interface SearchConversation extends ConversationType {
     title: string;
@@ -32,6 +34,8 @@ function mapDBConversation(conversation: ConversationType): ConversationType {
                 role: message.role,
                 content: message.content,
                 created_at: message.created_at || new Date(),
+                chunk_ids: message.chunk_ids || [],
+                file_ids: message.file_ids || [],
                 chunks: message.chunks || [],
                 files: message.files || []
             };
@@ -48,6 +52,24 @@ export async function getConversation(conversation_id: string): Promise<Conversa
     const conversation = await ConversationModel.findById(conversation_id);
     if (!conversation) {
         throw new Error('Conversation not found');
+    }
+    for (let message of conversation.messages || []) {
+        message.chunks = [];
+        message.files = [];
+        message.chunk_ids = message.chunk_ids?.map(chunk_id => chunk_id.toString());
+        message.file_ids = message.file_ids?.map(file_id => file_id.toString());
+        for (let chunk_id of message.chunk_ids || []) {
+            const chunk = await getChunk(chunk_id);
+            if (chunk) {
+                message.chunks.push(chunk);
+            }
+        }
+        for (let file_id of message.file_ids || []) {
+            const file = await getFile(file_id);
+            if (file) {
+                message.files.push(file);
+            }
+        }
     }
     return mapDBConversation(conversation);
 }

@@ -130,11 +130,11 @@
 					/>
 				</svg>
 			</button>
-
+			<div class="flex flex-grow gap-x-4 self-stretch lg:gap-x-6"></div>
 			<!-- Separator -->
 			<div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
 
-			<div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+			<div class="flex flex-shrink gap-x-4 self-stretch lg:gap-x-6">
 				<div class="flex items-center gap-x-4 lg:gap-x-6">
 					<AlertsDropdown bind:isAlertsMenuOpen />
 					<!-- Separator -->

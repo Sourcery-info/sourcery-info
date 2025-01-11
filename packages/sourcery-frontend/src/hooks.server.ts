@@ -36,7 +36,8 @@ async function getState(event: any) {
     }
     return {
         session,
-        user
+        user,
+        state: 'valid-session'
     };
 }
 
@@ -69,7 +70,7 @@ export async function handle({ event, resolve }) {
     }
 
     // Check if the route doesn't start with '/(authed)/' or '/admin/'
-    if (!route?.startsWith('/(authed)/') && !route?.startsWith('/admin/')) {
+    if (!route?.startsWith('/(authed)/') && !route?.startsWith('/admin')) {
         const response = await resolve(event);
         return response;
     }
@@ -104,7 +105,7 @@ export async function handle({ event, resolve }) {
     }
 
     // If accessing admin pages, check if the user is an admin
-    if (route?.startsWith('/admin/') && !user.admin) {
+    if (route?.startsWith('/admin') && !user.admin) {
         return redirect(303, createAlertUrl('/projects', 'unauthorized', 'danger'));
     }
 

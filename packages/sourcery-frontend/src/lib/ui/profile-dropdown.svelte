@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 
-	export let user: { name: string } | null = null;
+	export let user: { name: string; admin: boolean } | null = null;
 	export let isUserMenuOpen = false;
 
 	function toggleUserMenu() {
@@ -63,6 +63,14 @@
 				role="menuitem"
 				tabindex="-1">Settings</a
 			>
+			{#if user?.admin}
+				<a
+					href="/admin"
+					class="block px-3 py-1 text-sm/6 text-gray-900"
+					role="menuitem"
+					tabindex="-1">Admin</a
+				>
+			{/if}
 		</div>
 	{/if}
 </div>

@@ -22,11 +22,12 @@
 				<img class="h-8 w-auto" src={logo} alt="Sourcery.info Logo" />
 			</a>
 			<div class="relative flex-1">
-				<button
+				<a
+					href="/"
 					class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-100 hover:text-white"
 				>
 					Sourcery.info
-				</button>
+				</a>
 				<div
 					class="inline-flex items-center rounded-full bg-gray-700/50 px-2 py-0.5 text-xs font-medium text-gray-300 ring-1 ring-inset ring-gray-500/75"
 				>
@@ -61,7 +62,7 @@
 					<span>Configuration</span>
 				</a>
 				<a
-					href="/admin/settings"
+					href="/settings"
 					onclick={handleItemClick}
 					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
 				>

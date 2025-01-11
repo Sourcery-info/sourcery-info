@@ -14,7 +14,9 @@ declare global {
 				type: string;
 				message: string;
 			}>
-			configs: Config[];
+			config: {
+				[key: string]: string;
+			};
 		}
 		// interface PageData {}
 		// interface PageState {}

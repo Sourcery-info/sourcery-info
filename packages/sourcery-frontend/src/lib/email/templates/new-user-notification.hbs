@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .user-details {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .user-details dl {
+            margin: 0;
+        }
+        .user-details dt {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .user-details dd {
+            margin-left: 0;
+            margin-bottom: 10px;
+        }
+        .approval-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>New User Registration</h1>
+    </div>
+
+    <p>A new user has registered for a {{appName}} account.</p>
+
+    <div class="user-details">
+        <dl>
+            <dt>Name</dt>
+            <dd>{{userName}}</dd>
+            
+            <dt>Username</dt>
+            <dd>{{username}}</dd>
+            
+            <dt>Email</dt>
+            <dd>{{userEmail}}</dd>
+        </dl>
+    </div>
+
+    {{#unless isApproved}}
+    <div class="approval-notice">
+        <strong>Action Required:</strong> This account requires your approval before the user can log in.
+        {{#if adminUrl}}
+        <p style="text-align: center;">
+            <a href="{{adminUrl}}" class="button">Review User</a>
+        </p>
+        {{/if}}
+    </div>
+    {{/unless}}
+
+    <p>Best regards,<br>
+    {{appName}} System</p>
+</body>
+</html> 

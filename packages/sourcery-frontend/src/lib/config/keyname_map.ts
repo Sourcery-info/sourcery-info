@@ -2,6 +2,17 @@ import { z } from 'zod';
 import { zfd } from 'zod-form-data';
 
 export const keyNameMap = {
+    'admin_email': {
+        'name': 'Admin Email',
+        'type': 'email',
+        'placeholder': 'admin@example.com',
+        'required': true,
+        'default': '',
+        'description': 'The email address of the admin.',
+        'category': 'System',
+        'dotenv': 'ADMIN_EMAIL',
+        'schema': zfd.text(z.string().optional()),
+    },
     'smtp_host': {
         'name': 'SMTP Host',
         'type': 'text',

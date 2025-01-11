@@ -9,11 +9,10 @@ import { getConfigs } from '$lib/classes/config';
 
 connectDB(MONGO_URL).then(() => {
     console.log('Connected to MongoDB');
-})
-    .catch((e) => {
-        console.log('MongoDB failed to connect');
-        console.error(e);
-    });
+}).catch((e) => {
+    console.log('MongoDB failed to connect');
+    console.error(e);
+});
 
 export async function handle({ event, resolve }) {
     const route = event.route.id;
@@ -33,7 +32,10 @@ export async function handle({ event, resolve }) {
 
     // Load the config
     const configs = await getConfigs();
-    event.locals.configs = configs;
+    event.locals.config = {};
+    for (let config of configs) {
+        event.locals.config[config.key] = config.value;
+    }
 
     // Check if the route doesn't start with '/(authed)/' or '/admin/'
     if (!route?.startsWith('/(authed)/') && !route?.startsWith('/admin/')) {

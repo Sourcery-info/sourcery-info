@@ -10,6 +10,8 @@ import { createAlertUrl } from '$lib/alerts';
 async function populateConfig() {
     const configs = await getConfigs();
 
+    // console.log(configs);
+
     // Create a map of existing configs
     const configMap = configs.reduce((acc, config) => {
         acc[config.key] = config.value;

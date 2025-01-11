@@ -2,6 +2,7 @@ import { UserModel } from '@sourcery/common/src/models/User.model';
 import type { User } from '@sourcery/common/types/User.type';
 import { SourceryPub } from '@sourcery/queue/src/pub.js';
 const pub = new SourceryPub(`sourcery.info-ws`);
+import { hashPassword, checkPassword } from "$lib/utils/crypto";
 
 async function pubUser(user: User): Promise<void> {
     if (!user._id) {
@@ -42,11 +43,15 @@ export async function getUser(user_id: string): Promise<User> {
     return mapDBUser(user);
 }
 
-export async function createUser(user: Omit<User, '_id'> & { _id?: string }): Promise<User> {
-    if (user._id) {
-        delete user._id;
+export async function createUser(user: Omit<User, '_id' | 'password_hash' | 'created_at' | 'updated_at'>): Promise<User> {
+    if (!user.password) {
+        throw new Error('Password is required');
     }
-    const newUser = await UserModel.create(user);
+    const hashedPassword = await hashPassword(user.password);
+    const newUser = await UserModel.create({
+        ...user,
+        password_hash: hashedPassword
+    });
     pubUser(newUser);
     return mapDBUser(newUser);
 }

@@ -4,6 +4,7 @@ import { filesStore } from '$lib/stores/files';
 import { conversationsStore } from '$lib/stores/conversations';
 import { conversationStore } from '$lib/stores/conversationStore';
 import { connect, subscribe } from '@sourcery/ws/src/client.js';
+import { usersStore } from '$lib/stores/usersStore';
 
 interface User {
     user_id: string;
@@ -57,5 +58,10 @@ export async function initializeWebSocket(origin: string, token: string, user: U
             }
             return current;
         });
+    });
+
+    await subscribe(`${user.user_id}:user`, (message) => {
+        if (!message.user?._id) return;
+        usersStore.upsert(message.user);
     });
 }

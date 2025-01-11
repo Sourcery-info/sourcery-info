@@ -136,10 +136,8 @@
 			<div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
 				<div class="flex items-center gap-x-4 lg:gap-x-6">
 					<AlertsDropdown bind:isAlertsMenuOpen />
-
 					<!-- Separator -->
 					<div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10" aria-hidden="true"></div>
-
 					<!-- Profile dropdown -->
 					<ProfileDropdown user={data.user} bind:isUserMenuOpen />
 				</div>

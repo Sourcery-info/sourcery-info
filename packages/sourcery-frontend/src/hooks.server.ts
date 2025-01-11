@@ -18,20 +18,20 @@ export async function handle({ event, resolve }) {
     const route = event.route.id;
 
     // Parse alert from URL if present
-    const alertCode = event.url.searchParams.get('alert');
-    const alertType = event.url.searchParams.get('type') || 'info';
-    if (alertCode) {
-        const message = alertCode in alertMessages 
-            ? alertMessages[alertCode as keyof typeof alertMessages] 
-            : alertCode;
-        event.locals.alerts = [{
-            type: alertType,
-            message
-        }];
-    }
+    // const alertCode = event.url.searchParams.get('alert');
+    // const alertType = event.url.searchParams.get('type') || 'info';
+    // if (alertCode) {
+    //     const message = alertCode in alertMessages 
+    //         ? alertMessages[alertCode as keyof typeof alertMessages] 
+    //         : alertCode;
+    //     event.locals.alerts = [{
+    //         type: alertType,
+    //         message
+    //     }];
+    // }
 
-    // Check if the route starts with '/(authed)/'
-    if (!route?.startsWith('/(authed)/')) {
+    // Check if the route doesn't start with '/(authed)/' or '/admin/'
+    if (!route?.startsWith('/(authed)/') && !route?.startsWith('/admin/')) {
         const response = await resolve(event);
         return response;
     }
@@ -71,7 +71,7 @@ export async function handle({ event, resolve }) {
     }
 
     // If accessing admin pages, check if the user is an admin
-    if (route?.startsWith('/(authed)/admin/') && !user.admin) {
+    if (route?.startsWith('/admin/') && !user.admin) {
         return redirect(303, createAlertUrl('/projects', 'unauthorized', 'danger'));
     }
 

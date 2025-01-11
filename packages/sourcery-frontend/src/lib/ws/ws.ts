@@ -15,7 +15,7 @@ interface Project {
 
 let ws_connected = false;
 
-export async function initializeWebSocket(origin: string, token: string, user: User, project: Project | null) {
+export async function initializeWebSocket(origin: string, token: string, user: User, project: Project | null = null) {
     if (!ws_connected && token) {
         try {
             await connect(`${origin.replace('https://', 'wss://')}`, token);

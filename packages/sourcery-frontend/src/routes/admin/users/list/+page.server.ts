@@ -1,4 +1,4 @@
-/** @type {import('./$types').PageServerLoad} */
+/** @type {import('.$types').PageServerLoad} */
 
 import { getUserCount, getUsers } from '$lib/server/user';
 import { fail } from '@sveltejs/kit';

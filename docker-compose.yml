@@ -133,3 +133,11 @@ services:
     image: jasony/sourcery-ner-api:latest
     restart: always
     container_name: sourcery-ner
+
+  sourcery-mailhog:
+    image: mailhog/mailhog:latest
+    restart: always
+    container_name: sourcery-mailhog
+    ports:
+      # - 1025:1025
+      - 8026:8025

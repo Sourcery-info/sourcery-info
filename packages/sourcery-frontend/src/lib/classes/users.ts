@@ -88,3 +88,14 @@ export async function checkUniqueEmail(email: string, user_id: string | null = n
     }
     return !existingUser;
 } 
+
+export async function checkUserCredentials(username: string, password: string) {
+    const user = await UserModel.findOne({ $or: [{ email: username }, { username: username }] });
+    if (!user) {
+        return false;
+    }
+    if (await checkPassword(password, user.password_hash)) {
+        return user._id.toString();
+    }
+    return false;
+}

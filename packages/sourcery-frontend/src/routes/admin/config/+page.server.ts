@@ -1,6 +1,6 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { ConfigModel } from '@sourcery/common/src/models/Config.model';
+import { getConfigs, bulkUpdateConfigs } from '$lib/classes/config';
 import { keyNameMap } from '$lib/config/keyname_map';
 import { z } from 'zod';
 import { zfd } from 'zod-form-data';
@@ -8,7 +8,7 @@ import { validate } from '$lib/validate';
 import { createAlertUrl } from '$lib/alerts';
 
 async function populateConfig() {
-    const configs = await ConfigModel.find().lean();
+    const configs = await getConfigs();
 
     // Create a map of existing configs
     const configMap = configs.reduce((acc, config) => {
@@ -45,7 +45,7 @@ async function populateConfig() {
         return acc;
     }, {} as Record<string, any[]>);
 
-    const configRecords =  Object.entries(keyNameMap).reduce((acc, [key, value]) => {
+    const configRecords = Object.entries(keyNameMap).reduce((acc, [key, value]) => {
         acc[key] = {
             key,
             name: value.name,
@@ -59,14 +59,14 @@ async function populateConfig() {
         };
         return acc;
     }, {} as Record<string, any>);
-    return {configMap, configsByCategory, configRecords};
+    return { configMap, configsByCategory, configRecords };
 }
+
 export const load: PageServerLoad = async ({ locals }) => {
     if (!locals.user?.admin) {
         throw error(403, 'Unauthorized');
     }
-    const {configsByCategory} = await populateConfig();
-    console.log(configsByCategory);
+    const { configsByCategory } = await populateConfig();
     return {
         configsByCategory,
         user_id: locals.user._id
@@ -80,9 +80,8 @@ export const actions = {
         }
 
         const formData = await request.formData();
-        const { configMap, configRecords } = await populateConfig();
+        const { configRecords } = await populateConfig();
 
-        const updates = [];
         const schemas = z.object(
             Object.entries(formData).reduce((acc, [key]) => {
                 if (key in configRecords) {
@@ -101,23 +100,17 @@ export const actions = {
             return fail(400, validation);
         }
 
-        
+        const configUpdates = [];
         for (const [key, value] of formData.entries()) {
-            
-
-            updates.push({
-                updateOne: {
-                    filter: { key },
-                    update: { $set: { value: value.toString() } },
-                    upsert: true
-                }
+            configUpdates.push({
+                key,
+                value: value.toString()
             });
         }
 
-        
         try {
-            if (updates.length > 0) {
-                await ConfigModel.bulkWrite(updates);
+            if (configUpdates.length > 0) {
+                await bulkUpdateConfigs(configUpdates);
             }
         } catch (e) {
             console.error(e);

@@ -5,6 +5,7 @@ import { getUser, getUserCount } from '$lib/server/user';
 import { MONGO_URL } from '$env/static/private';
 import { connectDB } from '$lib/server/db';
 import { alertMessages, createAlertUrl } from '$lib/alerts';
+import { getConfigs } from '$lib/classes/config';
 
 connectDB(MONGO_URL).then(() => {
     console.log('Connected to MongoDB');
@@ -29,6 +30,10 @@ export async function handle({ event, resolve }) {
     //         message
     //     }];
     // }
+
+    // Load the config
+    const configs = await getConfigs();
+    event.locals.configs = configs;
 
     // Check if the route doesn't start with '/(authed)/' or '/admin/'
     if (!route?.startsWith('/(authed)/') && !route?.startsWith('/admin/')) {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import { alertsStore } from '$lib/stores/alertsStore';
+	import { usersStore } from '$lib/stores/usersStore';
 	import { onMount } from 'svelte';
 	import AdminSidebar from '$lib/ui/sidebar/admin-sidebar.svelte';
 	import ProfileDropdown from '$lib/ui/profile-dropdown.svelte';
@@ -11,6 +12,7 @@
 		session: null,
 		user: null,
 		alerts: [],
+		users: [],
 		origin: '',
 		token: null
 	};
@@ -18,6 +20,9 @@
 	$: {
 		if (data.alerts) {
 			alertsStore.set(data.alerts);
+		}
+		if (data.users) {
+			usersStore.set(data.users);
 		}
 	}
 
@@ -38,10 +43,6 @@
 		if (isAlertsMenuOpen && !target.closest('#alerts-menu-button')) {
 			isAlertsMenuOpen = false;
 		}
-	}
-
-	function handleSidebarClick() {
-		isMobileMenuOpen = false;
 	}
 
 	onMount(() => {

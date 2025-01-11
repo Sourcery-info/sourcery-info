@@ -2,6 +2,21 @@
 	/** @type {import('./$types').PageData} */
 	import logo from '$lib/assets/Sourcery Logo.png';
 	import { fade } from 'svelte/transition';
+	import { onMount } from 'svelte';
+
+	onMount(async () => {
+		checkState();
+		setInterval(checkState, 10000);
+	});
+
+	async function checkState() {
+		const response = await fetch('/state');
+		const data = await response.json();
+		console.log(data);
+		if (data.user?.approved) {
+			window.location.href = '/';
+		}
+	}
 </script>
 
 <div

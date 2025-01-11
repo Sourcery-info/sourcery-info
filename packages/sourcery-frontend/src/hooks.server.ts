@@ -2,6 +2,7 @@
 import { redirect } from '@sveltejs/kit';
 import { validateSessionToken, setSessionTokenCookie, deleteSessionTokenCookie } from '$lib/server/auth';
 import { getUser, getUserCount } from '$lib/server/user';
+// @ts-ignore
 import { MONGO_URL } from '$env/static/private';
 import { connectDB } from '$lib/server/db';
 import { alertMessages, createAlertUrl } from '$lib/alerts';
@@ -13,6 +14,31 @@ connectDB(MONGO_URL).then(() => {
     console.log('MongoDB failed to connect');
     console.error(e);
 });
+
+async function getState(event: any) {
+    const token = event.cookies.get("session") ?? null;
+    if (!token) {
+        return {
+            state: 'no-token'
+        };
+    }
+    const session = await validateSessionToken(token);
+    if (!session) {
+        return {
+            state: 'invalid-session'
+        };
+    }
+    const user = await getUser(session.user_id);
+    if (!user) {
+        return {
+            state: 'invalid-session'
+        };
+    }
+    return {
+        session,
+        user
+    };
+}
 
 export async function handle({ event, resolve }) {
     const route = event.route.id;
@@ -35,6 +61,11 @@ export async function handle({ event, resolve }) {
     event.locals.config = {};
     for (let config of configs) {
         event.locals.config[config.key] = config.value;
+    }
+
+    if (route === '/state') {
+        const state = await getState(event);
+        return new Response(JSON.stringify(state));
     }
 
     // Check if the route doesn't start with '/(authed)/' or '/admin/'
@@ -72,14 +103,14 @@ export async function handle({ event, resolve }) {
         return redirect(303, createAlertUrl('/login', 'login-required', 'danger'));
     }
 
-    // Check if the user is approved
-    if (!user.approved) {
-        return redirect(303, "/awaiting-authorization");
-    }
-
     // If accessing admin pages, check if the user is an admin
     if (route?.startsWith('/admin/') && !user.admin) {
         return redirect(303, createAlertUrl('/projects', 'unauthorized', 'danger'));
+    }
+
+    // Check if the user is approved
+    if (!user.approved) {
+        return redirect(303, "/awaiting-authorization");
     }
 
     // Set the user in the locals

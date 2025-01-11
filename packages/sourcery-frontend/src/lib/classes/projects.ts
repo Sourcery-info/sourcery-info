@@ -29,14 +29,20 @@ export function mapDBProject(project: ProjectType): ProjectType {
 }
 
 export async function getProjects(user_id: string): Promise<ProjectType[]> {
-    const projects = await ProjectModel.find({
-        $or: [
-            { owner: user_id },
+    let dbprojects: ProjectType[] = [];
+    if (user_id === '*') {
+        dbprojects = await ProjectModel.find({}).sort({ created_at: -1 }).populate('owner', 'username name');
+    } else {
+        dbprojects = await ProjectModel.find({
+            $or: [
+                { owner: user_id },
             { is_public: true },
             { shared_with: user_id }
         ]
-    }).sort({ created_at: -1 }).populate('owner', 'username name');
-    return projects.map(project => ({
+        }).sort({ created_at: -1 }).populate('owner', 'username name');
+    }
+    console.log(dbprojects);
+    return dbprojects.filter(project => project.owner).map(project => ({
         ...mapDBProject(project),
         owner_username: (project.owner as any).username,
         owner_name: (project.owner as any).name

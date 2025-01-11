@@ -13,15 +13,6 @@
 	function handleItemClick() {
 		dispatch('menuItemClick');
 	}
-
-	import { onMount } from 'svelte';
-
-	onMount(() => {
-		document.addEventListener('click', handleClickOutside);
-		return () => {
-			document.removeEventListener('click', handleClickOutside);
-		};
-	});
 </script>
 
 <div class="relative h-full">

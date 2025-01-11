@@ -25,6 +25,10 @@ function mapDBUser(user: User): User {
     }
 }
 
+export async function getUserCount(): Promise<number> {
+    return await UserModel.countDocuments();
+}
+
 export async function getUsers(): Promise<User[]> {
     const users = await UserModel.find().sort({ created_at: -1 });
     return users.map(mapDBUser);
@@ -62,4 +66,20 @@ export async function deleteUser(user_id: string): Promise<void> {
         throw new Error('User not found');
     }
     pubUser(deletedUser);
+}
+
+export async function checkUniqueUsername(username: string, user_id: string | null = null): Promise<boolean> {
+    const existingUser = await UserModel.findOne({ username });
+    if (user_id && existingUser?._id.toString() === user_id) {
+        return true;
+    }
+    return !existingUser;
+}
+
+export async function checkUniqueEmail(email: string, user_id: string | null = null): Promise<boolean> {
+    const existingUser = await UserModel.findOne({ email });
+    if (user_id && existingUser?._id.toString() === user_id) {
+        return true;
+    }
+    return !existingUser;
 } 

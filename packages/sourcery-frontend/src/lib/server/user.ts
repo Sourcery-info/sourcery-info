@@ -95,6 +95,5 @@ export async function updateUser(_id: string, user: User) {
     if (user.password) {
         data.password_hash = await hashPassword(user.password);
     }
-    console.log({ data });
     return await UserModel.findByIdAndUpdate(_id, data);
 }

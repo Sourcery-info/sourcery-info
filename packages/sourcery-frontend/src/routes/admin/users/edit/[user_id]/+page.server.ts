@@ -1,6 +1,6 @@
 /** @type {import('./$types').PageServerLoad} */
 
-import { getUser, updateUser, checkUniqueUsername } from '$lib/server/user';
+import { getUser, updateUser, checkUniqueUsername, checkUniqueEmail } from '$lib/classes/users';
 import { fail, redirect, error } from '@sveltejs/kit';
 import { zfd } from "zod-form-data";
 import { z } from 'zod';
@@ -20,7 +20,7 @@ export const actions = {
         const userScheme = zfd.formData({
             username: zfd.text(z.string().min(3).max(50).refine(async (username) => await checkUniqueUsername(username, params.user_id), { message: "Username already exists" })),
             name: zfd.text(z.string().min(1).max(100)),
-            email: zfd.text(z.string().email().max(100)),
+            email: zfd.text(z.string().email().max(100).refine(async (email) => await checkUniqueEmail(email, params.user_id), { message: "Email already exists" })),
             approved: zfd.checkbox({trueValue: "1"}),
             admin: zfd.checkbox({trueValue: "1"}),
         });
@@ -34,7 +34,7 @@ export const actions = {
             ...validation.data
         }
         try {
-            await updateUser(params.user_id, user);
+            await updateUser(user);
         } catch (err) {
             console.error(err);
             return fail(500, { message: "Failed to update user" });

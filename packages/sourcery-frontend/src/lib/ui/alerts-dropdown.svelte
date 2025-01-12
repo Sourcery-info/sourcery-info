@@ -63,26 +63,38 @@
 			<div class="divide-y divide-gray-100">
 				{#each $alertsStore.filter((alert) => !alert.seen) as alert (alert._id)}
 					<div class="px-3 py-2 hover:bg-gray-50">
-						<div class="flex items-center gap-x-3">
+						<div class="flex items-start gap-x-3">
 							{#if alert.type === 'error'}
-								<div class="flex-none rounded-full bg-red-50 p-1">
+								<div class="flex-none rounded-full bg-red-50 p-1 mt-0.5">
 									<div class="size-2 rounded-full bg-red-500"></div>
 								</div>
 							{:else if alert.type === 'warning'}
-								<div class="flex-none rounded-full bg-yellow-50 p-1">
+								<div class="flex-none rounded-full bg-yellow-50 p-1 mt-0.5">
 									<div class="size-2 rounded-full bg-yellow-500"></div>
 								</div>
 							{:else}
-								<div class="flex-none rounded-full bg-blue-50 p-1">
+								<div class="flex-none rounded-full bg-blue-50 p-1 mt-0.5">
 									<div class="size-2 rounded-full bg-blue-500"></div>
 								</div>
 							{/if}
-							<p class="text-sm text-gray-600">{alert.message}</p>
+							<p class="text-sm text-gray-600 break-words">{alert.message}</p>
 						</div>
 					</div>
 				{:else}
 					<div class="px-3 py-2 text-sm text-gray-500">No unread alerts</div>
 				{/each}
+				<div class="px-3 py-2">
+					<a
+						href="/alerts"
+						class="block text-sm text-blue-600 hover:text-blue-500 font-medium"
+						on:click={() => {
+							isAlertsMenuOpen = false;
+							markAlertsSeen();
+						}}
+					>
+						View all alerts
+					</a>
+				</div>
 			</div>
 		</div>
 	{/if}

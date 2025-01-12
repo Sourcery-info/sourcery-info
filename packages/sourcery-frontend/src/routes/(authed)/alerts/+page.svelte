@@ -6,11 +6,11 @@
 </script>
 
 <div class="min-h-full bg-white dark:bg-gray-900">
-	<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-		<h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Alert History</h1>
-	</div>
 	<main>
 		<div class="mx-auto max-w-7xl py-6 px-4 sm:px-6 lg:px-8">
+			<h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white mb-8">
+				Alert History
+			</h1>
 			<div class="space-y-4">
 				{#each alerts as alert (alert._id)}
 					<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-4 transition-colors">

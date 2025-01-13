@@ -4,6 +4,7 @@
 	import { marked } from 'marked';
 	import SourceChunks from '$lib/ui/source-chunks.svelte';
 	import { conversationStore } from '$lib/stores/conversationStore';
+	import { conversationsStore } from '$lib/stores/conversations';
 
 	export let data: {
 		conversation: ConversationType;
@@ -38,7 +39,9 @@
 
 		// Add user message to store
 		conversationStore.addMessage({ role: 'user', content: query });
-
+		if ($conversationStore && $conversationStore?.messages?.length === 1) {
+			$conversationStore.description = query;
+		}
 		const response = await fetch(`/chat/${data.project?._id}/${$conversationStore?._id}`, {
 			method: 'POST',
 			headers: {
@@ -76,6 +79,10 @@
 
 	function renderMarkdown(markdown: string) {
 		return marked(markdown);
+	}
+
+	$: if ($conversationStore) {
+		conversationsStore.upsert($conversationStore);
 	}
 </script>
 

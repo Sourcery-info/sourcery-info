@@ -29,7 +29,7 @@
 </script>
 
 <div class="p-4">
-	<h1 class="text-2xl font-bold text-white mb-8">Chunks</h1>
+	<h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">Chunks</h1>
 	{#if chunk}
 		<div class="overflow-x-auto pb-8">
 			<div class="min-w-full inline-block">
@@ -39,7 +39,7 @@
 			</div>
 		</div>
 	{:else}
-		<div class="text-gray-400">Loading...</div>
+		<div class="text-gray-500 dark:text-gray-400">Loading...</div>
 	{/if}
 </div>
 

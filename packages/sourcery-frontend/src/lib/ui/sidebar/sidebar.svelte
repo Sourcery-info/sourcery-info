@@ -5,7 +5,7 @@
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
-	import logo from '$lib/assets/Sourcery Logo.png';
+	import logoSvg from '$lib/assets/Sourcery.svg?raw';
 	import chevronDownIcon from '$lib/assets/icons/chevron-down.svg?raw';
 	import homeIcon from '$lib/assets/icons/home.svg?raw';
 	import settingsIcon from '$lib/assets/icons/settings.svg?raw';
@@ -17,6 +17,7 @@
 
 	let showProjectDropdown = $state(false);
 	let dropdownRef = $state(null);
+	let isDarkMode = $state(false);
 
 	function handleClickOutside(event) {
 		if (dropdownRef && !dropdownRef.contains(event.target)) {
@@ -32,23 +33,41 @@
 
 	onMount(() => {
 		document.addEventListener('click', handleClickOutside);
+
+		// Set up dark mode detection
+		const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+		isDarkMode = darkModeMediaQuery.matches;
+
+		const handleDarkModeChange = (e) => {
+			isDarkMode = e.matches;
+		};
+
+		darkModeMediaQuery.addEventListener('change', handleDarkModeChange);
+
 		return () => {
 			document.removeEventListener('click', handleClickOutside);
+			darkModeMediaQuery.removeEventListener('change', handleDarkModeChange);
 		};
 	});
 </script>
 
 <div class="relative h-full">
-	<div class="flex h-full flex-col bg-gray-900 px-6">
+	<div class="flex h-full flex-col bg-white dark:bg-gray-900 px-6">
 		<div class="flex h-16 flex-shrink-0 items-center gap-x-3">
-			<a href="/" onclick={handleItemClick}
-				><img class="h-8 w-auto" src={logo} alt="Sourcery.info Logo" /></a
-			>
+			<a href="/" onclick={handleItemClick}>
+				<div class="h-6">
+					<div
+						class="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current text-gray-900 dark:text-white"
+					>
+						{@html logoSvg}
+					</div>
+				</div>
+			</a>
 			{#if selected_project}
 				<div class="relative flex-1" bind:this={dropdownRef}>
 					<button
 						onclick={() => (showProjectDropdown = !showProjectDropdown)}
-						class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-100 hover:text-white"
+						class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-white"
 					>
 						<span class="truncate">{selected_project.name}</span>
 						{@html chevronDownIcon}
@@ -56,7 +75,7 @@
 
 					{#if showProjectDropdown}
 						<div
-							class="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-gray-700 bg-gray-800 py-1 shadow-lg"
+							class="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-1 shadow-lg"
 						>
 							{#each $projectsStore as project}
 								<a
@@ -65,9 +84,9 @@
 										showProjectDropdown = false;
 										handleItemClick();
 									}}
-									class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white {project._id ===
+									class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white {project._id ===
 									selected_project._id
-										? 'bg-gray-700 text-white'
+										? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
 										: ''}"
 								>
 									{project.name}
@@ -79,7 +98,7 @@
 			{:else}
 				<div class="relative flex-1">
 					<button
-						class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-100 hover:text-white"
+						class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-white"
 					>
 						Sourcery.info
 					</button>
@@ -95,7 +114,7 @@
 								<a
 									href="/"
 									onclick={handleItemClick}
-									class="group flex gap-x-3 rounded-md bg-gray-800 p-2 text-sm/6 font-semibold text-white"
+									class="group flex gap-x-3 rounded-md bg-gray-100 dark:bg-gray-800 p-2 text-sm/6 font-semibold text-gray-900 dark:text-white"
 								>
 									{@html homeIcon}
 									Projects
@@ -119,7 +138,7 @@
 						<li>
 							<a
 								href={`/project/${project._id}`}
-								class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+								class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
 								onclick={handleItemClick}
 							>
 								{project.name}
@@ -129,11 +148,13 @@
 				{/if}
 			</ul>
 		</nav>
-		<div class="flex-shrink-0 border-t border-gray-700 bg-gray-900 pt-4 pb-4">
+		<div
+			class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pt-4 pb-4"
+		>
 			<a
 				href={selected_project ? `/project/${selected_project._id}/settings` : '/settings'}
 				onclick={handleItemClick}
-				class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+				class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
 			>
 				{@html settingsIcon}
 				Settings

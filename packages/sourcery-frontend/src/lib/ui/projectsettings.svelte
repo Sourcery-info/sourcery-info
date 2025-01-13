@@ -12,16 +12,18 @@
 
 <div class="space-y-6">
 	<div>
-		<label for="name" class="block text-sm font-medium leading-6 text-white">Name</label>
+		<label for="name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
+			>Name</label
+		>
 		<div class="mt-2">
 			<input
 				type="text"
 				name="name"
 				id="name"
 				bind:value={name}
-				class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 {form
+				class="block w-full rounded-md bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-gray-900 dark:text-white placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500 sm:text-sm/6 {form
 					?.errors?.name
-					? 'outline-red-500'
+					? 'border-red-500 dark:border-red-500'
 					: ''}"
 			/>
 		</div>
@@ -39,7 +41,7 @@
 					name="is_public"
 					bind:checked={is_public}
 					value="true"
-					class="col-start-1 row-start-1 appearance-none rounded border border-white/10 bg-white/5 checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+					class="col-start-1 row-start-1 appearance-none rounded border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 				/>
 				<svg
 					class="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white"
@@ -57,8 +59,10 @@
 			</div>
 		</div>
 		<div class="flex flex-col gap-y-1">
-			<label for="is_public" class="font-medium text-white text-sm/6">Public Project</label>
-			<p class="text-sm/6 text-gray-400">
+			<label for="is_public" class="font-medium text-gray-900 dark:text-white text-sm/6"
+				>Public Project</label
+			>
+			<p class="text-sm/6 text-gray-600 dark:text-gray-400">
 				Public projects are visible to everyone. They will be listed on the projects page.
 			</p>
 		</div>
@@ -69,8 +73,9 @@
 	</Tags>
 
 	<div>
-		<label for="description" class="block text-sm font-medium leading-6 text-white"
-			>Description</label
+		<label
+			for="description"
+			class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Description</label
 		>
 		<div class="mt-2">
 			<textarea
@@ -78,9 +83,9 @@
 				id="description"
 				rows="3"
 				bind:value={description}
-				class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 {form
+				class="block w-full rounded-md bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-gray-900 dark:text-white placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500 sm:text-sm/6 {form
 					?.errors?.description
-					? 'outline-red-500'
+					? 'border-red-500 dark:border-red-500'
 					: ''}"
 			></textarea>
 		</div>
@@ -90,16 +95,18 @@
 	</div>
 
 	<div>
-		<label for="notes" class="block text-sm font-medium leading-6 text-white">Notes</label>
+		<label for="notes" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
+			>Notes</label
+		>
 		<div class="mt-2">
 			<textarea
 				name="notes"
 				id="notes"
 				rows="3"
 				bind:value={notes}
-				class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 {form
+				class="block w-full rounded-md bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 px-3 py-1.5 text-gray-900 dark:text-white placeholder:text-gray-500 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500 sm:text-sm/6 {form
 					?.errors?.notes
-					? 'outline-red-500'
+					? 'border-red-500 dark:border-red-500'
 					: ''}"
 			></textarea>
 		</div>
@@ -109,7 +116,9 @@
 	</div>
 
 	<div>
-		<label for="security" class="block text-sm/6 font-medium text-white">Security</label>
+		<label for="security" class="block text-sm/6 font-medium text-gray-900 dark:text-white"
+			>Security</label
+		>
 		<div class="mt-2 space-y-1">
 			<div class="flex items-center gap-x-3">
 				<input
@@ -118,9 +127,12 @@
 					type="radio"
 					bind:group={security}
 					value="secure"
-					class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 [&:not(:checked)]:before:hidden"
+					class="relative size-4 appearance-none rounded-full border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-indigo-600 dark:before:bg-indigo-500 checked:border-indigo-600 checked:bg-white dark:checked:border-indigo-500 dark:checked:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 [&:not(:checked)]:before:hidden"
 				/>
-				<label for="security-secure" class="block text-sm/6 font-medium text-white">Secure</label>
+				<label
+					for="security-secure"
+					class="block text-sm/6 font-medium text-gray-900 dark:text-white">Secure</label
+				>
 			</div>
 			<div class="flex items-center gap-x-3">
 				<input
@@ -129,9 +141,11 @@
 					type="radio"
 					bind:group={security}
 					value="insecure"
-					class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 [&:not(:checked)]:before:hidden"
+					class="relative size-4 appearance-none rounded-full border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-indigo-600 dark:before:bg-indigo-500 checked:border-indigo-600 checked:bg-white dark:checked:border-indigo-500 dark:checked:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 [&:not(:checked)]:before:hidden"
 				/>
-				<label for="security-insecure" class="block text-sm/6 font-medium text-white"
+				<label
+					for="security-insecure"
+					class="block text-sm/6 font-medium text-gray-900 dark:text-white"
 					>Insecure - Internet access</label
 				>
 			</div>

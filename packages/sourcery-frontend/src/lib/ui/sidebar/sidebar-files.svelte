@@ -56,13 +56,13 @@
 </script>
 
 <div>
-	<div class="text-xs/6 font-semibold text-gray-400">
+	<div class="text-xs/6 font-semibold text-gray-600 dark:text-gray-400">
 		<a href="/files/{selected_project._id}" {onclick}>Files</a>
 	</div>
 	<ul role="list" class="-mx-2 mt-2 space-y-0 max-h-[40vh] overflow-y-auto">
 		<li>
 			<label
-				class="group flex w-full cursor-pointer items-center gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+				class="group flex w-full cursor-pointer items-center gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
 			>
 				{@html plusIcon}
 				<span>Upload Files</span>
@@ -83,8 +83,8 @@
 						{onclick}
 						class="group flex w-full items-center gap-x-3 rounded-md p-2 text-sm/6 font-regular
                             {file._id === page.params.file_id
-							? 'bg-gray-800 text-white'
-							: 'text-gray-400 hover:bg-gray-800 hover:text-white'}"
+							? 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white'
+							: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'}"
 					>
 						<div class="flex items-center gap-x-3 min-w-0 flex-1">
 							{#if file.status === FileStatus.PROCESSING}
@@ -122,9 +122,9 @@
 
 <style>
 	.progress-bar {
-		@apply h-1 bg-gray-700 rounded-full overflow-hidden mt-1;
+		@apply h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-1;
 	}
 	.progress-bar-fill {
-		@apply h-full bg-blue-500 transition-all duration-300;
+		@apply h-full bg-indigo-600 dark:bg-blue-500 transition-all duration-300;
 	}
 </style>

@@ -6,15 +6,17 @@
 	dayjs.extend(relativeTime);
 </script>
 
-<div class="bg-gray-900 py-10">
+<div class="bg-white dark:bg-gray-900 py-10">
 	<div class="mx-auto max-w-7xl px-6 lg:px-8">
 		<div class="mx-auto max-w-2xl lg:max-w-none">
 			<div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
 				<a
 					href="/projects/new"
-					class="group relative flex flex-col justify-center items-center rounded-lg bg-gray-800/30 p-6 ring-1 ring-white/10 hover:bg-gray-800/50"
+					class="group relative flex flex-col justify-center items-center rounded-lg bg-gray-50 dark:bg-gray-800/30 p-6 ring-1 ring-gray-200 dark:ring-white/10 hover:bg-gray-100 dark:hover:bg-gray-800/50"
 				>
-					<div class="h-12 w-12 rounded-full bg-indigo-500 flex items-center justify-center">
+					<div
+						class="h-12 w-12 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center"
+					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -26,29 +28,31 @@
 							<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
 						</svg>
 					</div>
-					<h3 class="mt-4 text-lg font-semibold leading-6 text-white">New Project</h3>
-					<p class="mt-2 text-sm text-gray-300">Create a new project</p>
+					<h3 class="mt-4 text-lg font-semibold leading-6 text-gray-900 dark:text-white">
+						New Project
+					</h3>
+					<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Create a new project</p>
 				</a>
 
 				{#each data.projects as project}
 					<div
-						class="group relative rounded-lg bg-gray-800/50 p-6 ring-1 ring-white/10 hover:bg-gray-800/70"
+						class="group relative rounded-lg bg-gray-50 dark:bg-gray-800/50 p-6 ring-1 ring-gray-200 dark:ring-white/10 hover:bg-gray-100 dark:hover:bg-gray-800/70"
 					>
 						<div>
 							<div class="flex items-center gap-2">
-								<h3 class="text-lg font-semibold leading-6 text-white">
+								<h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
 									<a href="/project/{project._id}">{project.name}</a>
 								</h3>
 								{#if project.is_public}
 									<span
-										class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-400/20"
+										class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-400/10 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20 dark:ring-green-400/20"
 									>
 										Public
 									</span>
 								{/if}
 							</div>
 							{#if project.description}
-								<p class="mt-2 text-sm text-gray-300">
+								<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
 									{project.description}
 								</p>
 							{/if}
@@ -66,7 +70,7 @@
 						<div class="mt-6 flex flex-wrap gap-2 text-sm">
 							<a
 								href="/chat/{project._id}"
-								class="inline-flex items-center text-indigo-400 hover:text-indigo-300"
+								class="inline-flex items-center text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -84,10 +88,10 @@
 								</svg>
 								Chat
 							</a>
-							<span class="text-gray-600">•</span>
+							<span class="text-gray-400 dark:text-gray-600">•</span>
 							<a
 								href="/files/{project._id}"
-								class="inline-flex items-center text-gray-400 hover:text-gray-300"
+								class="inline-flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -105,10 +109,10 @@
 								</svg>
 								Files
 							</a>
-							<span class="text-gray-600">•</span>
+							<span class="text-gray-400 dark:text-gray-600">•</span>
 							<a
 								href="/entity/{project._id}"
-								class="inline-flex items-center text-gray-400 hover:text-gray-300"
+								class="inline-flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"
@@ -126,10 +130,10 @@
 								</svg>
 								Entities
 							</a>
-							<span class="text-gray-600">•</span>
+							<span class="text-gray-400 dark:text-gray-600">•</span>
 							<a
 								href="/project/{project._id}/settings"
-								class="inline-flex items-center text-gray-400 hover:text-gray-300"
+								class="inline-flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
 							>
 								<svg
 									xmlns="http://www.w3.org/2000/svg"

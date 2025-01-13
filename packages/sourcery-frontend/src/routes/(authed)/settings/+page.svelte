@@ -8,8 +8,8 @@
 </script>
 
 <div>
-	<h1 class="text-base/7 font-semibold text-white">Default Settings</h1>
-	<p class="text-sm/6 text-gray-400 mb-3">
+	<h1 class="text-base/7 font-semibold text-gray-900 dark:text-white">Default Settings</h1>
+	<p class="text-sm/6 text-gray-600 dark:text-gray-400 mb-3">
 		These settings will be applied by default to new projects. They will not affect the settings of
 		existing projects.
 	</p>
@@ -23,7 +23,7 @@
 		/>
 		<button
 			type="submit"
-			class="mt-10 rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+			class="mt-10 rounded-md bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
 		>
 			Save
 		</button>

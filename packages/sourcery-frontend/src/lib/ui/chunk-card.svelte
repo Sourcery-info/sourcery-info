@@ -42,19 +42,19 @@
 <div class="chunk-tree-container" bind:this={containerElement}>
 	<div class="chunk-node">
 		<div
-			class="chunk-content bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-700 hover:border-gray-600 transition-colors"
+			class="chunk-content bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
 		>
 			{#if chunk.title}
-				<h3 class="text-lg font-semibold text-white mb-2">{chunk.title}</h3>
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{chunk.title}</h3>
 			{/if}
-			<p class="text-gray-300">{displayContent}</p>
+			<p class="text-gray-700 dark:text-gray-300">{displayContent}</p>
 		</div>
 
 		{#if chunk.children && chunk.children.length > 0}
 			<div class="connector-wrapper">
 				<div class="connector-line"></div>
 				<button
-					class="expand-button bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white w-6 h-6 rounded-full border-2 border-gray-600 flex items-center justify-center transition-colors"
+					class="expand-button bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center transition-colors"
 					on:click={toggleChildren}
 					aria-label={isChildrenExpanded ? 'Collapse children' : 'Expand children'}
 				>
@@ -110,10 +110,9 @@
 
 	.children-container::before {
 		content: '';
-		@apply absolute bg-gray-600;
+		@apply absolute bg-gray-300 dark:bg-gray-600;
 		height: 2px;
 		top: -24px;
-		/* Position the line to start at first child's center and end at last child's center */
 		left: calc(var(--child-width) * 0.75);
 		right: calc(var(--child-width) * 0.75);
 	}
@@ -121,14 +120,13 @@
 	.child-branch {
 		@apply flex flex-col items-center;
 		position: relative;
-		/* Set a consistent width for child branches */
 		width: var(--child-width);
 		min-width: min-content;
 	}
 
 	.child-branch::before {
 		content: '';
-		@apply absolute bg-gray-600;
+		@apply absolute bg-gray-300 dark:bg-gray-600;
 		width: 2px;
 		height: 24px;
 		top: -24px;
@@ -137,7 +135,7 @@
 	}
 
 	.connector-line {
-		@apply bg-gray-600;
+		@apply bg-gray-300 dark:bg-gray-600;
 		position: absolute;
 		width: 2px;
 		height: 24px;

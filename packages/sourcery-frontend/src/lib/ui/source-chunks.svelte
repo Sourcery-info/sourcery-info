@@ -25,14 +25,14 @@
 	{#each displayChunks as chunk}
 		<a
 			href={`/chunk/${project_id}/${chunk._id}`}
-			class="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition-colors {!showAll
+			class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors {!showAll
 				? 'flex-shrink-0 w-48'
 				: ''}"
 		>
-			<div class="h-24 overflow-y-auto text-sm text-gray-300 mb-2">
+			<div class="h-24 overflow-y-auto text-sm text-gray-700 dark:text-gray-300 mb-2">
 				{truncateToWords(chunk.content || '', 50)}
 			</div>
-			<div class="text-xs text-gray-500 truncate">
+			<div class="text-xs text-gray-500 dark:text-gray-500 truncate">
 				{chunk.title || 'Untitled Source'}
 			</div>
 		</a>
@@ -41,12 +41,12 @@
 	{#if remainingCount > 0 && !showAll}
 		<button
 			on:click={() => (showAll = true)}
-			class="flex-shrink-0 w-48 bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-600 transition-colors cursor-pointer"
+			class="flex-shrink-0 w-48 bg-gray-100 dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer"
 		>
 			<div class="h-24 flex items-center justify-center">
 				<div class="text-center">
-					<div class="text-3xl font-bold text-gray-400">+{remainingCount}</div>
-					<div class="text-sm text-gray-500">more sources</div>
+					<div class="text-3xl font-bold text-gray-500 dark:text-gray-400">+{remainingCount}</div>
+					<div class="text-sm text-gray-500 dark:text-gray-500">more sources</div>
 				</div>
 			</div>
 		</button>

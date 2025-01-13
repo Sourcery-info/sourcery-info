@@ -107,7 +107,7 @@
 		name="search"
 		aria-label="Search"
 		autocomplete="off"
-		class="col-start-1 row-start-1 block size-full bg-white pl-8 text-base text-gray-900 outline-none placeholder:text-gray-400 sm:text-sm/6"
+		class="col-start-1 row-start-1 block size-full bg-white dark:bg-gray-800 pl-8 text-base text-gray-900 dark:text-white outline-none placeholder:text-gray-400 dark:placeholder:text-gray-500 sm:text-sm/6"
 		placeholder="Search"
 		value={searchQuery}
 		on:input={handleSearch}
@@ -115,7 +115,7 @@
 		on:focusout={handleSearchFocusOut}
 	/>
 	<svg
-		class="pointer-events-none col-start-1 row-start-1 size-5 self-center text-gray-400"
+		class="pointer-events-none col-start-1 row-start-1 size-5 self-center text-gray-400 dark:text-gray-500"
 		viewBox="0 0 20 20"
 		fill="currentColor"
 		aria-hidden="true"
@@ -130,7 +130,7 @@
 
 	{#if showSearchResults}
 		<button
-			class="search-results absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-lg ring-1 ring-gray-900/5 max-h-96 overflow-y-auto z-50"
+			class="search-results absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-gray-900/5 dark:ring-white/5 max-h-96 overflow-y-auto z-50"
 			tabindex="-1"
 			on:click={() => (showSearchResults = false)}
 			on:keydown={(e) => e.key === 'Escape' && (showSearchResults = false)}
@@ -138,40 +138,65 @@
 		>
 			<!-- Entities -->
 			{#if searchResults.entities.length > 0}
-				<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">Entities</div>
+				<div
+					class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700"
+				>
+					Entities
+				</div>
 				{#each searchResults.entities as entity (entity.id)}
-					<a href="/entity/{project_id}/{entity.id}" class="block px-4 py-2 hover:bg-gray-50">
-						<div class="text-sm font-medium text-gray-900">{entity.name}</div>
-						<div class="text-xs text-gray-500">{entity.type} • {entity.description}</div>
+					<a
+						href="/entity/{project_id}/{entity.id}"
+						class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+					>
+						<div class="text-sm font-medium text-gray-900 dark:text-white">{entity.name}</div>
+						<div class="text-xs text-gray-500 dark:text-gray-400">
+							{entity.type} • {entity.description}
+						</div>
 					</a>
 				{/each}
 			{/if}
 
 			<!-- Files -->
 			{#if searchResults.files.length > 0}
-				<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">Files</div>
+				<div
+					class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700"
+				>
+					Files
+				</div>
 				{#each searchResults.files as file (file.id)}
-					<a href="/file/{project_id}/{file.id}" class="block px-4 py-2 hover:bg-gray-50">
-						<div class="text-sm font-medium text-gray-900">{file.name}</div>
-						<div class="text-xs text-gray-500">{file.type} • {file.metadata}</div>
+					<a
+						href="/file/{project_id}/{file.id}"
+						class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+					>
+						<div class="text-sm font-medium text-gray-900 dark:text-white">{file.name}</div>
+						<div class="text-xs text-gray-500 dark:text-gray-400">
+							{file.type} • {file.metadata}
+						</div>
 					</a>
 				{/each}
 			{/if}
 
 			<!-- Conversations -->
 			{#if searchResults.conversations.length > 0}
-				<div class="px-4 py-2 text-xs font-semibold text-gray-500 bg-gray-50">Conversations</div>
+				<div
+					class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700"
+				>
+					Conversations
+				</div>
 				{#each searchResults.conversations as conversation (conversation.id)}
-					<a href="/chat/{project_id}/{conversation.id}" class="block px-4 py-2 hover:bg-gray-50">
-						<div class="text-sm font-medium text-gray-900">{conversation.name}</div>
-						<div class="text-xs text-gray-500">{conversation.preview}</div>
+					<a
+						href="/chat/{project_id}/{conversation.id}"
+						class="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700"
+					>
+						<div class="text-sm font-medium text-gray-900 dark:text-white">{conversation.name}</div>
+						<div class="text-xs text-gray-500 dark:text-gray-400">{conversation.preview}</div>
 					</a>
 				{/each}
 			{/if}
 
 			<!-- No results message -->
 			{#if searchResults.entities.length === 0 && searchResults.files.length === 0 && searchResults.conversations.length === 0}
-				<div class="px-4 py-2 text-sm text-gray-500">No results found</div>
+				<div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">No results found</div>
 			{/if}
 		</button>
 	{/if}

@@ -22,20 +22,22 @@
 
 <div class="space-y-6">
 	<div class="sm:col-span-4">
-		<label for="chat_model" class="block text-sm/6 font-medium text-white">Chat Model</label>
+		<label for="chat_model" class="block text-sm/6 font-medium text-gray-900 dark:text-white"
+			>Chat Model</label
+		>
 		<div class="mt-2 grid grid-cols-1">
 			<select
 				name="chat_model"
 				id="chat_model"
 				bind:value={chat_model}
-				class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pl-3 pr-8 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+				class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 py-1.5 pl-3 pr-8 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500 sm:text-sm/6"
 			>
 				{#each chatModels as model}
 					<option value={model.value}>{model.name}</option>
 				{/each}
 			</select>
 			<svg
-				class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-400 sm:size-4"
+				class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 dark:text-gray-400 sm:size-4"
 				viewBox="0 0 16 16"
 				fill="currentColor"
 				aria-hidden="true"
@@ -53,21 +55,23 @@
 	</div>
 
 	<div class="sm:col-span-4">
-		<label for="vector_model" class="block text-sm/6 font-medium text-white">Vector Model</label>
+		<label for="vector_model" class="block text-sm/6 font-medium text-gray-900 dark:text-white"
+			>Vector Model</label
+		>
 		{#if allow_vector_model_change}
 			<div class="mt-2 grid grid-cols-1">
 				<select
 					name="vector_model"
 					id="vector_model"
 					bind:value={vector_model}
-					class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pl-3 pr-8 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+					class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white dark:bg-white/5 border border-gray-300 dark:border-white/10 py-1.5 pl-3 pr-8 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500 sm:text-sm/6"
 				>
 					{#each vectorModels as model}
 						<option value={model.value}>{model.name}</option>
 					{/each}
 				</select>
 				<svg
-					class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-400 sm:size-4"
+					class="pointer-events-none col-start-1 row-start-1 mr-2 size-5 self-center justify-self-end text-gray-500 dark:text-gray-400 sm:size-4"
 					viewBox="0 0 16 16"
 					fill="currentColor"
 					aria-hidden="true"
@@ -89,16 +93,16 @@
 				id="vector_model"
 				bind:value={vector_model}
 				disabled
-				class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pl-3 pr-8 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+				class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 py-1.5 pl-3 pr-8 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500 sm:text-sm/6"
 			/>
-			<div class="mt-2 text-sm text-gray-400">
+			<div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
 				You cannot change the embedding model because you have already vectorized documents with it.
 			</div>
 		{/if}
 	</div>
 
 	<div class="sm:col-span-4">
-		<label for="temperature" class="block text-sm/6 font-medium text-white"
+		<label for="temperature" class="block text-sm/6 font-medium text-gray-900 dark:text-white"
 			>Temperature: {temperature}</label
 		>
 		<div class="mt-2">
@@ -110,7 +114,7 @@
 				step={temperatureStep}
 				min={temperatureMin}
 				max={temperatureMax}
-				class="w-full appearance-none bg-white/5 rounded-lg h-2 accent-indigo-500"
+				class="w-full appearance-none bg-gray-200 dark:bg-white/5 rounded-lg h-2 accent-indigo-600 dark:accent-indigo-500"
 			/>
 		</div>
 		{#if form?.errors?.temperature}

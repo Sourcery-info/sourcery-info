@@ -90,9 +90,11 @@
 	onDestroy(() => {});
 </script>
 
-<div class="p-4 bg-gray-900 min-h-screen text-gray-100">
+<div class="p-4 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
 	<div class="flex justify-between items-center mb-6 gap-8">
-		<h3 class="text-base font-semibold text-gray-100 truncate">{data.props.file.original_name}</h3>
+		<h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+			{data.props.file.original_name}
+		</h3>
 		<div class="flex gap-2 shrink-0">
 			<button
 				on:click={async () => {
@@ -101,7 +103,7 @@
 					await new Promise((resolve) => setTimeout(resolve, 1000));
 					isReindexing = false;
 				}}
-				class="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+				class="inline-flex items-center gap-x-1.5 rounded-md bg-indigo-600 dark:bg-indigo-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-500"
 				disabled={isReindexing}
 			>
 				<svg
@@ -136,7 +138,7 @@
 				<button
 					type="button"
 					on:click={openDeleteDialog}
-					class="inline-flex items-center gap-x-1.5 rounded-md bg-red-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+					class="inline-flex items-center gap-x-1.5 rounded-md bg-red-600 dark:bg-red-500 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 dark:hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 dark:focus-visible:outline-red-500"
 				>
 					<svg class="-ml-0.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
 						<path
@@ -152,6 +154,7 @@
 					title="Delete file"
 					message={`Are you sure you want to delete "${data.props.file.original_name}"? This action cannot be undone.`}
 					confirmText="Delete"
+					confirmClass="bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400"
 					form={deleteForm}
 					on:close={closeDeleteDialog}
 					on:confirm={handleDelete}
@@ -160,7 +163,7 @@
 		</div>
 	</div>
 
-	<div class="border-b border-gray-700">
+	<div class="border-b border-gray-200 dark:border-gray-700">
 		<div class="sm:flex sm:items-baseline">
 			<div class="mt-4 sm:mt-0">
 				<nav class="-mb-px flex space-x-8">
@@ -170,8 +173,8 @@
 							on:click|preventDefault={() => setActiveTab(tab.id)}
 							class="whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium transition-colors
 								{activeTab === tab.id
-								? 'border-indigo-500 text-indigo-400'
-								: 'border-transparent text-gray-400 hover:border-gray-600 hover:text-gray-300'}"
+								? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'}"
 							aria-current={activeTab === tab.id ? 'page' : undefined}
 						>
 							{tab.name}
@@ -205,7 +208,7 @@
 	confirmText="Close"
 	type="error"
 	showCancel={false}
-	confirmClass="bg-gray-600 hover:bg-gray-500"
+	confirmClass="bg-gray-600 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600"
 	on:close={closeErrorDialog}
 	on:confirm={closeErrorDialog}
 />

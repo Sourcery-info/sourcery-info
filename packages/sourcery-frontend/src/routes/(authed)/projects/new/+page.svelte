@@ -19,7 +19,7 @@
 </script>
 
 <div>
-	<div class="text-base/7 font-semibold text-white">New Project</div>
+	<div class="text-base/7 font-semibold text-gray-900 dark:text-white">New Project</div>
 	<div class="mt-10">
 		<form method="POST" use:enhance>
 			<div class="flex flex-col gap-4">
@@ -30,7 +30,7 @@
 			</div>
 			<button
 				type="submit"
-				class="mt-10 rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+				class="mt-10 rounded-md bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
 			>
 				Save
 			</button>

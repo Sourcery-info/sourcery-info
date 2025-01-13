@@ -18,10 +18,11 @@
 	>
 		<span class="sr-only">Open user menu</span>
 		<span class="hidden lg:flex lg:items-center">
-			<span class="ml-4 text-sm/6 font-semibold text-gray-900" aria-hidden="true">{user?.name}</span
+			<span class="ml-4 text-sm/6 font-semibold text-gray-900 dark:text-white" aria-hidden="true"
+				>{user?.name}</span
 			>
 			<svg
-				class="ml-2 size-5 text-gray-400"
+				class="ml-2 size-5 text-gray-400 dark:text-gray-500"
 				viewBox="0 0 20 20"
 				fill="currentColor"
 				aria-hidden="true"
@@ -38,7 +39,7 @@
 
 	{#if isUserMenuOpen}
 		<div
-			class="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
+			class="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white dark:bg-gray-800 py-2 shadow-lg ring-1 ring-gray-900/5 dark:ring-white/5 focus:outline-none"
 			role="menu"
 			aria-orientation="vertical"
 			aria-labelledby="user-menu-button"
@@ -47,26 +48,26 @@
 		>
 			<a
 				href="/profile"
-				class="block px-3 py-1 text-sm/6 text-gray-900"
+				class="block px-3 py-1 text-sm/6 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
 				role="menuitem"
 				tabindex="-1">Your profile</a
 			>
 			<a
 				href="/logout"
-				class="block px-3 py-1 text-sm/6 text-gray-900"
+				class="block px-3 py-1 text-sm/6 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
 				role="menuitem"
 				tabindex="-1">Sign out</a
 			>
 			<a
 				href="/settings"
-				class="block px-3 py-1 text-sm/6 text-gray-900"
+				class="block px-3 py-1 text-sm/6 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
 				role="menuitem"
 				tabindex="-1">Settings</a
 			>
 			{#if user?.admin}
 				<a
 					href="/admin"
-					class="block px-3 py-1 text-sm/6 text-gray-900"
+					class="block px-3 py-1 text-sm/6 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
 					role="menuitem"
 					tabindex="-1">Admin</a
 				>

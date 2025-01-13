@@ -23,7 +23,7 @@
 <div class="relative">
 	<button
 		type="button"
-		class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
+		class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
 		id="alerts-menu-button"
 		on:click={toggleAlertsMenu}
 	>
@@ -45,48 +45,48 @@
 		</svg>
 		{#if $alertsStore.some((alert) => !alert.seen)}
 			<div
-				class="absolute -right-1 -top-1 size-2.5 rounded-full bg-red-500 ring-2 ring-white"
+				class="absolute -right-1 -top-1 size-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-900"
 			></div>
 		{/if}
 	</button>
 
 	{#if isAlertsMenuOpen}
 		<div
-			class="absolute right-0 z-10 mt-2.5 w-80 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
+			class="absolute right-0 z-10 mt-2.5 w-80 origin-top-right rounded-md bg-white dark:bg-gray-800 py-2 shadow-lg ring-1 ring-gray-900/5 dark:ring-white/5 focus:outline-none"
 			role="menu"
 			aria-orientation="vertical"
 			aria-labelledby="alerts-menu-button"
 			tabindex="-1"
 			transition:fly={{ y: -10, duration: 200 }}
 		>
-			<div class="px-3 py-2 text-sm font-semibold text-gray-900">Alerts</div>
-			<div class="divide-y divide-gray-100">
+			<div class="px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white">Alerts</div>
+			<div class="divide-y divide-gray-100 dark:divide-gray-700">
 				{#each $alertsStore.filter((alert) => !alert.seen) as alert (alert._id)}
-					<div class="px-3 py-2 hover:bg-gray-50">
+					<div class="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700">
 						<div class="flex items-start gap-x-3">
 							{#if alert.type === 'error'}
-								<div class="flex-none rounded-full bg-red-50 p-1 mt-0.5">
+								<div class="flex-none rounded-full bg-red-50 dark:bg-red-900/50 p-1 mt-0.5">
 									<div class="size-2 rounded-full bg-red-500"></div>
 								</div>
 							{:else if alert.type === 'warning'}
-								<div class="flex-none rounded-full bg-yellow-50 p-1 mt-0.5">
+								<div class="flex-none rounded-full bg-yellow-50 dark:bg-yellow-900/50 p-1 mt-0.5">
 									<div class="size-2 rounded-full bg-yellow-500"></div>
 								</div>
 							{:else}
-								<div class="flex-none rounded-full bg-blue-50 p-1 mt-0.5">
+								<div class="flex-none rounded-full bg-blue-50 dark:bg-blue-900/50 p-1 mt-0.5">
 									<div class="size-2 rounded-full bg-blue-500"></div>
 								</div>
 							{/if}
-							<p class="text-sm text-gray-600 break-words">{alert.message}</p>
+							<p class="text-sm text-gray-600 dark:text-gray-300 break-words">{alert.message}</p>
 						</div>
 					</div>
 				{:else}
-					<div class="px-3 py-2 text-sm text-gray-500">No unread alerts</div>
+					<div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">No unread alerts</div>
 				{/each}
 				<div class="px-3 py-2">
 					<a
 						href="/alerts"
-						class="block text-sm text-blue-600 hover:text-blue-500 font-medium"
+						class="block text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium"
 						on:click={() => {
 							isAlertsMenuOpen = false;
 							markAlertsSeen();

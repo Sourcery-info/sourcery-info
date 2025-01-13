@@ -9,8 +9,10 @@
 </script>
 
 <div>
-	<div class="text-base/7 font-semibold text-white">Edit Project Settings</div>
-	<div class="text-sm/6 text-gray-400">These settings will only apply to this project.</div>
+	<div class="text-base/7 font-semibold text-gray-900 dark:text-white">Edit Project Settings</div>
+	<div class="text-sm/6 text-gray-600 dark:text-gray-400">
+		These settings will only apply to this project.
+	</div>
 
 	<div class="mt-5">
 		{#if data.project}
@@ -35,7 +37,7 @@
 				</div>
 				<button
 					type="submit"
-					class="mt-10 rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+					class="mt-10 rounded-md bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
 				>
 					Save
 				</button>

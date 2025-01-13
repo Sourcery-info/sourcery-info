@@ -43,6 +43,24 @@ const rag_prompt_template = (context, question, message_id, conversation) => [
     },
 ];
 
+function find_outliers(ranked_documents) {
+    const scores = ranked_documents.ranked_documents.map(d => d.score);
+    scores.sort((a, b) => a - b);
+
+    // Calculate quartiles
+    const q1_idx = Math.floor(scores.length * 0.25);
+    const q3_idx = Math.floor(scores.length * 0.75);
+    const q1 = scores[q1_idx];
+    const q3 = scores[q3_idx];
+
+    // Calculate IQR and bounds
+    const iqr = q3 - q1;
+    const upper_bound = q3 + (1.5 * iqr);
+
+    // Return documents above upper bound (high outliers)
+    return ranked_documents.ranked_documents.filter(d => d.score >= upper_bound);
+}
+
 const get_rag_context = async (project_name, files, question, top_k = TOP_K, vector_model = VECTOR_MODEL) => {
 
     // const get_parents = async (project_name, search_results) => {
@@ -89,6 +107,11 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
         // console.log(`Found ${parents.length} parents from ${results.length} results`);
         const contexts = results.map(result => `<filename>${result.payload.original_name}</filename>\n<id>${result.id}</id>\n<context>${result.payload.context || ""}</context>\n<content>${result.payload.content}</content>`);
         const reranked = await rerank(question, contexts, RERANK_TOP_K);
+        const outliers = find_outliers(reranked);
+        if (outliers.length > 0) {
+            console.log(`Found ${outliers.length} outliers`);
+            return outliers;
+        }
         return reranked.ranked_documents;
     } catch (err) {
         console.error(err);

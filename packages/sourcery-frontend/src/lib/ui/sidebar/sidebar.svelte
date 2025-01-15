@@ -2,6 +2,7 @@
 	// @ts-nocheck
 	/** @type {import('./$types').PageData} */
 	import { projectsStore } from '$lib/stores/projects';
+	import { filesStore } from '$lib/stores/files';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
@@ -127,12 +128,14 @@
 					<li>
 						<SidebarFiles {selected_project} onclick={handleItemClick} />
 					</li>
-					<li>
-						<SidebarEntities {selected_project} onclick={handleItemClick} />
-					</li>
-					<li>
-						<SidebarConversations {selected_project} onclick={handleItemClick} />
-					</li>
+					{#if $filesStore.length > 0}
+						<li>
+							<SidebarEntities {selected_project} onclick={handleItemClick} />
+						</li>
+						<li>
+							<SidebarConversations {selected_project} onclick={handleItemClick} />
+						</li>
+					{/if}
 				{:else}
 					{#each $projectsStore as project}
 						<li>

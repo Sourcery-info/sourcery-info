@@ -6,7 +6,7 @@ import path from "node:path";
 import { randomUUID } from 'crypto';
 import { encodingForModel } from "js-tiktoken";
 
-const MIN_CHUNK_LENGTH = 100;
+const MIN_CHUNK_LENGTH = 20;
 
 const encoding = encodingForModel("gpt-4o");
 export class ChunkingPipeline extends PipelineBase {

@@ -6,6 +6,8 @@ import path from "node:path";
 import { randomUUID } from 'crypto';
 import { encodingForModel } from "js-tiktoken";
 
+const MIN_CHUNK_LENGTH = 100;
+
 const encoding = encodingForModel("gpt-4o");
 export class ChunkingPipeline extends PipelineBase {
 
@@ -72,6 +74,10 @@ export class ChunkingPipeline extends PipelineBase {
             const title = parts[i].split('\n')[0];
             const id = randomUUID();
             const tokens = encoding.encode(content);
+            // Ignore short chunks
+            if (tokens.length < MIN_CHUNK_LENGTH) {
+                continue;
+            }
             const chunk: TChunk = {
                 id: id,
                 level: level,
@@ -93,8 +99,8 @@ export class ChunkingPipeline extends PipelineBase {
         let chunk_count = 0;
         for (const paragraph of paragraphs) {
             const tokens = encoding.encode(paragraph);
-            // Ignore very short paragraphs
-            if (tokens.length < 10) {
+            // Ignore short chunks
+            if (tokens.length < MIN_CHUNK_LENGTH) {
                 continue;
             }
             const title = `${parent.title} - ${chunk_count}`;
@@ -126,6 +132,4 @@ export class ChunkingPipeline extends PipelineBase {
         }
         return chunks;
     }
-
-    
 }

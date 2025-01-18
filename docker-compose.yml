@@ -52,7 +52,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 2
+              count: 1
               capabilities: [gpu]
   
   sourcery-reranking:
@@ -65,7 +65,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 2
+              count: 1
               capabilities: [gpu]
 
   sourcery:
@@ -76,6 +76,7 @@ services:
     container_name: sourcery
     ports:
       - 9000:9000
+      - 9001:9001
     volumes:
       - ./data/projects:/var/lib/sourcery/projects
       - ./packages:/app/packages
@@ -89,6 +90,7 @@ services:
       - REDIS_HOST=sourcery-keydb
       - REDIS_PORT=6379
       - MONGO_URL=mongodb://sourcery-mongodb:27017
+      - WEBSOCKET_PORT=9001
     privileged: true
     deploy:
       resources:
@@ -106,28 +108,6 @@ services:
       - 27017:27017
     volumes:
       - ./data/mongodb:/data/db
-
-  # sourcery-ws:
-  #   image: jasony/ws-subscribe-broadcast:latest
-  #   restart: always
-  #   container_name: sourcery-ws
-  #   ports:
-  #     - 9001:3000
-
-  sourcery-ws:
-    build:
-      context: .
-      dockerfile: packages/sourcery-ws/Dockerfile
-    restart: always
-    container_name: sourcery-ws
-    ports:
-      - 9001:3001
-    volumes:
-      - ./packages/sourcery-ws:/app/packages/sourcery-ws
-      - ./packages/sourcery-queue:/app/packages/sourcery-queue
-    environment:
-      - REDIS_HOST=sourcery-keydb
-      - REDIS_PORT=6379
 
   sourcery-ner:
     image: jasony/sourcery-ner-api:latest

@@ -20,6 +20,7 @@
     "start:frontend": "cd packages/sourcery-frontend && npm run dev",
     "start:chat": "tsx --watch packages/sourcery-chat-api/src/app.js",
     "start:pipeline": "tsx --watch packages/sourcery-pipeline/src/index.ts",
+    "start:ws": "tsx --watch packages/sourcery-ws/src/server.ts",
     "start-deprecated:llm-api": "cd packages/sourcery-llm-api && npm start",
     "sourcery-ocr": "cd packages/sourcery-ocr && npm run start"
   },

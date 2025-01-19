@@ -6,12 +6,15 @@ import { ORIGIN } from '$env/static/private';
 import type { TAlert } from '@sourcery/common/types/Alert.type';
 import type { User } from '@sourcery/common/types/User.type';
 import { getUsers } from '$lib/classes/users';
+import type { Session } from '$lib/server/auth';
 
 type response = {
     token: string | null,
     alerts: TAlert[] | null,
     users: User[] | null,
     origin: string;
+    user: User | null;
+    session: Session | null;
 }
 
 export async function load({ params, locals, cookies }): Promise<response> {
@@ -29,7 +32,9 @@ export async function load({ params, locals, cookies }): Promise<response> {
         token: token,
         alerts: alerts,
         users: users,
-        origin: ORIGIN
+        origin: ORIGIN,
+        user: locals?.user,
+        session: locals?.session
     }
     
     return response;

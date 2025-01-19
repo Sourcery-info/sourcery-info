@@ -12,6 +12,8 @@ import { error } from '@sveltejs/kit';
 import type { SourceryFile } from '$lib/types/SourceryFile.type';
 import { ORIGIN } from '$env/static/private';
 import type { TAlert } from '@sourcery/common/types/Alert.type';
+import type { Session } from '$lib/server/auth';
+import type { User } from '@sourcery/common/types/User.type';
 
 type response = {
     project: ProjectType | null,
@@ -21,6 +23,8 @@ type response = {
     alerts: TAlert[] | null,
     token: string | null,
     origin: string;
+    user: User | null;
+    session: Session | null;
 }
 
 export async function load({ params, locals, cookies }): Promise<response> {
@@ -36,7 +40,9 @@ export async function load({ params, locals, cookies }): Promise<response> {
         entities: [],
         alerts: [],
         token: token,
-        origin: ORIGIN
+        origin: ORIGIN,
+        user: locals?.user,
+        session: locals?.session
     }
     if (params?.project_id) {
         response.project = await getProject(params.project_id);

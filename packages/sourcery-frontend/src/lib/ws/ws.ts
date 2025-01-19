@@ -5,10 +5,7 @@ import { conversationsStore } from '$lib/stores/conversations';
 import { conversationStore } from '$lib/stores/conversationStore';
 import { connect, subscribe } from '@sourcery/ws/src/client.js';
 import { usersStore } from '$lib/stores/usersStore';
-
-interface User {
-    user_id: string;
-}
+import type { User } from '@sourcery/common/types/User.type';
 
 interface Project {
     _id: string;

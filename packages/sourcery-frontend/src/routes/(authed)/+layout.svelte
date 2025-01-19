@@ -73,7 +73,7 @@
 
 	onMount(() => {
 		return (async () => {
-			if (data.user && data.token && data.origin) {
+			if (data.user?.user_id && data.token && data.origin) {
 				await initializeWebSocket(data.origin, data.token, data.user, data.project);
 			}
 		})();

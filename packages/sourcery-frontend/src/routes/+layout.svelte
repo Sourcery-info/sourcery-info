@@ -3,6 +3,7 @@
 	// import '$lib/sass/global.scss';
 	import '../app.css';
 	import Alert from '$lib/ui/alert.svelte';
+	import '$lib/i18n/setup';
 
 	export let data = {
 		projects: [],

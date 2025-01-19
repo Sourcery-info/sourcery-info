@@ -1,0 +1,57 @@
+{
+    "login": {
+        "title": "Sign in to your account",
+        "tagline": "Interview your documents with complete privacy",
+        "description": {
+            "private": "Sourcery empowers journalists to unlock insights and tell compelling stories. Explore your document cache using natural language, all within a secure environment - perfect for investigative journalism and sensitive research.",
+            "cloud": "Sourcery empowers journalists to unlock insights and tell compelling stories. Explore your document cache using natural language, perfect for investigative journalism and research."
+        },
+        "security_note": {
+            "private": "Powered by local AI processing for unprecedented security. No data ever leaves your system.",
+            "cloud": "Powered by enterprise-grade security and encryption for your peace of mind."
+        },
+        "username_label": "Username",
+        "password_label": "Password",
+        "submit_button": "Sign in",
+        "create_account": {
+            "prompt": "Not a member?",
+            "link_text": "Create an account"
+        }
+    },
+    "create_account": {
+        "title": "Create your account",
+        "tagline": "Join the future of document analysis",
+        "description": {
+            "private": "Sourcery empowers journalists to unlock insights and tell compelling stories. Explore your document cache using natural language, all within a secure environment - perfect for investigative journalism and sensitive research.",
+            "cloud": "Sourcery empowers journalists to unlock insights and tell compelling stories. Explore your document cache using natural language, perfect for investigative journalism and research."
+        },
+        "security_note": {
+            "private": "Powered by local AI processing for unprecedented security. No data ever leaves your system.",
+            "cloud": "Powered by enterprise-grade security and encryption for your peace of mind."
+        },
+        "username_label": "Username",
+        "name_label": "Full Name",
+        "email_label": "Email",
+        "password_label": "Password",
+        "confirm_password_label": "Confirm Password",
+        "submit_button": "Create Account",
+        "login": {
+            "prompt": "Already have an account?",
+            "link_text": "Sign in"
+        }
+    },
+    "awaiting_authorization": {
+        "title": "Awaiting Authorization",
+        "tagline": "Welcome to Sourcery",
+        "description": {
+            "private": "Thank you for registering! We're excited to have you join our community of journalists and researchers using AI-powered document analysis with complete privacy.",
+            "cloud": "Thank you for registering! We're excited to have you join our community of journalists and researchers using AI-powered document analysis."
+        },
+        "security_note": {
+            "private": "Your security is our priority. All processing happens locally on your system.",
+            "cloud": "Your security is our priority. Enterprise-grade encryption protects your data."
+        },
+        "status_message": "Your account is awaiting authorization. An administrator will review your request shortly.",
+        "logout_button": "Log out"
+    }
+}

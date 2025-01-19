@@ -3,9 +3,14 @@
 	import { enhance } from '$app/forms';
 	import logo from '$lib/assets/Sourcery Logo.png';
 	import { fade } from 'svelte/transition';
+	import { _ } from 'svelte-i18n';
+	import { appVersionStore } from '$lib/i18n/config';
+	import VersionSwitcher from '$lib/ui/version-switcher.svelte';
 
 	export let form: LoginFormData;
 </script>
+
+<VersionSwitcher />
 
 <div
 	class="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 flex items-center justify-center px-6 py-12"
@@ -24,16 +29,13 @@
 						<p
 							class="text-2xl text-indigo-400 font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"
 						>
-							Interview your documents with complete privacy
+							{$_('login.tagline')}
 						</p>
 						<p class="text-gray-300 leading-relaxed">
-							Sourcery empowers journalists to unlock insights and tell compelling stories. Explore
-							your document cache using natural language, all within a secure environment - perfect
-							for investigative journalism and sensitive research.
+							{$_(`login.description.${$appVersionStore}`)}
 						</p>
 						<p class="text-sm text-gray-400 border-l-2 border-indigo-500 pl-4">
-							Powered by local AI processing for unprecedented security. No data ever leaves your
-							system.
+							{$_(`login.security_note.${$appVersionStore}`)}
 						</p>
 					</div>
 				</div>
@@ -41,14 +43,14 @@
 				<!-- Right side - Login Form -->
 				<div class="lg:pl-12">
 					<h2 class="text-2xl font-bold leading-9 tracking-tight text-white mb-8">
-						Sign in to your account
+						{$_('login.title')}
 					</h2>
 
 					<form class="space-y-6" method="POST" use:enhance>
 						<div class="space-y-4">
 							<div>
 								<label for="username" class="block text-sm font-medium leading-6 text-white"
-									>Username</label
+									>{$_('login.username_label')}</label
 								>
 								<div class="mt-2">
 									<input
@@ -65,7 +67,7 @@
 							<div>
 								<div class="flex items-center justify-between">
 									<label for="password" class="block text-sm font-medium leading-6 text-white"
-										>Password</label
+										>{$_('login.password_label')}</label
 									>
 								</div>
 								<div class="mt-2">
@@ -93,17 +95,17 @@
 							type="submit"
 							class="flex w-full justify-center rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2.5 text-sm font-semibold leading-6 text-white shadow-lg hover:from-indigo-400 hover:to-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 transition-all duration-200 hover:shadow-indigo-500/25"
 						>
-							Sign in
+							{$_('login.submit_button')}
 						</button>
 					</form>
 
 					<p class="mt-8 text-center text-sm text-gray-400">
-						Not a member?
+						{$_('login.create_account.prompt')}
 						<a
 							href="/create-account"
 							class="font-semibold text-indigo-400 hover:text-indigo-300 hover:underline transition-colors duration-200"
 						>
-							Create an account
+							{$_('login.create_account.link_text')}
 						</a>
 					</p>
 				</div>

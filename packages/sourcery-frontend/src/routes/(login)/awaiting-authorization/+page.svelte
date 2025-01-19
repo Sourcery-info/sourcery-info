@@ -1,8 +1,11 @@
-<script>
+<script lang="ts">
 	/** @type {import('./$types').PageData} */
 	import logo from '$lib/assets/Sourcery Logo.png';
 	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
+	import { _ } from 'svelte-i18n';
+	import { appVersionStore } from '$lib/i18n/config';
+	import VersionSwitcher from '$lib/ui/version-switcher.svelte';
 
 	onMount(async () => {
 		checkState();
@@ -18,6 +21,8 @@
 		}
 	}
 </script>
+
+<VersionSwitcher />
 
 <div
 	class="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 flex items-center justify-center px-6 py-12"
@@ -36,14 +41,13 @@
 						<p
 							class="text-2xl text-indigo-400 font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"
 						>
-							Welcome to Sourcery
+							{$_('awaiting_authorization.tagline')}
 						</p>
 						<p class="text-gray-300 leading-relaxed">
-							Thank you for registering! We're excited to have you join our community of journalists
-							and researchers using AI-powered document analysis.
+							{$_(`awaiting_authorization.description.${$appVersionStore}`)}
 						</p>
 						<p class="text-sm text-gray-400 border-l-2 border-indigo-500 pl-4">
-							Your security is our priority. All processing happens locally on your system.
+							{$_(`awaiting_authorization.security_note.${$appVersionStore}`)}
 						</p>
 					</div>
 				</div>
@@ -62,13 +66,12 @@
 						</div>
 
 						<h2 class="text-2xl font-bold leading-9 tracking-tight text-white">
-							Awaiting Authorization
+							{$_('awaiting_authorization.title')}
 						</h2>
 
 						<div class="max-w-sm">
 							<p class="text-gray-300 leading-relaxed">
-								Your account is awaiting authorization. An administrator will review your request
-								shortly.
+								{$_('awaiting_authorization.status_message')}
 							</p>
 						</div>
 
@@ -77,7 +80,7 @@
 								href="/logout"
 								class="inline-flex items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold text-white bg-white/10 hover:bg-white/20 transition-colors duration-200"
 							>
-								Log out
+								{$_('awaiting_authorization.logout_button')}
 							</a>
 						</div>
 					</div>

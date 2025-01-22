@@ -77,7 +77,11 @@
 									<div class="size-2 rounded-full bg-blue-500"></div>
 								</div>
 							{/if}
-							<p class="text-sm text-gray-600 dark:text-gray-300 break-words">{alert.message}</p>
+							<p
+								class="text-sm text-gray-600 dark:text-gray-300 break-words max-w-[250px] truncate"
+							>
+								{alert.message}
+							</p>
 						</div>
 					</div>
 				{:else}

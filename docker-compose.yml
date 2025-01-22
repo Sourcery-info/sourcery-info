@@ -51,9 +51,9 @@ services:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+            - driver: ${NVIDIA_DRIVER:-nvidia}
+              count: ${OLLAMA_GPU_COUNT:-1}
+              capabilities: ["${NVIDIA_CAPABILITIES:-gpu}"]
   
   sourcery-reranking:
     image: jasony/document-reranking-api:latest
@@ -64,9 +64,9 @@ services:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+            - driver: ${NVIDIA_DRIVER:-nvidia}
+              count: ${RERANKING_GPU_COUNT:-1}
+              capabilities: ["${NVIDIA_CAPABILITIES:-gpu}"]
 
   sourcery:
     build:
@@ -96,9 +96,9 @@ services:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+            - driver: ${NVIDIA_DRIVER:-nvidia}
+              count: ${SOURCERY_GPU_COUNT:-1}
+              capabilities: ["${NVIDIA_CAPABILITIES:-gpu}"]
 
   sourcery-mongodb:
     image: mongo:latest

@@ -1,11 +1,10 @@
 /** @type {import('./$types').PageServerLoad} */
 
 import { getUser, updateUser, checkUniqueUsername, checkUniqueEmail } from '$lib/classes/users';
-import { fail, redirect, error } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { zfd } from "zod-form-data";
 import { z } from 'zod';
 import { validate } from '$lib/validate';
-import { createAlertUrl } from '$lib/alerts';
 import { MailService } from '$lib/utils/mail';
 
 export async function load({ locals, params }) {
@@ -19,7 +18,7 @@ export const actions = {
     default: async ({ request, params, url, locals }) => {
         const formData = await request.formData();
         const userScheme = zfd.formData({
-            username: zfd.text(z.string().min(3).max(50).refine(async (username) => await checkUniqueUsername(username, params.user_id), { message: "Username already exists" })),
+            user_username: zfd.text(z.string().min(3).max(50).refine(async (username) => await checkUniqueUsername(username, params.user_id), { message: "Username already exists" })),
             name: zfd.text(z.string().min(1).max(100)),
             email: zfd.text(z.string().email().max(100).refine(async (email) => await checkUniqueEmail(email, params.user_id), { message: "Email already exists" })),
             approved: zfd.checkbox({trueValue: "1"}),
@@ -37,6 +36,7 @@ export const actions = {
             
             const user = {
                 _id: params.user_id,
+                username: validation.data.user_username,
                 ...validation.data
             }
             await updateUser(user);
@@ -68,10 +68,20 @@ export const actions = {
                     }
                 );
             }
+            return { 
+                success: true,
+                data: {
+                    _id: params.user_id,
+                    username: validation.data.user_username,
+                    name: validation.data.name,
+                    email: validation.data.email,
+                    approved: validation.data.approved,
+                    admin: validation.data.admin
+                }
+            };
         } catch (err) {
             console.error(err);
             return fail(500, { message: "Failed to update user" });
         }
-        return redirect(303, createAlertUrl('/admin/users/list', 'changes-saved'));
     }
 };

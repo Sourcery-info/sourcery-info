@@ -1,10 +1,22 @@
 <script>
 	// @ts-nocheck
 	import ModelSettings from '$lib/ui/modelsettings.svelte';
+	import SuccessAlert from '$lib/ui/success-alert.svelte';
 	import { enhance } from '$app/forms';
 
 	export let form;
 	export let data;
+
+	let showSuccess = false;
+
+	function handleSubmit() {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') {
+				showSuccess = true;
+			}
+		};
+	}
 </script>
 
 <div>
@@ -13,7 +25,7 @@
 		These settings will be applied by default to new projects. They will not affect the settings of
 		existing projects.
 	</p>
-	<form method="POST" use:enhance class="mt-10">
+	<form method="POST" use:enhance={handleSubmit} class="mt-10">
 		<ModelSettings
 			bind:form
 			bind:chat_model={data.props.settings.chat_model}
@@ -29,3 +41,5 @@
 		</button>
 	</form>
 </div>
+
+<SuccessAlert bind:show={showSuccess} message="Settings saved" />

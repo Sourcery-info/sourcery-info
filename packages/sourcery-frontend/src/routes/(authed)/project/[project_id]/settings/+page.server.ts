@@ -52,9 +52,9 @@ export const actions = {
         console.log(validation.data);
         try {
             updateProject(Object.assign(validation.data, { _id, updated_at: new Date() }));
+            return { success: true };
         } catch (err) {
             return fail(400, { errors: [err], data: validation.data });
         }
-        return redirect(303, `/project/${_id}/settings`);
     }
 }

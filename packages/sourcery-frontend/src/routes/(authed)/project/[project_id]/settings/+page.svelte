@@ -1,11 +1,23 @@
-<script>
+<script lang="ts">
 	import ProjectSettings from '$lib/ui/projectsettings.svelte';
 	import ModelSettings from '$lib/ui/modelsettings.svelte';
-	import { enhance } from '$app/forms';
+	import SuccessAlert from '$lib/ui/success-alert.svelte';
+	import { enhance, type SubmitFunction } from '$app/forms';
 	import { filesStore } from '$lib/stores/files';
 
 	export let form;
 	export let data;
+
+	let showSuccess = false;
+
+	const handleSubmit: SubmitFunction = () => {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') {
+				showSuccess = true;
+			}
+		};
+	};
 </script>
 
 <div>
@@ -16,7 +28,7 @@
 
 	<div class="mt-5">
 		{#if data.project}
-			<form method="POST" use:enhance>
+			<form method="POST" use:enhance={handleSubmit}>
 				<ProjectSettings
 					bind:form
 					bind:name={data.project.name}
@@ -45,3 +57,5 @@
 		{/if}
 	</div>
 </div>
+
+<SuccessAlert bind:show={showSuccess} message="Project settings saved" />

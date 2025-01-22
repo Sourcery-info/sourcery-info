@@ -40,11 +40,9 @@ export const actions = {
         }
         try {
             settings.set(validation.data);
+            return { success: true };
         } catch (err) {
             return fail(400, { errors: [err], data: validation.data });
         }
-        // redirect(303, '/projects');
-        return redirect(303, '/settings');
-
     }
 }

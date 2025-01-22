@@ -55,8 +55,8 @@
 						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 					/>
 				</div>
-				{#if form?.errors?.username}
-					<p class="mt-2 text-sm text-red-500">{form.errors.username}</p>
+				{#if form?.errors?.user_username}
+					<p class="mt-2 text-sm text-red-500">{form.errors.user_username}</p>
 				{/if}
 			</div>
 

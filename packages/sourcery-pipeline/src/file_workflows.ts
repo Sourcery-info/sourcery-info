@@ -49,3 +49,15 @@ export const stages = [
     "done",
     "error"
 ]
+
+export const stage_names = {
+    [FileStage.UNPROCESSED]: "Starting",
+    [FileStage.MARKER_PDF]: "OCR",
+    [FileStage.CHUNKING]: "Chunking",
+    [FileStage.CONTEXTUAL_CHUNKING]: "Adding Context",
+    [FileStage.ENTITIES]: "Extracting Entities",
+    [FileStage.VECTORISING]: "Vectorising",
+    [FileStage.SAVING]: "Saving",
+    [FileStage.DONE]: "Done",
+    [FileStage.ERROR]: "Error"
+}

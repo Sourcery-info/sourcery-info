@@ -39,6 +39,7 @@ export const actions = {
                 created_at: new Date(),
                 updated_at: new Date()
             });
+            return { success: true, data: validation.data };
         } catch (error) {
             console.error('Error creating project:', error);
             return fail(500, { 
@@ -46,6 +47,5 @@ export const actions = {
                 data: validation.data
             });
         }
-        return redirect(303, createAlertUrl('/admin/projects/list', 'project-created', 'success'));
     }
 } 

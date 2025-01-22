@@ -27,12 +27,12 @@
 	$: user = form?.data || data.user;
 </script>
 
-<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
-		<h2 class="text-center text-2xl font-bold leading-9 tracking-tight text-white">Edit User</h2>
+<div class="px-6 py-12">
+	<div>
+		<h2 class="text-2xl font-bold leading-9 tracking-tight text-white">Edit User</h2>
 	</div>
 
-	<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+	<div class="mt-10 max-w-2xl">
 		<form use:enhance={handleSubmit} method="POST" class="space-y-6">
 			{#if form?.message}
 				<div class="p-4 bg-red-900/50 text-red-200 rounded-lg">

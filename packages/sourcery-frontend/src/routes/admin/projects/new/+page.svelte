@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { ActionResult } from '@sveltejs/kit';
+	import SuccessAlert from '$lib/ui/success-alert.svelte';
+	import ModelSettings from '$lib/ui/modelsettings.svelte';
 
 	export let form: {
 		message?: string;
@@ -16,17 +19,38 @@
 			tags?: string;
 		};
 	} | null;
+
+	let showSuccess = false;
+
+	function handleSubmit() {
+		return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
+			await update();
+			if (result.type === 'success') {
+				showSuccess = true;
+			}
+		};
+	}
+
+	$: project = form?.data ?? {
+		name: '',
+		description: '',
+		notes: '',
+		is_public: false,
+		vector_model: '',
+		chat_model: '',
+		temperature: 0.7,
+		security: 'secure',
+		tags: ''
+	};
 </script>
 
-<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
-		<h2 class="text-center text-2xl font-bold leading-9 tracking-tight text-white">
-			Create New Project
-		</h2>
+<div class="px-6 py-12">
+	<div>
+		<h2 class="text-2xl font-bold leading-9 tracking-tight text-white">Create New Project</h2>
 	</div>
 
-	<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-		<form use:enhance method="POST" class="space-y-6">
+	<div class="mt-10 max-w-2xl">
+		<form use:enhance={handleSubmit} method="POST" class="space-y-6">
 			{#if form?.message}
 				<div class="p-4 bg-red-900/50 text-red-200 rounded-lg">
 					{form.message}
@@ -40,7 +64,7 @@
 						type="text"
 						id="name"
 						name="name"
-						value={form?.data?.name ?? ''}
+						bind:value={project.name}
 						required
 						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 					/>
@@ -59,7 +83,7 @@
 						id="description"
 						name="description"
 						rows="3"
-						value={form?.data?.description ?? ''}
+						bind:value={project.description}
 						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 					></textarea>
 				</div>
@@ -75,71 +99,12 @@
 						id="notes"
 						name="notes"
 						rows="3"
-						value={form?.data?.notes ?? ''}
+						bind:value={project.notes}
 						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 					></textarea>
 				</div>
 				{#if form?.errors?.notes}
 					<p class="mt-2 text-sm text-red-500">{form.errors.notes}</p>
-				{/if}
-			</div>
-
-			<div>
-				<label for="chat_model" class="block text-sm font-medium leading-6 text-white"
-					>Chat Model</label
-				>
-				<div class="mt-2">
-					<input
-						type="text"
-						id="chat_model"
-						name="chat_model"
-						value={form?.data?.chat_model ?? ''}
-						required
-						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
-					/>
-				</div>
-				{#if form?.errors?.chat_model}
-					<p class="mt-2 text-sm text-red-500">{form.errors.chat_model}</p>
-				{/if}
-			</div>
-
-			<div>
-				<label for="vector_model" class="block text-sm font-medium leading-6 text-white"
-					>Vector Model</label
-				>
-				<div class="mt-2">
-					<input
-						type="text"
-						id="vector_model"
-						name="vector_model"
-						value={form?.data?.vector_model ?? ''}
-						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
-					/>
-				</div>
-				{#if form?.errors?.vector_model}
-					<p class="mt-2 text-sm text-red-500">{form.errors.vector_model}</p>
-				{/if}
-			</div>
-
-			<div>
-				<label for="temperature" class="block text-sm font-medium leading-6 text-white"
-					>Temperature</label
-				>
-				<div class="mt-2">
-					<input
-						type="number"
-						id="temperature"
-						name="temperature"
-						min="0"
-						max="1"
-						step="0.1"
-						value={form?.data?.temperature ?? 0.7}
-						required
-						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
-					/>
-				</div>
-				{#if form?.errors?.temperature}
-					<p class="mt-2 text-sm text-red-500">{form.errors.temperature}</p>
 				{/if}
 			</div>
 
@@ -150,7 +115,7 @@
 						type="text"
 						id="tags"
 						name="tags"
-						value={form?.data?.tags ?? ''}
+						bind:value={project.tags}
 						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 					/>
 				</div>
@@ -159,13 +124,20 @@
 				{/if}
 			</div>
 
+			<ModelSettings
+				bind:chat_model={project.chat_model}
+				bind:vector_model={project.vector_model}
+				bind:temperature={project.temperature}
+				{form}
+			/>
+
 			<div class="space-y-4">
 				<label class="flex items-center space-x-3">
 					<input
 						type="checkbox"
 						name="is_public"
 						value={1}
-						checked={form?.data?.is_public ?? false}
+						bind:checked={project.is_public}
 						class="w-4 h-4 rounded border-gray-300 bg-white/5 text-indigo-500 focus:ring-indigo-500"
 					/>
 					<span class="text-sm font-medium text-white">Public</span>
@@ -179,13 +151,12 @@
 						<select
 							id="security"
 							name="security"
+							bind:value={project.security}
 							required
 							class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 						>
-							<option value="secure" selected={form?.data?.security === 'secure'}>Secure</option>
-							<option value="insecure" selected={form?.data?.security === 'insecure'}
-								>Insecure</option
-							>
+							<option value="secure">Secure</option>
+							<option value="insecure">Insecure</option>
 						</select>
 					</div>
 					{#if form?.errors?.security}
@@ -211,3 +182,5 @@
 		</form>
 	</div>
 </div>
+
+<SuccessAlert bind:show={showSuccess} message="Project created successfully" />

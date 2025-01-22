@@ -5,12 +5,9 @@ import { keyNameMap } from '$lib/config/keyname_map';
 import { z } from 'zod';
 import { zfd } from 'zod-form-data';
 import { validate } from '$lib/validate';
-import { createAlertUrl } from '$lib/alerts';
 
 async function populateConfig() {
     const configs = await getConfigs();
-
-    // console.log(configs);
 
     // Create a map of existing configs
     const configMap = configs.reduce((acc, config) => {
@@ -114,11 +111,10 @@ export const actions = {
             if (configUpdates.length > 0) {
                 await bulkUpdateConfigs(configUpdates);
             }
+            return { success: true };
         } catch (e) {
             console.error(e);
             return fail(500, { message: "Failed to update config" });
         }
-
-        return redirect(303, createAlertUrl('/admin/config', 'changes-saved'));
     }
 }; 

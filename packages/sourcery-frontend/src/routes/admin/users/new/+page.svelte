@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { ActionResult } from '@sveltejs/kit';
+	import SuccessAlert from '$lib/ui/success-alert.svelte';
 
 	export let form: {
 		message?: string;
@@ -12,17 +14,34 @@
 			admin?: boolean;
 		};
 	} | null;
+
+	let showSuccess = false;
+
+	function handleSubmit() {
+		return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
+			await update();
+			if (result.type === 'success') {
+				showSuccess = true;
+			}
+		};
+	}
+
+	$: user = form?.data ?? {
+		username: '',
+		name: '',
+		email: '',
+		approved: false,
+		admin: false
+	};
 </script>
 
-<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
-		<h2 class="text-center text-2xl font-bold leading-9 tracking-tight text-white">
-			Create New User
-		</h2>
+<div class="px-6 py-12">
+	<div>
+		<h2 class="text-2xl font-bold leading-9 tracking-tight text-white">Create New User</h2>
 	</div>
 
-	<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-		<form use:enhance method="POST" class="space-y-6">
+	<div class="mt-10 max-w-2xl">
+		<form use:enhance={handleSubmit} method="POST" class="space-y-6">
 			{#if form?.message}
 				<div class="p-4 bg-red-900/50 text-red-200 rounded-lg">
 					{form.message}
@@ -38,7 +57,7 @@
 						id="username"
 						name="username"
 						required
-						value={form?.data?.username ?? ''}
+						bind:value={user.username}
 						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 					/>
 				</div>
@@ -55,7 +74,7 @@
 						id="name"
 						name="name"
 						required
-						value={form?.data?.name ?? ''}
+						bind:value={user.name}
 						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 					/>
 				</div>
@@ -72,7 +91,7 @@
 						id="email"
 						name="email"
 						required
-						value={form?.data?.email ?? ''}
+						bind:value={user.email}
 						class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm sm:leading-6"
 					/>
 				</div>
@@ -104,7 +123,7 @@
 						type="checkbox"
 						name="approved"
 						value={1}
-						checked={form?.data?.approved ?? false}
+						bind:checked={user.approved}
 						class="w-4 h-4 rounded border-gray-300 bg-white/5 text-indigo-500 focus:ring-indigo-500"
 					/>
 					<span class="text-sm font-medium text-white">Approved</span>
@@ -115,7 +134,7 @@
 						type="checkbox"
 						name="admin"
 						value={1}
-						checked={form?.data?.admin ?? false}
+						bind:checked={user.admin}
 						class="w-4 h-4 rounded border-gray-300 bg-white/5 text-indigo-500 focus:ring-indigo-500"
 					/>
 					<span class="text-sm font-medium text-white">Admin</span>
@@ -139,3 +158,5 @@
 		</form>
 	</div>
 </div>
+
+<SuccessAlert bind:show={showSuccess} message="User created successfully" />

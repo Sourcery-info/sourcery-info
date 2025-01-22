@@ -1,11 +1,10 @@
 /** @type {import('./$types').PageServerLoad} */
 
 import { getProject, updateProject, checkUniqueName } from '$lib/classes/projects';
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { zfd } from "zod-form-data";
 import { z } from 'zod';
 import { validate } from '$lib/validate';
-import { createAlertUrl } from '$lib/alerts';
 
 export async function load({ params }) {
     const project = await getProject(params.project_id);
@@ -23,7 +22,7 @@ export const actions = {
         const formData = await request.formData();
         const user_id = locals.session.user_id;
         const projectSchema = zfd.formData({
-            name: zfd.text(z.string().min(3).max(50).refine(async (name) => await checkUniqueName(name, user_id), { message: "Project name already exists" })),
+            name: zfd.text(z.string().min(3).max(50).refine(async (name) => await checkUniqueName(name, user_id, params.project_id), { message: "Project name already exists" })),
             description: zfd.text(z.string().optional()),
             notes: zfd.text(z.string().optional()),
             is_public: zfd.checkbox({trueValue: "1"}),
@@ -47,10 +46,10 @@ export const actions = {
                 owner: user_id,
                 updated_at: new Date()
             });
+            return { success: true, data: validation.data };
         } catch (err) {
             console.error(err);
             return fail(500, { message: "Failed to update project" });
         }
-        return redirect(303, createAlertUrl('/admin/projects/list', 'changes-saved'));
     }
 }; 

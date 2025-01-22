@@ -70,7 +70,9 @@
 								>
 									{i + 1}
 								</span>
-								<span class="text-gray-900 dark:text-white">{stage_names[stage]}</span>
+								<span class="text-gray-900 dark:text-white"
+									>{stage_names[stage as keyof typeof stage_names] || stage}</span
+								>
 							</div>
 							<button
 								class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
@@ -116,7 +118,10 @@
 							>
 								1
 							</span>
-							<span class="text-gray-900 dark:text-white">{stage_names[processing_stage]}</span>
+							<span class="text-gray-900 dark:text-white"
+								>{stage_names[processing_stage as keyof typeof stage_names] ||
+									processing_stage}</span
+							>
 						</div>
 						<button
 							class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
@@ -161,7 +166,9 @@
 							>
 								{i + 1}
 							</span>
-							<span class="text-gray-900 dark:text-white">{stage_names[stage]}</span>
+							<span class="text-gray-900 dark:text-white"
+								>{stage_names[stage as keyof typeof stage_names] || stage}</span
+							>
 						</div>
 					{/each}
 				</div>

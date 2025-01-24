@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { ActionResult } from '@sveltejs/kit';
 	import ThemeToggle from '$lib/ui/theme-toggle.svelte';
+	import SuccessAlert from '$lib/ui/success-alert.svelte';
+
 	interface FormErrors {
 		username?: string;
 		email?: string;
@@ -13,19 +16,38 @@
 
 	export let form: { errors?: FormErrors; data?: Record<string, string> };
 	export let data;
+
+	let showSuccess = false;
+
+	let username = '';
+	let name = '';
+	let email = '';
+
+	$: {
+		username = form?.data?.username || data.user?.username || '';
+		name = form?.data?.name || data.user?.name || '';
+		email = form?.data?.email || data.user?.email || '';
+	}
+
+	function handleSubmit() {
+		return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
+			await update();
+			if (result.type === 'success') {
+				showSuccess = true;
+			}
+		};
+	}
 </script>
 
-<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
-		<h2
-			class="text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white"
-		>
+<div class="px-6 py-12">
+	<div>
+		<h2 class="text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
 			Profile Settings
 		</h2>
 	</div>
 
-	<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-		<form class="space-y-6" method="POST" action="?/updateProfile" use:enhance>
+	<div class="mt-10 max-w-2xl">
+		<form class="space-y-6" method="POST" action="?/updateProfile" use:enhance={handleSubmit}>
 			<div>
 				<label
 					for="username"
@@ -36,7 +58,7 @@
 						id="username"
 						name="username"
 						type="text"
-						value={form?.data?.username || data.user?.username || ''}
+						bind:value={username}
 						required
 						class="block w-full rounded-md border-0 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
 					/>
@@ -55,7 +77,7 @@
 						id="name"
 						name="name"
 						type="text"
-						value={form?.data?.name || data.user?.name || ''}
+						bind:value={name}
 						required
 						class="block w-full rounded-md border-0 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
 					/>
@@ -74,7 +96,7 @@
 						id="email"
 						name="email"
 						type="email"
-						value={form?.data?.email || data.user?.email || ''}
+						bind:value={email}
 						required
 						class="block w-full rounded-md border-0 bg-white dark:bg-gray-800 px-3 py-1.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
 					/>
@@ -168,3 +190,5 @@
 		</form>
 	</div>
 </div>
+
+<SuccessAlert bind:show={showSuccess} message="Profile updated successfully" />

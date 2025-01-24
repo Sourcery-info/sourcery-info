@@ -66,6 +66,7 @@ export const actions: Actions = {
 
         try {
             await updateUser(locals.user.user_id, validation.data);
+            return { success: true };
         } catch (err: any) {
             console.error({ err });
             return fail(400, { 
@@ -73,6 +74,5 @@ export const actions: Actions = {
                 data: Object.fromEntries(formData)
             });
         }
-        return redirect(303, createAlertUrl('/profile', 'changes-saved'));
     }
 };

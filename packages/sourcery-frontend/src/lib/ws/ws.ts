@@ -50,7 +50,6 @@ export async function initializeWebSocket(origin: string, token: string, user: U
         // Update single conversation store if it matches the current conversation
         conversationStore.update((current) => {
             if (current?._id === message.conversation._id) {
-                console.log('Updating conversation store', message.conversation);
                 return message.conversation;
             }
             return current;

@@ -12,9 +12,12 @@ import dotenv from "dotenv";
 import { rerank } from "@sourcery/common/src/reranker";
 import { ensure_model } from "@sourcery/common/src/ollama";
 import { FileStatus } from "@sourcery/common/types/SourceryFile.type";
+import { logger, startTimer, endTimer, logError } from "@sourcery/common/src/logger";
 dotenv.config();
 
-export const httpServer = restify.createServer();
+export const httpServer = restify.createServer({
+    log: logger
+});
 httpServer.use(bodyParser.json());
 const MODEL = "llama3.2:latest"
 const VECTOR_MODEL = "nomic-embed-text:latest"
@@ -62,9 +65,17 @@ function find_outliers(ranked_documents) {
 }
 
 const get_rag_context = async (project_name, files, question, top_k = TOP_K, vector_model = VECTOR_MODEL) => {
+    const timerId = `rag_context_${project_name}`;
+    const componentTimings = {};
+    startTimer(timerId);
+    startTimer(`${timerId}_embedding`);
+
     try {
         await ensure_model(vector_model);
         const vector = await ollama.embeddings({ model: vector_model, prompt: question });
+        componentTimings.embedding = endTimer(`${timerId}_embedding`, { model: vector_model }, ['chat', 'rag', 'embedding']);
+
+        startTimer(`${timerId}_qdrant_search`);
         const file_query = {
             key: "file_id",
             match: {
@@ -80,11 +91,27 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
         }
 
         const qdrant_results = await qdrant.search(project_name, query);
-        console.log(qdrant_results);
+        componentTimings.qdrant_search = endTimer(`${timerId}_qdrant_search`, {
+            result_count: qdrant_results?.length
+        }, ['chat', 'rag', 'search']);
+
+        logger.debug({
+            msg: 'Qdrant search results',
+            count: qdrant_results?.length,
+            tags: ['chat', 'rag', 'search', 'debug']
+        });
+
         if (!qdrant_results) {
-            console.log(`No results found for query`);
+            logger.warn({
+                msg: 'No results found for query',
+                project_name,
+                question,
+                tags: ['chat', 'rag', 'search', 'warning']
+            });
             return [];
         }
+
+        startTimer(`${timerId}_chunk_retrieval`);
         const results = [];
         for (let result of qdrant_results) {
             const chunk = await getChunkByQdrantID(result.id);
@@ -92,55 +119,114 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
                 results.push(chunk);
             }
         }
+        componentTimings.chunk_retrieval = endTimer(`${timerId}_chunk_retrieval`, {
+            chunks_retrieved: results.length
+        }, ['chat', 'rag', 'chunks']);
+
+        startTimer(`${timerId}_reranking`);
         const contexts = results.map(result => `<filename>${result.file_id.original_name}</filename>\n<id>${result.id}</id>\n<context>${result.context || ""}</context>\n<content>${result.content}</content>`);
         const reranked = await rerank(question, contexts, RERANK_TOP_K);
+        componentTimings.reranking = endTimer(`${timerId}_reranking`, {
+            input_chunks: contexts.length,
+            output_chunks: reranked.ranked_documents.length
+        }, ['chat', 'rag', 'reranking']);
+
         const outliers = find_outliers(reranked);
         if (outliers.length > 0) {
-            console.log(`Found ${outliers.length} outliers`);
+            logger.info({
+                msg: `Found outliers`,
+                count: outliers.length,
+                tags: ['chat', 'rag', 'outliers']
+            });
+            endTimer(timerId, {
+                outliers_found: true,
+                component_timings: componentTimings,
+                vector_model,
+                total_chunks: results.length
+            }, ['chat', 'rag', 'complete']);
             return outliers;
         }
+
+        endTimer(timerId, {
+            component_timings: componentTimings,
+            vector_model,
+            total_chunks: results.length
+        }, ['chat', 'rag', 'complete']);
         return reranked.ranked_documents;
     } catch (err) {
-        console.error(err);
+        logError(err, {
+            project_name,
+            question,
+            component_timings: componentTimings,
+            vector_model
+        }, ['chat', 'rag', 'error']);
         throw new restifyErrors.InternalServerError("Error processing chat");
     }
 }
 
 httpServer.post("/chat/:project_id", async (req, res) => {
+    const requestId = `chat_${req.params.project_id}_${Date.now()}`;
+    const componentTimings = {};
+    startTimer(requestId);
+
     try {
         const project_id = req.params.project_id;
         const { input, conversation_id, message_id, files } = req.body;
-        // Make sure we have all the required fields
-        if (!project_id) {
-            throw new restifyErrors.BadRequestError("No project provided");
+
+        // Validate request
+        if (!project_id || !input || !message_id || !conversation_id) {
+            const missingFields = [];
+            if (!project_id) missingFields.push('project_id');
+            if (!input) missingFields.push('input');
+            if (!message_id) missingFields.push('message_id');
+            if (!conversation_id) missingFields.push('conversation_id');
+
+            logger.warn({
+                msg: 'Missing required fields',
+                missingFields,
+                requestId,
+                tags: ['chat', 'validation', 'warning']
+            });
+            throw new restifyErrors.BadRequestError(`Missing required fields: ${missingFields.join(', ')}`);
         }
-        if (!input) {
-            throw new restifyErrors.BadRequestError("No input provided");
-        }
-        if (!message_id) {
-            throw new restifyErrors.BadRequestError("No message_id provided");
-        }
-        if (!conversation_id) {
-            throw new restifyErrors.BadRequestError("No conversation_id provided");
-        }
+
+        startTimer(`${requestId}_project_fetch`);
         // Get the project
         const project = await getProject(project_id);
         if (!project?._id) {
+            logger.warn({
+                msg: 'Project not found',
+                project_id,
+                requestId,
+                tags: ['chat', 'project', 'warning']
+            });
             throw new restifyErrors.NotFoundError("Project not found");
         }
+        componentTimings.project_fetch = endTimer(`${requestId}_project_fetch`, {}, ['chat', 'project']);
+
         const model = req.body?.model || project?.model || MODEL;
         const temperature = req.body?.temperature || project?.temperature || TEMPERATURE;
         const top_k = req.body?.top_k || project?.top_k || TOP_K;
         const vector_model = req.body?.vector_model || project?.vector_model || VECTOR_MODEL;
+
         // Get the files to search
+        startTimer(`${requestId}_files_fetch`);
         let files_to_search = [];
         if (files) {
             files_to_search = await getFiles(project_id, files);
         } else {
             files_to_search = (await getFiles(project_id)).filter(f => f.status === FileStatus.ACTIVE);
         }
+        componentTimings.files_fetch = endTimer(`${requestId}_files_fetch`, {
+            files_count: files_to_search.length
+        }, ['chat', 'files']);
+
         // Get the context
+        startTimer(`${requestId}_context`);
         const contextChunks = await get_rag_context(project_id, files_to_search, input, top_k, vector_model);
+        componentTimings.context = endTimer(`${requestId}_context`, {}, ['chat', 'context']);
+
+        startTimer(`${requestId}_chunk_processing`);
         let used_chunks = [];
         for (const chunk of contextChunks) {
             const id = chunk.document.match(/<id>(.*?)<\/id>/)?.[1];
@@ -149,15 +235,27 @@ httpServer.post("/chat/:project_id", async (req, res) => {
                 used_chunks.push(c._id);
             }
         }
+        componentTimings.chunk_processing = endTimer(`${requestId}_chunk_processing`, {
+            chunks_used: used_chunks.length
+        }, ['chat', 'chunks']);
+
         const context = contextChunks.map(c => `<document>${c.document}</document>`).join("\n\n---\n\n");
+
         // Get the history of messages
+        startTimer(`${requestId}_conversation_fetch`);
         const conversation = await getConversation(conversation_id);
+        componentTimings.conversation_fetch = endTimer(`${requestId}_conversation_fetch`, {}, ['chat', 'conversation']);
+
+        startTimer(`${requestId}_model_load`);
         try {
             await ensure_model(model);
+            componentTimings.model_load = endTimer(`${requestId}_model_load`, { model }, ['chat', 'model', 'load']);
         } catch (err) {
-            console.error(err);
+            logError(err, { model, requestId }, ['chat', 'model', 'error']);
             throw new restifyErrors.InternalServerError("Error loading model");
         }
+
+        startTimer(`${requestId}_chat`);
         const messages = rag_prompt_template(context, input, message_id, conversation);
         const chatResponse = await ollama.chat({
             model,
@@ -165,11 +263,17 @@ httpServer.post("/chat/:project_id", async (req, res) => {
             stream: false,
             options: { temperature }
         }).catch(err => {
-            console.error(err);
+            logError(err, { model, requestId }, ['chat', 'model', 'error']);
             throw new restifyErrors.InternalServerError("Error processing chat");
         });
+        componentTimings.chat = endTimer(`${requestId}_chat`, {
+            model,
+            temperature,
+            message_count: messages.length
+        }, ['chat', 'model', 'inference']);
 
         // Update conversation with the response
+        startTimer(`${requestId}_conversation_update`);
         const newMessage = {
             role: "assistant",
             content: chatResponse.message.content,
@@ -177,6 +281,17 @@ httpServer.post("/chat/:project_id", async (req, res) => {
         };
         conversation.messages.push(newMessage);
         await updateConversation({ _id: conversation_id, messages: conversation.messages });
+        componentTimings.conversation_update = endTimer(`${requestId}_conversation_update`, {}, ['chat', 'conversation']);
+
+        endTimer(requestId, {
+            project_id,
+            model,
+            vector_model,
+            temperature,
+            chunks_used: used_chunks.length,
+            component_timings: componentTimings,
+            total_duration: Object.values(componentTimings).reduce((a, b) => a + b, 0)
+        }, ['chat', 'complete']);
 
         // Send minimal JSON response
         res.send({
@@ -184,10 +299,13 @@ httpServer.post("/chat/:project_id", async (req, res) => {
             message: newMessage
         });
     } catch (error) {
-        console.error(error);
+        logError(error, {
+            requestId,
+            component_timings: componentTimings
+        }, ['chat', 'error']);
         throw new restifyErrors.InternalServerError("Error processing chat");
     }
-})
+});
 
 httpServer.get("/test", async (req, res) => {
     res.send({ status: "ok" });
@@ -197,5 +315,6 @@ httpServer.listen({
     port: 9101,
     host: "0.0.0.0",
 }, () => {
+    logger.info({ msg: 'Chat API server started', port: 9101 });
     return connectDB(process.env.MONGO_URL || "mongodb://localhost:27017/sourcery")
-})
+});

@@ -7,6 +7,7 @@ import { uploadFile as uploadFileUtils } from '@sourcery/frontend/src/lib/utils/
 import mongoose from 'mongoose';
 import { getProject } from './projects';
 import { error } from '@sveltejs/kit';
+import { logger } from '@sourcery/common/src/logger';
 const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export function mapDBFile(file: SourceryFile): SourceryFile {
@@ -71,12 +72,11 @@ export async function reindexFile(file_id: string, stage_name: FileStage = FileS
     }
     const workflow = [...fileTypeWorkflows[file.filetype].stages];
     if (!workflow) {
-        console.error(`No workflow found for file type ${file.filetype}`);
+        logger.error({ msg: `No workflow found for file type ${file.filetype}`, file_id, tags: ['file', 'error'] });
         return null;
     }
-    console.log('workflow', workflow);
     if (stage_name !== FileStage.UNPROCESSED && !workflow.includes(stage_name)) {
-        console.error(`Stage ${stage_name} not found in workflow for file type ${file.filetype}`);
+        logger.error({ msg: `Stage ${stage_name} not found in workflow for file type ${file.filetype}`, file_id, tags: ['file', 'error'] });
         return null;
     }
     file.stage = stage_name;
@@ -92,7 +92,6 @@ export async function reindexFile(file_id: string, stage_name: FileStage = FileS
         }
     }
     file.processing = false;
-    // console.log({ stage_name, completed_stages: file.completed_stages, stage_queue: file.stage_queue });
     for (const clear_stage of workflow) {
         await pub.clearJob(`file-${clear_stage}-${file_id}`);
     }

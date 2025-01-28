@@ -6,6 +6,5 @@ export const load: PageServerLoad = async ({ locals }) => {
         return { alerts: [] };
     }
 	const alerts = await getAlerts(locals.session?.user_id);
-    console.log(alerts);
 	return { alerts };
 }; 

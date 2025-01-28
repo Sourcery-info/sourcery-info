@@ -1,5 +1,31 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/state';
+	import { logError } from '@sourcery/common/src/logger';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		const currentPage = page;
+		if (currentPage.error) {
+			const error = currentPage.error;
+			const errorContext = {
+				status: currentPage.status,
+				url: currentPage.url.pathname,
+				route: currentPage.route.id,
+				...(error instanceof Error
+					? {
+							name: error.name,
+							stack: error.stack
+						}
+					: {}),
+				...(error instanceof Object && 'status' in error
+					? {
+							httpStatus: error.status
+						}
+					: {})
+			};
+			logError(error instanceof Error ? error : new Error(String(error)), errorContext);
+		}
+	});
 </script>
 
 <div class="flex items-center justify-center h-full text-white">

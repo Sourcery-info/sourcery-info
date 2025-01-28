@@ -23,24 +23,24 @@ export class IOServer {
 
     private setupEventHandlers() {
         this.io.on("connection", (socket) => {
-            console.log("Client connected");
+            // console.log("Client connected");
             socket.on("disconnect", () => {
-                console.log("Client disconnected");
+                // console.log("Client disconnected");
             });
             socket.on("ping", () => {
-                console.log("Received ping");
+                // console.log("Received ping");
                 socket.emit("pong");
             });
             socket.on("subscribe", (channel: string) => {
-                console.log(`Subscribing to ${channel}`);
+                // console.log(`Subscribing to ${channel}`);
                 socket.join(channel);
             });
             socket.on("unsubscribe", (channel: string) => {
-                console.log(`Unsubscribing from ${channel}`);
+                // console.log(`Unsubscribing from ${channel}`);
                 socket.leave(channel);
             });
             socket.onAny((event, data) => {
-                console.log(`Received event ${event}`, data);
+                // console.log(`Received event ${event}`, data);
             });
         });
     }
@@ -53,7 +53,7 @@ export class IOServer {
     }
 
     public emit(channel: string, data: any) {
-        console.log(`Emitting to ${channel}`, data);
+        // console.log(`Emitting to ${channel}`, data);
         this.io.of(channel).emit(data);
     }
 

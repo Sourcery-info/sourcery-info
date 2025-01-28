@@ -1,3 +1,4 @@
+import { logger } from '@sourcery/common/src/logger';
 import mongoose from 'mongoose';
 
 let isConnected = false;
@@ -9,10 +10,10 @@ export async function connectDB(MONGO_URL: string) {
     if (isConnected) return;
 
     try {
-        console.log('Connecting to MongoDB...', MONGO_URL);
+        logger.info({ msg: 'Connecting to MongoDB', url: MONGO_URL, tags: ['db', 'info'] });
         await mongoose.connect(MONGO_URL);
         isConnected = true;
-        console.log('MongoDB connected');
+        logger.info({ msg: 'MongoDB connected', tags: ['db', 'info'] });
     } catch (error) {
         console.error('MongoDB connection error:', error);
         throw error;

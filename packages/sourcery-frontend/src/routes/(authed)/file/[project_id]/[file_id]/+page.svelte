@@ -88,9 +88,7 @@
 				method: 'DELETE'
 			});
 			if (response.ok) {
-				console.log(`File count before delete: ${$filesStore.length}`);
 				filesStore.remove(data.props.file._id);
-				console.log(`File count after delete: ${$filesStore.length}`);
 				goto(`/project/${data.props.project_id}`);
 			}
 		} catch (err) {
@@ -106,7 +104,6 @@
 				method: 'GET'
 			});
 			const data = await response.json();
-			console.log(data);
 		} catch (err) {
 			console.error('Error reindexing file:', err);
 			showErrorDialog = true;

@@ -24,6 +24,7 @@ import { MontagePipeline } from "./pipeline/montage";
 import { FilenamePipeline } from "./pipeline/filename";
 import { SourceryPub } from "@sourcery/queue/src/pub";
 import { createAlert } from "@sourcery/frontend/src/lib/classes/alerts";
+import { logger } from "@sourcery/common/src/logger";
 
 dotenv.config();
 
@@ -113,7 +114,6 @@ async function handleFile(file: SourceryFile) {
             send_ws_message(file, 'No workflow found');
             return false;
     }
-    // console.log({ stage_instance });
     if (!stage_instance) {
         console.error(`No file workflow found for stage ${stage}`);
         file.status = FileStatus.ERROR;
@@ -126,14 +126,13 @@ async function handleFile(file: SourceryFile) {
         await stage_instance.process();
         await stage_instance.done();
         const end_time = Date.now();
-        console.log(`File ${file._id} stage ${stage} took ${end_time - start_time}ms`);
+        logger.info({ msg: `File ${file._id} stage ${stage} took ${end_time - start_time}ms`, file_id: file._id, tags: ['file', 'info'] });
         if (stage === FileStage.DONE) {
             file.status = FileStatus.ACTIVE;
             file.stage = FileStage.DONE;
             await updateFile(file);
             send_ws_message(file, `Pipeline complete`);
-            console.log('Pipeline complete');
-            console.log(file);
+            logger.info({ msg: 'Pipeline complete', file_id: file._id, tags: ['file', 'info'] });
             await createAlert({
                 user_id: file.user_id?.toString(),
                 message: `Pipeline complete for ${file.original_name}`,
@@ -144,10 +143,10 @@ async function handleFile(file: SourceryFile) {
         // Broadcast success
         send_ws_message(file, `${stage} complete`);
     } catch (error: any) {
-        console.error(error);
+        logger.error({ msg: 'Error processing file', error: error, file_id: file._id, tags: ['file', 'error'] });
         // Change file status to error
         if (!file._id) {
-            console.error("File ID is undefined");
+            logger.error({ msg: 'File ID is undefined', file_id: file._id, tags: ['file', 'error'] });
         } else {
             const errfile = await getFile(file._id);
             if (errfile) {
@@ -176,11 +175,10 @@ async function main() {
     // Connect to WebSocket server and wait for connection
     try {
         for (const stage of stages) {
-            // console.log(`Subscribing to ${stage} queue`);
             new SourcerySub((file: SourceryFile) => handleFile(file), `file-${stage}`);
         }
     } catch (error) {
-        console.error('Failed to connect to WebSocket server:', error);
+        logger.error({ msg: 'Failed to connect to WebSocket server', error: error, tags: ['file', 'error'] });
         process.exit(1);
     }
 }

@@ -8,6 +8,7 @@ import path from "path";
 import { getFilepath } from "@sourcery/frontend/src/lib/utils/files";
 import fs from "fs/promises";
 import { existsSync } from "fs";
+import { logger } from "@sourcery/common/src/logger";
 dotenv.config();
 
 /**
@@ -47,8 +48,7 @@ export class PipelineBase {
         this.time_start = new Date();
         this.file = file;
         this.file.stage = this.stage_name;
-        console.log(`==== ${file.stage} : ${file._id} ====`);
-        this.filepath = getFilepath(file.project, file._id);
+        this.filepath = getFilepath(file.project.toString(), file._id.toString());
         this.extension = extension || file.filetype;
         this.directory_name = directory_name || file.stage;
         this.filename = path.join(this.filepath, this.directory_name, file.filename + "." + this.extension);
@@ -66,23 +66,12 @@ export class PipelineBase {
     }
 
     async process(): Promise<SourceryFile> {
-        console.log(`Processing ${this.stage_name} Pipeline`);
+        logger.info({ msg: `Processing ${this.stage_name} Pipeline`, file_id: this.file._id, tags: ['file', 'info'] });
         return this.file;
     }
 
     log(state: StageState, result: StageResult | null, message: string) {
-        console.log(`${this.file.stage} - ${state} - ${result} - ${message}`);
-        // const log = {} as StageLog;
-        // log.stage = this.file.stage;
-        // log.state = state;
-        // log.result = result;
-        // log.message = message;
-        // log.end_time = new Date();
-        // log.duration = log.end_time.getTime() - this.time_start.getTime();
-        // if (!this.file.stage_logs) {
-        //     this.file.stage_logs = [];
-        // }
-        // this.file.stage_logs.push(log);
+        logger.info({ msg: `${this.file.stage} - ${state} - ${result} - ${message}`, file_id: this.file._id, tags: ['file', 'info'] });
     }
 
     async done() {
@@ -103,9 +92,9 @@ export class PipelineBase {
         if (this.file.stage) {
             const pub = new SourceryPub(`file-${this.file.stage}`);
             await pub.addJob(`file-${this.file.stage}-${this.file._id}`, this.file);
-            console.log(`File ${this.file._id} has completed ${this.file.completed_stages.length} stages and is queued for ${this.file.stage}`);
+            logger.info({ msg: `File ${this.file._id} has completed ${this.file.completed_stages.length} stages and is queued for ${this.file.stage}`, file_id: this.file._id, tags: ['file', 'info'] });
         } else {
-            console.log(`File ${this.file._id} has completed ${this.file.completed_stages.length} stages and is not queued for any further stages`);
+            logger.info({ msg: `File ${this.file._id} has completed ${this.file.completed_stages.length} stages and is not queued for any further stages`, file_id: this.file._id, tags: ['file', 'info'] });
         }
     }
 }

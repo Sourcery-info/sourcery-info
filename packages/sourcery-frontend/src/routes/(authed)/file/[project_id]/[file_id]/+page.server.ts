@@ -3,6 +3,7 @@ import { deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error, redirect } from '@sveltejs/kit';
 import { deleteFile, getFile, reindexFile } from '$lib/classes/files';
+import { logger } from '@sourcery/common/src/logger';
 
 const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
 
@@ -26,21 +27,16 @@ export const actions = {
 		const { project_id, file_id } = params;
 		
 		try {
-			console.log('Deleting file:', file_id);
 			// Delete from database
 			await deleteFile(file_id);
-			console.log('File deleted from database');
-			
 			// Delete from storage
 			await deleteFileUtils(project_id, file_id);
-			console.log('File deleted from storage');
-			
 			// Delete from vector database
 			await qdrant.deleteFile(project_id, file_id);
-			console.log('File deleted from vector database');
+			logger.info({ msg: 'File deleted', file_id, tags: ['file', 'info'] });
 			// Redirect after successful deletion
 		} catch (err) {
-			console.error('Error deleting file:', err);
+			logger.error({ msg: 'Error deleting file', error: err, tags: ['file', 'error'] });
 			throw error(500, 'Failed to delete file');
 		}
 		redirect(303, `/project/${project_id}`);

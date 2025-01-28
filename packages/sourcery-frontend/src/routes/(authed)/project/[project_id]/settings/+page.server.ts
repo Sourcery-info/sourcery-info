@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { validate } from '$lib/validate';
 import { Settings } from '$lib/classes/settings';
 import type { SourcerySettings } from '$lib/types/SourcerySettings.type';
+import { logger } from '@sourcery/common/src/logger';
 
 export async function load({ locals, params }) {
     if (!locals?.session?.user_id) {
@@ -43,17 +44,16 @@ export const actions = {
             temperature: zfd.numeric(z.number().min(0).max(1)),
             security: zfd.text(z.enum(["secure", "insecure"])), // It would be nice if the values were derived from the SourcerySecurity enum
         });
-        console.log(formData);
         const validation = await validate(formData, settingsSchema);
         if (validation.errors) {
-            console.log(validation.errors);
+            logger.error({ msg: "Validation errors", errors: validation.errors, tags: ['project', 'error'] });
             return fail(400, validation);
         }
-        console.log(validation.data);
         try {
             updateProject(Object.assign(validation.data, { _id, updated_at: new Date() }));
             return { success: true };
         } catch (err) {
+            logger.error({ msg: "Error updating project", error: err, tags: ['project', 'error'] });
             return fail(400, { errors: [err], data: validation.data });
         }
     }

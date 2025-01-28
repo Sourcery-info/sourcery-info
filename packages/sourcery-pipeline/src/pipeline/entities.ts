@@ -140,8 +140,6 @@ export class EntitiesPipeline extends PipelineBase {
             for (const entity of consolidated_entities) {
                 entity.description = await this.generateDescription(entity, entity_chunks);
             }
-            // console.log(consolidated_entities);
-            // console.log(`Writing ${consolidated_entities.length} entities to ${this.filename.replace("chunks", "entities")}`);
             await writeFile(this.filename, JSON.stringify(consolidated_entities, null, 2));
             return this.file;
         } catch (error) {

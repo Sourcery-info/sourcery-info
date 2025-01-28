@@ -7,116 +7,85 @@ import { MONGO_URL } from '$env/static/private';
 import { connectDB } from '$lib/server/db';
 import { alertMessages, createAlertUrl } from '$lib/alerts';
 import { getConfigs } from '$lib/classes/config';
+import { logger, loggerMiddleware } from '@sourcery/common/src/logger';
+import type { Handle } from '@sveltejs/kit';
+import { getState } from '$lib/server/state';
 
 connectDB(MONGO_URL).then(() => {
-    console.log('Connected to MongoDB');
-}).catch((e) => {
-    console.log('MongoDB failed to connect');
-    console.error(e);
+    logger.info({ msg: 'Connected to MongoDB' });
+}).catch((err) => {
+    logger.error({ msg: 'Error connecting to MongoDB', error: err });
 });
 
-async function getState(event: any) {
-    const token = event.cookies.get("session") ?? null;
-    if (!token) {
-        return {
-            state: 'no-token'
-        };
-    }
-    const session = await validateSessionToken(token);
-    if (!session) {
-        return {
-            state: 'invalid-session'
-        };
-    }
-    const user = await getUser(session.user_id);
-    if (!user) {
-        return {
-            state: 'invalid-session'
-        };
-    }
-    return {
-        session,
-        user,
-        state: 'valid-session'
-    };
-}
+export const handle: Handle = async ({ event, resolve }) => {
+    // Start with logging middleware
+    const wrappedResolve = async (event: any) => {
+        const route = event.route.id;
 
-export async function handle({ event, resolve }) {
-    const route = event.route.id;
+        // Parse alert from URL if present
+        const configs = await getConfigs();
+        event.locals.config = {};
+        for (let config of configs) {
+            event.locals.config[config.key] = config.value;
+        }
 
-    // Parse alert from URL if present
-    // const alertCode = event.url.searchParams.get('alert');
-    // const alertType = event.url.searchParams.get('type') || 'info';
-    // if (alertCode) {
-    //     const message = alertCode in alertMessages 
-    //         ? alertMessages[alertCode as keyof typeof alertMessages] 
-    //         : alertCode;
-    //     event.locals.alerts = [{
-    //         type: alertType,
-    //         message
-    //     }];
-    // }
+        if (route === '/state') {
+            const state = await getState(event);
+            return new Response(JSON.stringify(state));
+        }
 
-    // Load the config
-    const configs = await getConfigs();
-    event.locals.config = {};
-    for (let config of configs) {
-        event.locals.config[config.key] = config.value;
-    }
+        // Check if the route doesn't start with '/(authed)/' or '/admin/'
+        if (!route?.startsWith('/(authed)/') && !route?.startsWith('/admin')) {
+            const response = await resolve(event);
+            return response;
+        }
 
-    if (route === '/state') {
-        const state = await getState(event);
-        return new Response(JSON.stringify(state));
-    }
+        // Check if we have any users set at all
+        const userCount = await getUserCount();
+        if (userCount === 0) {
+            return redirect(303, "/create-account");
+        }
 
-    // Check if the route doesn't start with '/(authed)/' or '/admin/'
-    if (!route?.startsWith('/(authed)/') && !route?.startsWith('/admin')) {
+        // Check if we have a valid session token
+        const token = event.cookies.get("session") ?? null;
+        if (!token) {
+            return redirect(303, createAlertUrl('/login', 'login-required', 'danger'));
+        }
+
+        // Validate the session token
+        const session = await validateSessionToken(token);
+        if (session) {
+            setSessionTokenCookie(event.cookies, token, session.expiresAt);
+        } else {
+            deleteSessionTokenCookie(event.cookies);
+            return redirect(303, createAlertUrl('/login', 'login-required', 'danger'));
+        }
+
+        event.locals.session = session;
+
+        // Get the user
+        const user = await getUser(session.user_id);
+        if (!user) {
+            return redirect(303, createAlertUrl('/login', 'login-required', 'danger'));
+        }
+
+        // If accessing admin pages, check if the user is an admin
+        if (route?.startsWith('/admin') && !user.admin) {
+            return redirect(303, createAlertUrl('/projects', 'unauthorized', 'danger'));
+        }
+
+        // Check if the user is approved
+        if (!user.approved) {
+            return redirect(303, "/awaiting-authorization");
+        }
+
+        // Set the user in the locals
+        event.locals.user = user;
+
         const response = await resolve(event);
         return response;
-    }
+    };
 
-    // Check if we have any users set at all
-    const userCount = await getUserCount();
-    if (userCount === 0) {
-        return redirect(303, "/create-account");
-    }
-
-    // Check if we have a valid session token
-    const token = event.cookies.get("session") ?? null;
-    if (!token) {
-        return redirect(303, createAlertUrl('/login', 'login-required', 'danger'));
-    }
-
-    // Validate the session token
-    const session = await validateSessionToken(token);
-    if (session) {
-        setSessionTokenCookie(event.cookies, token, session.expiresAt);
-    } else {
-        deleteSessionTokenCookie(event.cookies);
-        return redirect(303, createAlertUrl('/login', 'login-required', 'danger'));
-    }
-
-    event.locals.session = session;
-
-    // Get the user
-    const user = await getUser(session.user_id);
-    if (!user) {
-        return redirect(303, createAlertUrl('/login', 'login-required', 'danger'));
-    }
-
-    // If accessing admin pages, check if the user is an admin
-    if (route?.startsWith('/admin') && !user.admin) {
-        return redirect(303, createAlertUrl('/projects', 'unauthorized', 'danger'));
-    }
-
-    // Check if the user is approved
-    if (!user.approved) {
-        return redirect(303, "/awaiting-authorization");
-    }
-
-    // Set the user in the locals
-    event.locals.user = user;
-
-    const response = await resolve(event);
-    return response;
-}
+    // Apply logging middleware with our wrapped resolve function
+    return loggerMiddleware({ event, resolve: wrappedResolve });
+};

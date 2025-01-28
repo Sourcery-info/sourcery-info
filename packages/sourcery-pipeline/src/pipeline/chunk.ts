@@ -35,7 +35,6 @@ export class ChunkingPipeline extends PipelineBase {
 
     private processEmptyChunks(chunk: TChunk): TChunk {
         if (chunk.children?.length === 0) {
-            console.log(`Chunk ${chunk.id} has no children, chunking by paragraph`);
             chunk.children = this.chunkByParagraph(chunk);
         } else {
             // Recursively process all children
@@ -65,7 +64,6 @@ export class ChunkingPipeline extends PipelineBase {
         const headingRegex = new RegExp(`^#{${level}}\\s`, 'gm');
         const anyHeadingsRegex = new RegExp(`^#{1,6}\\s`, 'gm');
         if (!parent.content.match(anyHeadingsRegex)) {
-            console.log(`No deeper headings at this level: ${level}`);
             return [];
         }
         const parts = parent.content.split(headingRegex);

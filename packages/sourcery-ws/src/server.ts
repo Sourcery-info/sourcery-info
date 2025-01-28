@@ -1,7 +1,7 @@
 import { Server as WSServer } from "socket.io";
 import { SourcerySub } from "@sourcery/queue/src/sub.ts";
 import { validateSessionToken, type Session } from "@sourcery/frontend/src/lib/server/auth.js";
-
+import { logger } from "@sourcery/common/src/logger";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -13,23 +13,19 @@ export const io = new WSServer(port, {
         origin: "*",
     }
 });
-console.log(`Websocket server listening on port ${port}`);
+logger.info({ msg: `Websocket server listening on port ${port}`, tags: ['ws', 'info'] });
 
 io.use(async (socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) {
-        if (debug) {
-            console.log("No token provided");
-        }
+        logger.error({ msg: "No token provided", tags: ['ws', 'error'] });
         return next(new Error("Authentication token required"));
     }
 
     try {
         const session = await validateSessionToken(token);
         if (!session) {
-            if (debug) {
-                console.log("Invalid authentication token");
-            }
+            logger.error({ msg: "Invalid authentication token", tags: ['ws', 'error'] });
             return next(new Error("Invalid authentication token"));
         }
         
@@ -37,9 +33,7 @@ io.use(async (socket, next) => {
         socket.data.session = session;
         next();
     } catch (error) {
-        if (debug) {
-            console.log("Authentication failed", error);
-        }
+        logger.error({ msg: "Authentication failed", error: error, tags: ['ws', 'error'] });
         return next(new Error("Authentication failed"));
     }
 });
@@ -47,45 +41,30 @@ io.use(async (socket, next) => {
 io.on("connection", (socket) => {
     const session = socket.data.session as Session;
     
-    if (debug) {
-        console.log("Client connected", socket.id, "user:", session.user_id);
-    }
+    logger.info({ msg: "Client connected", socket_id: socket.id, user_id: session.user_id, tags: ['ws', 'info'] });
     socket.on("disconnect", () => {
-        if (debug) {
-            console.log("Client disconnected", socket.id);
-        }
+        logger.info({ msg: "Client disconnected", socket_id: socket.id, tags: ['ws', 'info'] });
     });
     socket.on("ping", () => {
-        if (debug) {
-            console.log("Received ping");
-        }
         socket.emit("pong");
     });
     socket.on("subscribe", (channel: string) => {
-        if (debug) {
-            console.log(`Subscribing to ${channel}`);
-        }
+        logger.info({ msg: `Subscribing to ${channel}`, socket_id: socket.id, tags: ['ws', 'info'] });
         socket.join(channel);
     });
     socket.on("unsubscribe", (channel: string) => {
-        if (debug) {
-            console.log(`Unsubscribing from ${channel}`);
-        }
+        logger.info({ msg: `Unsubscribing from ${channel}`, socket_id: socket.id, tags: ['ws', 'info'] });
         socket.leave(channel);
     });
 });
 
 new SourcerySub(async (data: any) => {
-    if (debug) {
-        console.log("Received message", data);
-    }
+    logger.info({ msg: "Received message", data: data, tags: ['ws', 'info'] });
     emit(data.channel, data);
     return true;
 }, "sourcery.info-ws");
 
 export function emit(channel: string, data: any) {
-    if (debug) {
-        console.log(`Emitting to ${channel}`, data);
-    }
+    logger.info({ msg: `Emitting to ${channel}`, data: data, tags: ['ws', 'info'] });
     io.to(channel).emit(channel, data);
 }

@@ -29,6 +29,21 @@ export const AIModels: TAIModel[] = [
         "default": true
     },
     {
+        "name": "Deepseek R1 8b",
+        "value": "deepseek-r1:8b",
+        "type": "chat"
+    },
+    {
+        "name": "Deepseek R1 7b",
+        "value": "deepseek-r1:7b",
+        "type": "chat"
+    },
+    {
+        "name": "Deepseek R1 14b",
+        "value": "deepseek-r1:14b",
+        "type": "chat"
+    },
+    {
         "name": "Llama3.2 Vision 7b",
         "value": "llama3.2-vision:7b",
         "type": "mulitmodal"

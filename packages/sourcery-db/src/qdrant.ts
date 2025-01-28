@@ -2,6 +2,48 @@ import { SourceryDB } from "./soucery-db"
 import type { SourceryDBRecord, SourceryDBRecordSearch } from "./soucery-db"
 import fetch from 'node-fetch';
 
+interface QdrantCollection {
+    name: string;
+}
+
+interface QdrantCollectionsResponse {
+    result: {
+        collections: QdrantCollection[];
+    };
+}
+
+interface QdrantPointResponse {
+    result: {
+        id: string;
+        payload: any;
+        vector: number[];
+    };
+}
+
+interface QdrantSearchResponse {
+    result: Array<{
+        id: string;
+        payload: any;
+        score: number;
+    }>;
+}
+
+interface QdrantUpsertResponse {
+    status: string;
+    error?: string;
+}
+
+interface QdrantCollectionInfo {
+    status: string;
+    result: {
+        status: string;
+        vectors_count: number;
+        points_count: number;
+        segments_count: number;
+        config: any;
+    };
+}
+
 const url = process.env.QDRANT_URL || 'http://127.0.0.1:6333';
 
 export class Qdrant implements SourceryDB {
@@ -13,8 +55,8 @@ export class Qdrant implements SourceryDB {
 
     async getCollections(): Promise<string[]> {
         const response = await fetch(`${this.url}/collections`);
-        const collections = (await response.json()).result.collections;
-        return collections.map((collection: any) => collection.name);
+        const collections = (await response.json() as QdrantCollectionsResponse).result.collections;
+        return collections.map((collection) => collection.name);
     }
 
     async collectionExists(collection: string): Promise<boolean> {
@@ -60,7 +102,7 @@ export class Qdrant implements SourceryDB {
 
     async getOne(collection: string, id: string): Promise<any> {
         const response = await fetch(`${this.url}/collections/${collection}/points/${id}`);
-        const result = await response.json();
+        const result = await response.json() as QdrantPointResponse;
         return result.result;
     }
 
@@ -75,7 +117,7 @@ export class Qdrant implements SourceryDB {
                 data
             })
         });
-        return await response.json();
+        return await response.json() as QdrantUpsertResponse;
     }
 
     async addRecords(collection: string, records: SourceryDBRecord[]): Promise<void> {
@@ -91,11 +133,10 @@ export class Qdrant implements SourceryDB {
             },
             body: JSON.stringify({points})
         });
-        const result = await response.json();
+        const result = await response.json() as QdrantUpsertResponse;
         if (result.status !== "ok") {
-            throw new Error(result.status?.error || "Unknown error");
+            throw new Error(result.error || "Unknown error");
         }
-        return result;
     }
 
     async search(collection: string, query: SourceryDBRecordSearch): Promise<any> {
@@ -116,7 +157,7 @@ export class Qdrant implements SourceryDB {
             },
             body: JSON.stringify(search)
         });
-        const result = await response.json();
+        const result = await response.json() as QdrantSearchResponse;
         return result.result;
     }
 
@@ -146,7 +187,7 @@ export class Qdrant implements SourceryDB {
                 "filter": {
                     "must": [
                         {
-                            "key": "filename",
+                            "key": "file_id",
                             "match": { "value": file_id } }
                     ]
                 }
@@ -157,7 +198,7 @@ export class Qdrant implements SourceryDB {
 
     async getInfo(collection: string): Promise<any> {
         const response = await fetch(`${this.url}/collections/${collection}`);
-        const info = (await response.json()).result;
+        const info = (await response.json() as QdrantCollectionInfo).result;
         return info;
     }
 }

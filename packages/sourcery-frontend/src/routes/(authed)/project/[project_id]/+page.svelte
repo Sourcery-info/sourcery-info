@@ -1,8 +1,30 @@
 <script lang="ts">
-	/** @type {import('./$types').PageData} */
+	import { filesStore } from '$lib/stores/files';
+
 	export let data;
 
-	import { filesStore } from '$lib/stores/files';
+	async function handleFileUpload(event: Event) {
+		const uploaded_files = (event.target as HTMLInputElement).files;
+		if (!uploaded_files) return;
+
+		const formData = new FormData();
+		for (const uploaded_file of uploaded_files) {
+			formData.append('files', uploaded_file);
+		}
+
+		const res = await fetch(`/files/${data.project._id}/upload`, {
+			method: 'POST',
+			body: formData
+		});
+
+		if (res.ok) {
+			const res_json = await res.json();
+			filesStore.update((files) => [...files, ...res_json.files]);
+		}
+		if (event.target) {
+			(event.target as HTMLInputElement).value = '';
+		}
+	}
 </script>
 
 <div class="min-h-full bg-white dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
@@ -26,9 +48,8 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			{#if $filesStore.length === 0}
 				<!-- New Project Card -->
-				<a
-					href="/files/{data.project._id}"
-					class="group relative flex flex-col justify-center items-center rounded-lg bg-gray-50 dark:bg-gray-800/30 p-6 ring-1 ring-gray-200 dark:ring-white/10 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+				<label
+					class="group relative flex flex-col justify-center items-center rounded-lg bg-gray-50 dark:bg-gray-800/30 p-6 ring-1 ring-gray-200 dark:ring-white/10 hover:bg-gray-100 dark:hover:bg-gray-800/50 cursor-pointer"
 				>
 					<div
 						class="h-12 w-12 rounded-full bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center"
@@ -50,7 +71,14 @@
 					<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
 						Get started by uploading your first file
 					</p>
-				</a>
+					<input
+						type="file"
+						multiple
+						class="hidden"
+						on:change={handleFileUpload}
+						accept=".txt,.pdf,.doc,.docx"
+					/>
+				</label>
 			{:else}
 				<!-- New Conversation Card -->
 				<a

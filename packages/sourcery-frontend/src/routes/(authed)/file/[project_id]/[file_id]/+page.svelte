@@ -134,6 +134,7 @@
 		<div class="relative">
 			<button
 				id="dropdown-button"
+				aria-label="File actions"
 				on:click={toggleDropdown}
 				class="inline-flex items-center gap-x-1.5 rounded-md bg-white dark:bg-gray-800 p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
 			>

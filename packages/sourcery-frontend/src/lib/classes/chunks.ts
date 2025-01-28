@@ -48,7 +48,7 @@ export async function getChunk(chunk_id: string | mongoose.Types.ObjectId): Prom
 }
 
 export async function getChunkByQdrantID(qdrant_id: string): Promise<TChunk | null> {
-    const chunk = await ChunkModel.findOne({ id: qdrant_id });
+    const chunk = await ChunkModel.findOne({ id: qdrant_id }).populate('file_id');
     if (!chunk) {
         return null;
     }

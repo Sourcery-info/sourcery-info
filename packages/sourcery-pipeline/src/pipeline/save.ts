@@ -25,20 +25,40 @@ export class SavePipeline extends PipelineBase {
     async save_to_qdrant(collection: string, chunks: TChunk[], file: SourceryFile) {
         await this.client.createCollection(collection);
         await this.client.deleteFile(collection.toString(), this.file.filename);
-        const points: any[] = [];
         const local_chunks: any[] = [...chunks].map(chunk => {
             const children = chunk.children?.map(child => child.id);
             return { ...chunk, children };
         });
-        const local_file = { filename: file.filename, original_name: file.original_name, filetype: file.filetype, created_at: file.created_at, updated_at: file.updated_at, file_id: file._id };
-        for (const chunk of local_chunks) {
+        // const local_file = { filename: file.filename, original_name: file.original_name, filetype: file.filetype, created_at: file.created_at, updated_at: file.updated_at, file_id: file._id };
+        let x = 0;
+        let points: any[] = [];
+        for (const chunk of [...chunks]) {
+            const chunk_data = {
+                id: chunk.id,
+                vector: chunk.vector,
+                children: chunk.children?.map(child => child.id),
+                created_at: file.created_at,
+                updated_at: file.updated_at,
+                level: chunk.level,
+                tokens: chunk.tokens,
+                filetype: file.filetype,
+                file_id: file._id,
+            }
             points.push({
                 id: chunk.id,
                 vectors: chunk.vector,
-                data: { ...chunk, ...local_file },
+                data: chunk_data,
             });
+            x++;
+            if (x % 100 === 0) {
+                await this.client.addRecords(collection, points);
+                points = [];
+                console.log(`${Math.round(x / [...chunks].length * 100)}%`);
+            }
+            if (x === [...chunks].length) {
+                await this.client.addRecords(collection, points);
+            }
         }
-        await this.client.addRecords(collection, points);
     }
 
     async save_to_mongo(chunks: TChunk[], file: SourceryFile) {

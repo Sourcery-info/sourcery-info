@@ -62,32 +62,13 @@ function find_outliers(ranked_documents) {
 }
 
 const get_rag_context = async (project_name, files, question, top_k = TOP_K, vector_model = VECTOR_MODEL) => {
-
-    // const get_parents = async (project_name, search_results) => {
-    //     // If we match a chunk, we need to get the parent chunk
-    //     const parents = new Set();
-    //     const ids = search_results.map(s => s.id);
-    //     for (const result of search_results) {
-    //         if (result.payload.parent_id && !ids.includes(result.payload.parent_id)) {
-    //             parents.add(result.payload.parent_id);
-    //         }
-    //     }
-    //     const parent_results = [];
-    //     for (const parent of parents) {
-    //         const p = await qdrant.getOne(project_name, parent);
-    //         if (p?.payload?.content) {
-    //             parent_results.push(p);
-    //         }
-    //     }
-    //     return parent_results;
-    // }
     try {
         await ensure_model(vector_model);
         const vector = await ollama.embeddings({ model: vector_model, prompt: question });
         const file_query = {
-            key: "filename",
+            key: "file_id",
             match: {
-                any: files.map(f => f.filename),
+                any: files.map(f => f._id),
             }
         }
         const query = {
@@ -98,14 +79,20 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
             }
         }
 
-        const results = await qdrant.search(project_name, query);
-        if (!results) {
+        const qdrant_results = await qdrant.search(project_name, query);
+        console.log(qdrant_results);
+        if (!qdrant_results) {
             console.log(`No results found for query`);
             return [];
         }
-        // const parents = await get_parents(project_name, results);
-        // console.log(`Found ${parents.length} parents from ${results.length} results`);
-        const contexts = results.map(result => `<filename>${result.payload.original_name}</filename>\n<id>${result.id}</id>\n<context>${result.payload.context || ""}</context>\n<content>${result.payload.content}</content>`);
+        const results = [];
+        for (let result of qdrant_results) {
+            const chunk = await getChunkByQdrantID(result.id);
+            if (chunk) {
+                results.push(chunk);
+            }
+        }
+        const contexts = results.map(result => `<filename>${result.file_id.original_name}</filename>\n<id>${result.id}</id>\n<context>${result.context || ""}</context>\n<content>${result.content}</content>`);
         const reranked = await rerank(question, contexts, RERANK_TOP_K);
         const outliers = find_outliers(reranked);
         if (outliers.length > 0) {

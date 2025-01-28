@@ -7,24 +7,28 @@ function createFilesStore() {
     return {
         subscribe,
         set,
+        // Ensure we only set unique files
+        setUnique: (files: SourceryFile[]) => {
+            const uniqueFiles = [...new Map(files.map(file => [file._id, file])).values()];
+            set(uniqueFiles);
+        },
         update,
-        // Add a file
-        add: (file: SourceryFile) => update(files => [...files, file]),
+        // Add a file only if it doesn't exist
+        add: (file: SourceryFile) => update(files => {
+            if (files.some(f => f._id === file._id)) return files;
+            return [...files, file];
+        }),
         // Remove a file
         remove: (fileId: string) => update(files => files.filter(f => f._id !== fileId)),
         // Update a file
         updateOne: (fileId: string, data: Partial<SourceryFile>) => update(files => 
             files.map(f => f._id === fileId ? { ...f, ...data } : f)
         ),
+        // Upsert with proper duplicate handling
         upsert: (file: SourceryFile) => {
             update(files => {
-                const index = files.findIndex(f => f._id === file._id);
-                if (index !== -1) {
-                    files[index] = { ...files[index], ...file };
-                } else {
-                    files.unshift(file);
-                }
-                return files;
+                const existingFiles = files.filter(f => f._id !== file._id);
+                return [file, ...existingFiles];
             });
         },
         // Reset store

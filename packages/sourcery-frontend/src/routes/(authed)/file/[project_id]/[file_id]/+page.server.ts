@@ -36,7 +36,7 @@ export const actions = {
 			console.log('File deleted from storage');
 			
 			// Delete from vector database
-			await qdrant.deleteCollection(file_id);
+			await qdrant.deleteFile(project_id, file_id);
 			console.log('File deleted from vector database');
 			// Redirect after successful deletion
 		} catch (err) {

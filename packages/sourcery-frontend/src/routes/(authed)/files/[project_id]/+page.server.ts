@@ -67,7 +67,7 @@ export const actions = {
 	deleteFiles: async ({ request, params }) => {
 		const formData = await request.formData();
 		for (const uid of formData.values()) {
-			await qdrant.deleteRecord(params.project_id, uid.toString());
+			await qdrant.deleteFile(params.project_id, uid.toString());
 			await deleteFileUtils(params.project_id, uid.toString());
 			await deleteFile(uid.toString());
 		}

@@ -66,13 +66,21 @@
 			</a>
 			{#if selected_project}
 				<div class="relative flex-1" bind:this={dropdownRef}>
-					<button
-						onclick={() => (showProjectDropdown = !showProjectDropdown)}
-						class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-white"
-					>
-						<span class="truncate">{selected_project.name}</span>
-						{@html chevronDownIcon}
-					</button>
+					<div class="flex w-full items-center gap-x-1">
+						<a
+							href="/project/{selected_project._id}"
+							class="flex-1 truncate text-base font-semibold text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-white"
+							onclick={handleItemClick}
+						>
+							{selected_project.name}
+						</a>
+						<button
+							onclick={() => (showProjectDropdown = !showProjectDropdown)}
+							class="flex items-center text-gray-900 hover:text-gray-700 dark:text-gray-100 dark:hover:text-white"
+						>
+							{@html chevronDownIcon}
+						</button>
+					</div>
 
 					{#if showProjectDropdown}
 						<div

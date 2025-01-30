@@ -15,6 +15,11 @@
 	let input = '';
 	let thinking = false;
 	let lastQuery = '';
+	let inputElement: HTMLInputElement;
+
+	$: if (inputElement && input !== inputElement.value) {
+		input = inputElement.value;
+	}
 
 	async function handleSampleQuestion(question: string) {
 		input = question;
@@ -152,20 +157,21 @@
 				id="input"
 				type="text"
 				placeholder="Type a message"
+				bind:this={inputElement}
 				bind:value={input}
 				disabled={thinking}
 				class="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2
-                       text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400
-                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-                       disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:text-gray-400 dark:disabled:text-gray-500"
+					   text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400
+					   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+					   disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:text-gray-400 dark:disabled:text-gray-500"
 				autocomplete="off"
 			/>
 			{#if !thinking}
 				<button
 					type="submit"
 					class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700
-                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                           focus:ring-offset-white dark:focus:ring-offset-gray-900 transition-colors"
+						   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+						   focus:ring-offset-white dark:focus:ring-offset-gray-900 transition-colors"
 				>
 					Send
 				</button>
@@ -173,8 +179,8 @@
 				<button
 					type="button"
 					class="rounded-lg bg-yellow-600 px-4 py-2 text-white hover:bg-yellow-700
-                           focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2
-                           focus:ring-offset-white dark:focus:ring-offset-gray-900 transition-colors"
+						   focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2
+						   focus:ring-offset-white dark:focus:ring-offset-gray-900 transition-colors"
 				>
 					Cancel
 				</button>

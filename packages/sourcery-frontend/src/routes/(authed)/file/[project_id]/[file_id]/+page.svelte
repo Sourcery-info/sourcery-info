@@ -10,6 +10,7 @@
 	import Text from './text.svelte';
 	import Chunks from './chunks.svelte';
 	import Dialog from '$lib/ui/dialog.svelte';
+	import HamburgerMenu from '$lib/ui/hamburger-menu.svelte';
 	import { filesStore } from '$lib/stores/files';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
@@ -67,8 +68,8 @@
 	let showDeleteDialog = false;
 	let showErrorDialog = false;
 	let errorMessage = '';
-	let deleteForm;
 	let isReindexing = false;
+
 	function openDeleteDialog() {
 		showDeleteDialog = true;
 	}
@@ -111,6 +112,30 @@
 		}
 	}
 
+	$: menuItems = [
+		{
+			label: 'Reindex',
+			icon: `<svg class="mr-3 h-5 w-5 ${isReindexing ? 'animate-spin' : ''}" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0v2.433l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z" clip-rule="evenodd"/>
+			</svg>`,
+			onClick: async () => {
+				isReindexing = true;
+				await handleReindex(data.props);
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+				isReindexing = false;
+			},
+			disabled: isReindexing
+		},
+		{
+			label: 'Delete',
+			icon: `<svg class="mr-3 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd"/>
+			</svg>`,
+			onClick: openDeleteDialog,
+			class: 'text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+		}
+	];
+
 	onMount(() => {
 		if (browser) {
 			window.addEventListener('click', handleClickOutside);
@@ -128,70 +153,7 @@
 		<h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
 			{data.props.file.original_name}
 		</h3>
-		<div class="relative">
-			<button
-				id="dropdown-button"
-				aria-label="File actions"
-				on:click={toggleDropdown}
-				class="inline-flex items-center gap-x-1.5 rounded-md bg-white dark:bg-gray-800 p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none"
-			>
-				<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-					<path
-						d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 14a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"
-					/>
-				</svg>
-			</button>
-
-			{#if isDropdownOpen}
-				<div
-					id="dropdown-menu"
-					class="absolute right-0 mt-2 w-48 rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 z-10"
-				>
-					<div class="py-1">
-						<button
-							on:click={async () => {
-								isReindexing = true;
-								await handleReindex(data.props);
-								await new Promise((resolve) => setTimeout(resolve, 1000));
-								isReindexing = false;
-								isDropdownOpen = false;
-							}}
-							class="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-							disabled={isReindexing}
-						>
-							<svg
-								class="mr-3 h-5 w-5 {isReindexing ? 'animate-spin' : ''}"
-								viewBox="0 0 20 20"
-								fill="currentColor"
-							>
-								<path
-									fill-rule="evenodd"
-									d="M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H3.989a.75.75 0 00-.75.75v4.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm1.23-3.723a.75.75 0 00.219-.53V2.929a.75.75 0 00-1.5 0v2.433l-.31-.31A7 7 0 003.239 8.188a.75.75 0 101.448.389A5.5 5.5 0 0113.89 6.11l.311.31h-2.432a.75.75 0 000 1.5h4.243a.75.75 0 00.53-.219z"
-									clip-rule="evenodd"
-								/>
-							</svg>
-							Reindex
-						</button>
-						<button
-							on:click={() => {
-								openDeleteDialog();
-								isDropdownOpen = false;
-							}}
-							class="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-						>
-							<svg class="mr-3 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-								<path
-									fill-rule="evenodd"
-									d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z"
-									clip-rule="evenodd"
-								/>
-							</svg>
-							Delete
-						</button>
-					</div>
-				</div>
-			{/if}
-		</div>
+		<HamburgerMenu {menuItems} />
 	</div>
 
 	<div class="border-b border-gray-200 dark:border-gray-700">

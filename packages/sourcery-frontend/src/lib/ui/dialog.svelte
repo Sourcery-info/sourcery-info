@@ -80,6 +80,7 @@
 									{message}
 								</p>
 							</div>
+							<slot />
 						</div>
 					</div>
 					<div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">

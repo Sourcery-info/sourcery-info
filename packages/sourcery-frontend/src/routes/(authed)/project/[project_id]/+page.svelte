@@ -1,7 +1,63 @@
 <script lang="ts">
 	import { filesStore } from '$lib/stores/files';
+	import { goto } from '$app/navigation';
+	import Dialog from '$lib/ui/dialog.svelte';
+	import HamburgerMenu from '$lib/ui/hamburger-menu.svelte';
 
 	export let data;
+
+	let showDeleteDialog = false;
+	let showErrorDialog = false;
+	let errorMessage = '';
+	let confirmProjectName = '';
+
+	function openDeleteDialog() {
+		showDeleteDialog = true;
+		confirmProjectName = '';
+	}
+
+	function closeDeleteDialog() {
+		showDeleteDialog = false;
+		confirmProjectName = '';
+	}
+
+	function closeErrorDialog() {
+		showErrorDialog = false;
+	}
+
+	async function handleDelete() {
+		if (confirmProjectName !== data.project.name) {
+			errorMessage = 'Project name does not match';
+			showErrorDialog = true;
+			return;
+		}
+		closeDeleteDialog();
+		try {
+			const response = await fetch(`/project/${data.project._id}`, {
+				method: 'DELETE'
+			});
+			if (response.ok) {
+				goto('/projects');
+			} else {
+				throw new Error('Failed to delete project');
+			}
+		} catch (err) {
+			console.error('Error deleting project:', err);
+			showErrorDialog = true;
+			errorMessage = 'Failed to delete project';
+		}
+	}
+
+	$: menuItems = [
+		{
+			label: 'Delete',
+			icon: `<svg class="mr-3 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd"/>
+			</svg>`,
+			onClick: openDeleteDialog,
+			class: 'text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+		}
+	];
 
 	async function handleFileUpload(event: Event) {
 		const uploaded_files = (event.target as HTMLInputElement).files;
@@ -36,13 +92,16 @@
 					<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{data.project.description}</p>
 				{/if}
 			</div>
-			{#if data.project.is_public}
-				<span
-					class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-400/10 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20 dark:ring-green-400/20"
-				>
-					Public
-				</span>
-			{/if}
+			<div class="flex items-center gap-4">
+				{#if data.project.is_public}
+					<span
+						class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-400/10 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-400 ring-1 ring-inset ring-green-600/20 dark:ring-green-400/20"
+					>
+						Public
+					</span>
+				{/if}
+				<HamburgerMenu {menuItems} />
+			</div>
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -187,3 +246,43 @@
 		{/if}
 	</div>
 </div>
+
+<Dialog
+	show={showDeleteDialog}
+	title="Delete project"
+	message={`This action cannot be undone. This will permanently delete the project "${data.project.name}" and all of its data.`}
+	confirmText="Delete"
+	confirmClass="bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400 {confirmProjectName !==
+	data.project.name
+		? 'opacity-50 cursor-not-allowed'
+		: ''}"
+	on:close={closeDeleteDialog}
+	on:confirm={() => confirmProjectName === data.project.name && handleDelete()}
+>
+	<div class="mt-4">
+		<label for="confirm-name" class="block text-sm font-medium text-gray-200">
+			Please type <span class="font-semibold text-white">{data.project.name}</span> to confirm
+		</label>
+		<div class="mt-2">
+			<input
+				type="text"
+				id="confirm-name"
+				bind:value={confirmProjectName}
+				class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6"
+				placeholder="Enter project name"
+			/>
+		</div>
+	</div>
+</Dialog>
+
+<Dialog
+	show={showErrorDialog}
+	title="Error"
+	message={errorMessage}
+	confirmText="Close"
+	type="error"
+	showCancel={false}
+	confirmClass="bg-gray-600 hover:bg-gray-500 dark:bg-gray-700 dark:hover:bg-gray-600"
+	on:close={closeErrorDialog}
+	on:confirm={closeErrorDialog}
+/>

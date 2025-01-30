@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
 	import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
-	import { marked } from 'marked';
-	import SourceChunks from '$lib/ui/source-chunks.svelte';
+	import ChatMessage from '$lib/ui/chat-message.svelte';
 	import { conversationStore } from '$lib/stores/conversationStore';
 	import { conversationsStore } from '$lib/stores/conversations';
 
@@ -13,12 +12,6 @@
 
 	$: conversationStore.set(data.conversation);
 
-	marked.setOptions({
-		gfm: true,
-		breaks: true
-	});
-
-	let content = '';
 	let input = '';
 	let thinking = false;
 	let lastQuery = '';
@@ -77,10 +70,6 @@
 		await handleSubmit(event);
 	}
 
-	function renderMarkdown(markdown: string) {
-		return marked(markdown);
-	}
-
 	$: if ($conversationStore) {
 		conversationsStore.upsert($conversationStore);
 	}
@@ -135,35 +124,7 @@
 			</div>
 		{:else}
 			{#each $conversationStore?.messages ?? [] as message}
-				{#if message.role === 'user'}
-					<div class="flex justify-end">
-						<div class="bg-blue-600 text-white rounded-lg py-2 px-4 max-w-[80%]">
-							<p class="text-sm">{message.content}</p>
-						</div>
-					</div>
-				{/if}
-				{#if message.role === 'assistant'}
-					{#if message.chunks && message.chunks.length > 0}
-						<SourceChunks chunks={message.chunks} project_id={data.project?._id} />
-					{/if}
-					<div class="flex justify-start">
-						<div
-							class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]"
-						>
-							<p class="text-sm font-mono prose dark:prose-invert prose-sm max-w-none">
-								{@html renderMarkdown(message.content)}
-							</p>
-							{#if message.error}
-								<button
-									class="mt-2 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-									on:click={() => resubmit(message.failedQuery ?? '')}
-								>
-									Try Again
-								</button>
-							{/if}
-						</div>
-					</div>
-				{/if}
+				<ChatMessage {message} projectId={data.project._id} onResubmit={resubmit} />
 			{/each}
 		{/if}
 		{#if thinking}
@@ -172,17 +133,6 @@
 					class="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-lg py-2 px-4"
 				>
 					<p class="text-sm">Thinking...</p>
-				</div>
-			</div>
-		{/if}
-		{#if content}
-			<div class="flex justify-start">
-				<div
-					class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-lg rounded-lg py-2 px-4 max-w-[80%]"
-				>
-					<p class="text-sm font-mono prose dark:prose-invert prose-sm max-w-none">
-						{@html renderMarkdown(content)}
-					</p>
 				</div>
 			</div>
 		{/if}

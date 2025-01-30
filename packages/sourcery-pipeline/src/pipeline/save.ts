@@ -9,6 +9,9 @@ import { ChunkModel } from "@sourcery/common/src/models/Chunk.model";
 import { FileModel } from "@sourcery/common/src/models/File.model";
 import { EntityModel } from "@sourcery/common/src/models/Entity.model";
 import { Entity } from "@sourcery/common/types/Entities.type";
+import { AIModels } from "@sourcery/common/src/ai-models";
+import { ProjectModel } from "@sourcery/common/src/models/Project.model";
+
 export class SavePipeline extends PipelineBase {
     private client: Qdrant;
 
@@ -23,7 +26,12 @@ export class SavePipeline extends PipelineBase {
     }
 
     async save_to_qdrant(collection: string, chunks: TChunk[], file: SourceryFile) {
-        await this.client.createCollection(collection);
+        // Get the project's vector model and dimensions
+        const project = await ProjectModel.findById(file.project);
+        const vectorModel = project?.vector_model || AIModels.find(model => model.type === 'embed' && model.default)?.value;
+        const dimensions = AIModels.find(model => model.value === vectorModel)?.dimensions || 768;
+
+        await this.client.createCollection(collection, dimensions);
         await this.client.deleteFile(collection.toString(), this.file.filename);
         const local_chunks: any[] = [...chunks].map(chunk => {
             const children = chunk.children?.map(child => child.id);

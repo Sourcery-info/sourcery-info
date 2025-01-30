@@ -1,9 +1,18 @@
 import { SourceryDB } from "./soucery-db"
 import type { SourceryDBRecord, SourceryDBRecordSearch } from "./soucery-db"
 import fetch from 'node-fetch';
+import { AIModels } from "@sourcery/common/src/ai-models";
 
 interface QdrantCollection {
     name: string;
+}
+
+interface QdrantCollectionConfig {
+    result?: {
+        config?: {
+            vector_model?: string;
+        };
+    };
 }
 
 interface QdrantCollectionsResponse {
@@ -67,25 +76,26 @@ export class Qdrant implements SourceryDB {
         return false;
     }
 
-    async createCollection(collection: string) {
+    async createCollection(collection: string, dimensions: number = 768) {
         if (await this.collectionExists(collection)) {
             return false;
         }
+
         const config = {
             vectors: {
-                size: 768,
+                size: dimensions,
                 distance: 'Cosine',
                 on_disk: true
             }
         }
-        const response = await fetch(`${this.url}/collections/${collection}`, {
+        const createResponse = await fetch(`${this.url}/collections/${collection}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(config)
         });
-        await response.json();
+        await createResponse.json();
         return true;
     }
 

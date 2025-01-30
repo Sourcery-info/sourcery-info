@@ -1,5 +1,5 @@
-import type { SourceryFile, StageLog, FileStage } from "@sourcery/common/types/SourceryFile.type"
-import { StageState, StageResult } from "@sourcery/common/types/SourceryFile.type"
+import { SourceryFile, StageLog } from "@sourcery/common/types/SourceryFile.type"
+import { StageState, StageResult, FileStage, FileStatus } from "@sourcery/common/types/SourceryFile.type"
 import { SourceryPub } from "@sourcery/queue/src/pub";
 import { updateFile } from "@sourcery/frontend/src/lib/classes/files";
 import { ensureDir } from "@sourcery/common/src/utils"
@@ -87,14 +87,23 @@ export class PipelineBase {
         };
         this.file.stage_paths = PipelineBase.stage_paths;
         this.file.completed_stages.push(this.file.stage as FileStage);
-        this.file.stage = this.file.stage_queue.shift() as FileStage;
-        updateFile(this.file);
-        if (this.file.stage) {
+        
+        // Get next stage from queue
+        const nextStage = this.file.stage_queue.shift() as FileStage;
+        
+        if (nextStage) {
+            // If there's another stage, set it and queue it
+            this.file.stage = nextStage;
+            await updateFile(this.file);
             const pub = new SourceryPub(`file-${this.file.stage}`);
             await pub.addJob(`file-${this.file.stage}-${this.file._id}`, this.file);
             logger.info({ msg: `File ${this.file._id} has completed ${this.file.completed_stages.length} stages and is queued for ${this.file.stage}`, file_id: this.file._id, tags: ['file', 'info'] });
         } else {
-            logger.info({ msg: `File ${this.file._id} has completed ${this.file.completed_stages.length} stages and is not queued for any further stages`, file_id: this.file._id, tags: ['file', 'info'] });
+            // If no more stages, set to DONE and ACTIVE
+            this.file.stage = FileStage.DONE;
+            this.file.status = FileStatus.ACTIVE;
+            await updateFile(this.file);
+            logger.info({ msg: `File ${this.file._id} has completed all ${this.file.completed_stages.length} stages`, file_id: this.file._id, tags: ['file', 'info'] });
         }
     }
 }

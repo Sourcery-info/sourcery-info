@@ -19,7 +19,7 @@ export const httpServer = restify.createServer({
     log: logger
 });
 httpServer.use(bodyParser.json());
-const MODEL = "llama3.2:latest"
+const CHAT_MODEL = "llama3.2:latest"
 const VECTOR_MODEL = "nomic-embed-text:latest"
 const TEMPERATURE = 0.1
 const TOP_K = 20
@@ -95,12 +95,6 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
             result_count: qdrant_results?.length
         }, ['chat', 'rag', 'search']);
 
-        logger.debug({
-            msg: 'Qdrant search results',
-            count: qdrant_results?.length,
-            tags: ['chat', 'rag', 'search', 'debug']
-        });
-
         if (!qdrant_results) {
             logger.warn({
                 msg: 'No results found for query',
@@ -133,11 +127,6 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
 
         const outliers = find_outliers(reranked);
         if (outliers.length > 0) {
-            logger.info({
-                msg: `Found outliers`,
-                count: outliers.length,
-                tags: ['chat', 'rag', 'outliers']
-            });
             endTimer(timerId, {
                 outliers_found: true,
                 component_timings: componentTimings,
@@ -172,7 +161,7 @@ httpServer.post("/chat/:project_id", async (req, res) => {
     try {
         const project_id = req.params.project_id;
         const { input, conversation_id, message_id, files } = req.body;
-
+        logger.info({ msg: "Chat request", requestId, project_id, input, conversation_id, message_id, files, tags: ['chat', 'info'] });
         // Validate request
         if (!project_id || !input || !message_id || !conversation_id) {
             const missingFields = [];
@@ -203,8 +192,7 @@ httpServer.post("/chat/:project_id", async (req, res) => {
             throw new restifyErrors.NotFoundError("Project not found");
         }
         componentTimings.project_fetch = endTimer(`${requestId}_project_fetch`, {}, ['chat', 'project']);
-
-        const model = req.body?.model || project?.model || MODEL;
+        const model = req.body?.chat_model || project?.chat_model || CHAT_MODEL;
         const temperature = req.body?.temperature || project?.temperature || TEMPERATURE;
         const top_k = req.body?.top_k || project?.top_k || TOP_K;
         const vector_model = req.body?.vector_model || project?.vector_model || VECTOR_MODEL;
@@ -215,7 +203,19 @@ httpServer.post("/chat/:project_id", async (req, res) => {
         if (files) {
             files_to_search = await getFiles(project_id, files);
         } else {
-            files_to_search = (await getFiles(project_id)).filter(f => f.status === FileStatus.ACTIVE);
+            const all_files = await getFiles(project_id);
+            logger.info({
+                msg: "All files", files: all_files.map(f => {
+                    return {
+                        name: f.original_name,
+                        status: f.status,
+                        stage: f.stage,
+                        filetype: f.filetype,
+                        project: f.project,
+                    }
+                }), tags: ['chat', 'files']
+            });
+            files_to_search = all_files.filter(f => f.status === FileStatus.ACTIVE);
         }
         componentTimings.files_fetch = endTimer(`${requestId}_files_fetch`, {
             files_count: files_to_search.length
@@ -315,6 +315,6 @@ httpServer.listen({
     port: 9101,
     host: "0.0.0.0",
 }, () => {
-    logger.info({ msg: 'Chat API server started', port: 9101 });
+    logger.info({ msg: 'Chat API server started', port: 9101, tags: ['chat', 'info'] });
     return connectDB(process.env.MONGO_URL || "mongodb://localhost:27017/sourcery")
 });

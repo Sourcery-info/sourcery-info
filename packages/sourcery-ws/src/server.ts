@@ -43,28 +43,28 @@ io.on("connection", (socket) => {
     
     logger.info({ msg: "Client connected", socket_id: socket.id, user_id: session.user_id, tags: ['ws', 'info'] });
     socket.on("disconnect", () => {
-        logger.info({ msg: "Client disconnected", socket_id: socket.id, tags: ['ws', 'info'] });
+        // logger.info({ msg: "Client disconnected", socket_id: socket.id, tags: ['ws', 'info'] });
     });
     socket.on("ping", () => {
         socket.emit("pong");
     });
     socket.on("subscribe", (channel: string) => {
-        logger.info({ msg: `Subscribing to ${channel}`, socket_id: socket.id, tags: ['ws', 'info'] });
+        // logger.info({ msg: `Subscribing to ${channel}`, socket_id: socket.id, tags: ['ws', 'info'] });
         socket.join(channel);
     });
     socket.on("unsubscribe", (channel: string) => {
-        logger.info({ msg: `Unsubscribing from ${channel}`, socket_id: socket.id, tags: ['ws', 'info'] });
+        // logger.info({ msg: `Unsubscribing from ${channel}`, socket_id: socket.id, tags: ['ws', 'info'] });
         socket.leave(channel);
     });
 });
 
 new SourcerySub(async (data: any) => {
-    logger.info({ msg: "Received message", data: data, tags: ['ws', 'info'] });
+    // logger.info({ msg: "Received message", data: data, tags: ['ws', 'info'] });
     emit(data.channel, data);
     return true;
 }, "sourcery.info-ws");
 
 export function emit(channel: string, data: any) {
-    logger.info({ msg: `Emitting to ${channel}`, data: data, tags: ['ws', 'info'] });
+    // logger.info({ msg: `Emitting to ${channel}`, data: data, tags: ['ws', 'info'] });
     io.to(channel).emit(channel, data);
 }

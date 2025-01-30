@@ -22,11 +22,11 @@
 	<div class="text-base/7 font-semibold text-gray-900 dark:text-white">New Project</div>
 	<div class="mt-10">
 		<form method="POST" use:enhance>
-			<div class="flex flex-col gap-4">
-				<Projectsettings bind:form />
+			<div class="flex flex-col gap-4 mb-10">
+				<Projectsettings bind:form {security} />
 			</div>
 			<div class="flex flex-col gap-4">
-				<ModelSettings bind:form {chat_model} {vector_model} {temperature} {security} />
+				<ModelSettings bind:form {chat_model} {vector_model} {temperature} />
 			</div>
 			<button
 				type="submit"

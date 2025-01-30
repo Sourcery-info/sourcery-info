@@ -41,7 +41,7 @@ export const actions = {
             is_public: zfd.checkbox({ trueValue: "true" }),
             vector_model: zfd.text(z.string().optional()),
             chat_model: zfd.text(z.string()),
-            temperature: zfd.numeric(z.number().min(0).max(1)),
+            temperature: zfd.numeric(z.number().min(0).max(1).transform(val => val === 0 ? 0 : val || 0.1)),
             security: zfd.text(z.enum(["secure", "insecure"])), // It would be nice if the values were derived from the SourcerySecurity enum
         });
         const validation = await validate(formData, settingsSchema);

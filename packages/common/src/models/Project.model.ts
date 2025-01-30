@@ -25,7 +25,12 @@ const ProjectSchema = new Schema<Project & Document>({
     chat_model: String,
     tags: [String],
     security: String,
-    temperature: Number,
+    temperature: { 
+        type: Number,
+        default: 0.1,
+        min: 0,
+        max: 1
+    },
     conversations: [String],
     created_at: { 
         type: Date, 
@@ -39,9 +44,8 @@ const ProjectSchema = new Schema<Project & Document>({
 
 ProjectSchema.index({ name: 1, owner: 1 }, { unique: true });
 
-ProjectSchema.pre('save', function(this: Project & Document, next) {
+ProjectSchema.pre('save', async function(this: Project & Document) {
     this.updated_at = new Date();
-    next();
 });
 
 export const ProjectModel = mongoose.model<Project & Document>('Project', ProjectSchema);

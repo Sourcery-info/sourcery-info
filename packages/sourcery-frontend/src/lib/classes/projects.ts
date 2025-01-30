@@ -65,5 +65,12 @@ export async function createProject(project: ProjectType): Promise<ProjectType> 
 }
 
 export async function updateProject(project: ProjectType): Promise<void> {
-    await ProjectModel.findByIdAndUpdate(project._id, project, { new: true });
+    const updateData = { ...project };
+    if (typeof updateData.temperature === 'number') {
+        updateData.temperature = Math.max(0, Math.min(1, updateData.temperature));
+    }
+    await ProjectModel.findByIdAndUpdate(project._id, updateData, { 
+        new: true,
+        runValidators: true
+    });
 }

@@ -9,15 +9,19 @@
 	export let allow_vector_model_change = true;
 	export let temperature;
 
-	const chatModels = AIModels.filter((model) => model.type === 'chat').sort((a, b) =>
-		a.default ? -1 : b.default ? 1 : 0
-	);
-	const vectorModels = AIModels.filter((model) => model.type === 'embed').sort((a, b) =>
-		a.default ? -1 : b.default ? 1 : 0
-	);
+	const chatModels = AIModels.filter((model) => model.type === 'chat');
+	const vectorModels = AIModels.filter((model) => model.type === 'embed');
+
 	const temperatureStep = 0.1;
 	const temperatureMin = 0;
 	const temperatureMax = 1.0;
+
+	$: if (!chat_model) {
+		chat_model = chatModels.find((model) => model.default)?.value;
+	}
+	$: if (!vector_model) {
+		vector_model = vectorModels.find((model) => model.default)?.value;
+	}
 </script>
 
 <div class="space-y-6">

@@ -63,6 +63,14 @@
 					<span>Terms & Conditions</span>
 				</a>
 				<a
+					href="/admin/privacy"
+					onclick={handleItemClick}
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+				>
+					{@html fileIcon}
+					<span>Privacy Policy</span>
+				</a>
+				<a
 					href="/admin/config"
 					onclick={handleItemClick}
 					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"

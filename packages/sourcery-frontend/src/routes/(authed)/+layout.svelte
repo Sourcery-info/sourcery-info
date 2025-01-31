@@ -12,6 +12,13 @@
 	import Search from '$lib/ui/sidebar/search.svelte';
 	import { initializeWebSocket } from '$lib/ws/ws';
 	import { theme } from '$lib/stores/theme';
+	import { page } from '$app/stores';
+	import { enhance } from '$app/forms';
+	import SuccessAlert from '$lib/ui/success-alert.svelte';
+	import Dialog from '$lib/ui/dialog.svelte';
+	import type { TermsAndConditions } from '@sourcery/common/types/TermsAndConditions.type';
+	import type { ActionResult } from '@sveltejs/kit';
+	import { marked } from 'marked';
 
 	// Initialize theme as early as possible
 	if (typeof window !== 'undefined') {
@@ -27,7 +34,11 @@
 		alerts: [],
 		origin: '',
 		entities: [],
-		token: null
+		token: null,
+		terms: {
+			needsAcceptance: false,
+			activeTerms: null
+		}
 	};
 
 	$: {
@@ -46,11 +57,19 @@
 		if (data.alerts) {
 			alertsStore.set(data.alerts);
 		}
+		if (data.terms.needsAcceptance && data.terms.activeTerms) {
+			data.terms.needsAcceptance = true;
+			data.terms.activeTerms = data.terms.activeTerms;
+		}
 	}
 
 	let isMobileMenuOpen = false;
 	let isUserMenuOpen = false;
 	let isAlertsMenuOpen = false;
+	let showTermsDialog = false;
+	let showSuccess = false;
+	let hasScrolledToBottom = false;
+	let termsContainer: HTMLDivElement;
 
 	function toggleMobileMenu() {
 		isMobileMenuOpen = !isMobileMenuOpen;
@@ -78,7 +97,93 @@
 			}
 		})();
 	});
+
+	function handleSubmit() {
+		return async ({ result, update }: { result: ActionResult; update: () => Promise<void> }) => {
+			await update();
+
+			if (result.type === 'success') {
+				showTermsDialog = false;
+				showSuccess = true;
+			}
+		};
+	}
+
+	function handleScroll(e: Event) {
+		const target = e.target as HTMLDivElement;
+		checkIfScrolledToBottom(target);
+	}
+
+	function checkIfScrolledToBottom(element: HTMLDivElement) {
+		const isAtBottom =
+			Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
+		if (isAtBottom) {
+			hasScrolledToBottom = true;
+		}
+	}
+
+	$: if (termsContainer && data.terms.activeTerms) {
+		// Check scroll state whenever terms content changes or container is mounted
+		checkIfScrolledToBottom(termsContainer);
+	}
+
+	$: formattedTermsContent = data.terms.activeTerms ? marked(data.terms.activeTerms.content) : '';
+
+	$: if (data.terms.needsAcceptance && data.terms.activeTerms) {
+		showTermsDialog = true;
+	}
 </script>
+
+{#if showTermsDialog && data.terms.activeTerms}
+	<Dialog
+		show={true}
+		title="Terms & Conditions"
+		message="Please review and accept our Terms & Conditions to continue using the service."
+		confirmText="Accept"
+		cancelText="Decline"
+		confirmClass="bg-indigo-600 hover:bg-indigo-500 {!hasScrolledToBottom
+			? 'opacity-50 cursor-not-allowed'
+			: ''}"
+		type="warning"
+		on:confirm={async () => {
+			if (hasScrolledToBottom) {
+				const formData = new FormData();
+				const response = await fetch('/terms/accept', {
+					method: 'POST',
+					body: formData
+				});
+				if (response.ok) {
+					showTermsDialog = false;
+					showSuccess = true;
+					// Refresh the page to update terms acceptance state
+					window.location.reload();
+				}
+			}
+		}}
+		on:close={() => {
+			// Redirect to logout if user declines
+			window.location.href = '/logout';
+		}}
+	>
+		<div class="mt-4 space-y-4">
+			<div
+				bind:this={termsContainer}
+				on:scroll={handleScroll}
+				class="prose dark:prose-invert prose-sm max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md p-4"
+			>
+				{@html formattedTermsContent}
+			</div>
+			<p class="text-sm text-gray-500 dark:text-gray-400">
+				Version {data.terms.activeTerms.version}
+			</p>
+			{#if !hasScrolledToBottom}
+				<p class="text-sm text-amber-500 dark:text-amber-400">
+					Please scroll to the bottom to accept the terms and conditions
+				</p>
+			{/if}
+		</div>
+	</Dialog>
+{/if}
 
 <svelte:window on:click={handleClickOutside} />
 
@@ -185,3 +290,5 @@
 		</main>
 	</div>
 </div>
+
+<SuccessAlert bind:show={showSuccess} message="Terms & Conditions accepted successfully" />

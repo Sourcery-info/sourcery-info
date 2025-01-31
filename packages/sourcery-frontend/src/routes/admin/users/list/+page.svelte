@@ -1,7 +1,17 @@
 <script lang="ts">
 	import { usersStore } from '$lib/stores/usersStore';
+	import type { User } from '@sourcery/common/types/User.type';
+	import type { UserTermsAcceptance } from '@sourcery/common/types/TermsAndConditions.type';
+
+	interface UserWithTerms extends User {
+		latestTermsAcceptance: UserTermsAcceptance | null;
+	}
 
 	/** @type {import('$types').PageData} */
+	export let data: { users: UserWithTerms[] };
+
+	let users: UserWithTerms[] = [];
+	$: users = data.users;
 </script>
 
 <div class="px-4 sm:px-6 lg:px-8">
@@ -54,13 +64,19 @@
 								>
 									Role
 								</th>
+								<th
+									scope="col"
+									class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200"
+								>
+									Terms Version
+								</th>
 								<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
 									<span class="sr-only">Edit</span>
 								</th>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900">
-							{#each $usersStore as user}
+							{#each users as user}
 								<tr>
 									<td
 										class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-200 sm:pl-6"
@@ -75,6 +91,23 @@
 									</td>
 									<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
 										{user.admin ? 'Admin' : 'User'}
+									</td>
+									<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+										{#if user.latestTermsAcceptance}
+											<span
+												class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900 px-2 py-1 text-xs font-medium text-green-700 dark:text-green-200 ring-1 ring-inset ring-green-600/20"
+											>
+												v{user.latestTermsAcceptance.version} ({new Date(
+													user.latestTermsAcceptance.accepted_at
+												).toLocaleDateString()})
+											</span>
+										{:else}
+											<span
+												class="inline-flex items-center rounded-md bg-yellow-50 dark:bg-yellow-900/50 px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-200 ring-1 ring-inset ring-yellow-600/20"
+											>
+												Not Accepted
+											</span>
+										{/if}
 									</td>
 									<td
 										class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"

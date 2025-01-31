@@ -9,6 +9,7 @@ import { getProject } from './projects';
 import { error } from '@sveltejs/kit';
 import { logger } from '@sourcery/common/src/logger';
 const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
+const ws_pub = new SourceryPub(`sourcery.info-ws`);
 
 export function mapDBFile(file: SourceryFile): SourceryFile {
     return {
@@ -57,11 +58,21 @@ export async function updateFile(file: SourceryFile): Promise<SourceryFile | nul
     const data = { ...file, _id };
     delete data._id;
     const updatedFile = await FileModel.findByIdAndUpdate(_id, { $set: data }, { new: true });
+    ws_pub.addJob(`${file.user_id}:file`, {
+        id: file._id,
+        file: file,
+        message: "File updated"
+    });
     return updatedFile ? mapDBFile(updatedFile) : null;
 }
 
 export async function deleteFile(file_id: string): Promise<boolean> {
     const deletedFile = await FileModel.findByIdAndDelete(file_id);
+    ws_pub.addJob(`${deletedFile?.user_id}:file-deleted`, {
+        id: deletedFile?._id,
+        file: deletedFile,
+        message: "File deleted"
+    });
     return deletedFile ? true : false;
 }
 
@@ -145,6 +156,11 @@ export async function uploadFile(request: Request, params: any, locals: any) {
             stage,
         };
         await updateFile(data);
+        ws_pub.addJob(`${user_id}:file`, {
+            id: file_record._id,
+            file: data,
+            message: "File uploaded"
+        });
         await pub.addJob(`file-${stage}-${file_record._id}`, data);
         res_data.push(data);
     }

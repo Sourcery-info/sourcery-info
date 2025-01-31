@@ -53,7 +53,7 @@ function createFilesStore() {
             });
         },
         // Reset store
-        reset: () => set([])
+        reset: () => set([]),
     };
 }
 

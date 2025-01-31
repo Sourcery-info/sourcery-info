@@ -17,7 +17,7 @@ async function pubConversation(conversation: ConversationType): Promise<void> {
         return;
     }
     const conversation_db = await getConversation(conversation._id);
-    pub.addJob(`${conversation_db.project_id}:conversation`, { conversation: conversation_db });
+    pub.addJob(`${conversation_db.user_id}:conversation`, { conversation: conversation_db });
 }
 
 function mapDBConversation(conversation: ConversationType): ConversationType {
@@ -28,6 +28,7 @@ function mapDBConversation(conversation: ConversationType): ConversationType {
         created_at: conversation.created_at,
         updated_at: conversation.updated_at,
         description: conversation.description || conversation.messages?.[0]?.content || conversation.created_at?.toLocaleString(),
+        __v: conversation.__v,
         messages: conversation.messages?.map(message => {
             return {
                 _id: message._id?.toString() || undefined,

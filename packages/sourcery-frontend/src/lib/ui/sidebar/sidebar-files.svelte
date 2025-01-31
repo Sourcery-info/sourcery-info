@@ -76,7 +76,7 @@
 			</label>
 		</li>
 		{#if $filesStore.length > 0}
-			{#each $filesStore as file}
+			{#each $filesStore.filter((file) => file.project === selected_project._id) as file}
 				<li>
 					<a
 						href={`/file/${selected_project._id}/${file._id}`}

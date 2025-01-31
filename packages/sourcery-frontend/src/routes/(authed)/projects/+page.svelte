@@ -4,6 +4,8 @@
 	import dayjs from 'dayjs';
 	import relativeTime from 'dayjs/plugin/relativeTime';
 	dayjs.extend(relativeTime);
+
+	import { projectsStore } from '$lib/stores/projects.store';
 </script>
 
 <div class="bg-white dark:bg-gray-900 py-10">
@@ -34,7 +36,7 @@
 					<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">Create a new project</p>
 				</a>
 
-				{#each data.projects as project}
+				{#each $projectsStore as project}
 					<div
 						class="group relative rounded-lg bg-gray-50 dark:bg-gray-800/50 p-6 ring-1 ring-gray-200 dark:ring-white/10 hover:bg-gray-100 dark:hover:bg-gray-800/70"
 					>

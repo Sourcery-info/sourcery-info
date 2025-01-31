@@ -2,7 +2,10 @@ import { ensureProjectDirectory } from '@sourcery/frontend/src/lib/utils/files';
 import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
 import { ProjectModel } from '@sourcery/common/src/models/Project.model';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
+import { SourceryPub } from '@sourcery/queue/src/pub.js';
 // import type { User } from '@sourcery/common/types/User.type.js';
+
+const ws_pub = new SourceryPub(`sourcery.info-ws`);
 
 export async function checkUniqueName(name: string, user_id: string, project_id: string | null = null) {
     const existingProject = await ProjectModel.findOne({ name, owner: user_id });
@@ -62,6 +65,7 @@ export async function createProject(project: ProjectType): Promise<ProjectType> 
     const newProject = await ProjectModel.create(project);
     if (!newProject) throw new Error('Failed to create project');
     await ensureProjectDirectory(newProject._id.toString());
+    ws_pub.addJob(`${project.owner}:project`, { project: mapDBProject(newProject) });
     return mapDBProject(newProject);
 }
 
@@ -74,12 +78,18 @@ export async function updateProject(project: ProjectType): Promise<void> {
         new: true,
         runValidators: true
     });
+    ws_pub.addJob(`${project.owner}:project`, { project: mapDBProject(project) });
 }
 
 export async function removeProject(project_id: string): Promise<void> {
     const qdrant = new Qdrant({});
+    const project = await ProjectModel.findById(project_id);
+    if (!project) {
+        return;
+    }
     await Promise.all([
         ProjectModel.findByIdAndDelete(project_id),
         qdrant.deleteCollection(project_id)
     ]);
+    ws_pub.addJob(`${project.owner}:project-deleted`, { project_id });
 }

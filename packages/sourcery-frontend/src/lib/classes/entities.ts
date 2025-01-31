@@ -3,6 +3,7 @@ import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { Entity } from '@sourcery/common/types/Entities.type';
 import { SourceryPub } from '@sourcery/queue/src/pub.js';
 import mongoose from 'mongoose';
+import { getProject } from './projects';
 const pub = new SourceryPub(`sourcery.info-ws`);
 
 async function pubEntity(entity: Entity): Promise<void> {
@@ -13,7 +14,11 @@ async function pubEntity(entity: Entity): Promise<void> {
     if (!entity_db) {
         return;
     }
-    pub.addJob(`${entity_db.project_id}:entity`, { entity: entity_db });
+    const project = await getProject(entity_db.project_id.toString());
+    if (!project) {
+        return;
+    }
+    pub.addJob(`${project.owner}:entity`, { entity: entity_db });
 }
 
 function mapDBEntity(entity: Entity): Entity {

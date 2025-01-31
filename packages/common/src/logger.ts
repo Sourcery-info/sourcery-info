@@ -2,6 +2,9 @@ import pino from 'pino';
 import type { ResolveOptions } from '@sveltejs/kit';
 import type { RequestEvent } from '@sveltejs/kit';
 
+// Detect if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 // Configure log levels and custom levels
 const levels = {
   emerg: 80,
@@ -16,29 +19,35 @@ const levels = {
 
 // Create base logger configuration
 const baseConfig = {
-  level: process.env.LOG_LEVEL || 'info',
+  level: isBrowser ? 'info' : (process?.env?.LOG_LEVEL || 'info'),
   customLevels: levels,
   formatters: {
     level: (label: string) => {
       return { level: label };
     },
   },
-  timestamp: pino.stdTimeFunctions.isoTime,
+  timestamp: isBrowser ? undefined : pino.stdTimeFunctions.isoTime,
 };
 
 // Create performance hooks for timing
 const performanceHooks: { [key: string]: number } = {};
 
-// Create the streams array
-const streams = [
-  { stream: process.stdout },
-];
+// Create the streams array - always provide a valid array for Node environment
+const streams = isBrowser ? [] : [{ stream: process.stdout }];
 
 // Create the logger instance
-export const logger = pino(
-  baseConfig,
-  pino.multistream(streams)
-);
+export const logger = isBrowser
+  ? pino({
+      ...baseConfig,
+      browser: {
+        write: {
+          info: (o) => console.log(o),
+          warn: (o) => console.warn(o),
+          error: (o) => console.error(o),
+        },
+      },
+    })
+  : pino(baseConfig, pino.multistream(streams));
 
 // Performance monitoring helpers
 export const startTimer = (label: string) => {

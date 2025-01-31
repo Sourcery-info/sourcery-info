@@ -22,12 +22,33 @@ function createFilesStore() {
         remove: (fileId: string) => update(files => files.filter(f => f._id !== fileId)),
         // Update a file
         updateOne: (fileId: string, data: Partial<SourceryFile>) => update(files => 
-            files.map(f => f._id === fileId ? { ...f, ...data } : f)
+            files.map(f => {
+                if (f._id === fileId) {
+                    // Only update if the new version is higher or if versions are undefined
+                    const existingVersion = f.__v ?? 0;
+                    const newVersion = data.__v ?? 0;
+                    if (newVersion >= existingVersion) {
+                        return { ...f, ...data };
+                    }
+                    return f;
+                }
+                return f;
+            })
         ),
         // Upsert with proper duplicate handling
         upsert: (file: SourceryFile) => {
             update(files => {
                 const existingFiles = files.filter(f => f._id !== file._id);
+                const existingFile = files.find(f => f._id === file._id);
+                if (existingFile) {
+                    // Only update if the new version is higher or if versions are undefined
+                    const existingVersion = existingFile.__v ?? 0;
+                    const newVersion = file.__v ?? 0;
+                    if (newVersion >= existingVersion) {
+                        return [file, ...existingFiles];
+                    }
+                    return files;
+                }
                 return [file, ...existingFiles];
             });
         },

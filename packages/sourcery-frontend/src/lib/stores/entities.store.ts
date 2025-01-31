@@ -14,13 +14,29 @@ function createEntitiesStore() {
         remove: (entityId: string) => update(entities => entities.filter(e => e._id !== entityId)),
         // Update an entity
         updateOne: (entityId: string, data: Partial<Entity>) => update(entities => 
-            entities.map(e => e._id === entityId ? { ...e, ...data } : e)
+            entities.map(e => {
+                if (e._id === entityId) {
+                    // Only update if the new version is higher or if versions are undefined
+                    const existingVersion = e.__v ?? 0;
+                    const newVersion = data.__v ?? 0;
+                    if (newVersion >= existingVersion) {
+                        return { ...e, ...data };
+                    }
+                    return e;
+                }
+                return e;
+            })
         ),
         upsert: (entity: Entity) => {
             update(entities => {
                 const index = entities.findIndex(e => e._id === entity._id);
                 if (index !== -1) {
-                    entities[index] = { ...entities[index], ...entity };
+                    // Only update if the new version is higher or if versions are undefined
+                    const existingVersion = entities[index].__v ?? 0;
+                    const newVersion = entity.__v ?? 0;
+                    if (newVersion >= existingVersion) {
+                        entities[index] = { ...entities[index], ...entity };
+                    }
                 } else {
                     entities.unshift(entity);
                 }

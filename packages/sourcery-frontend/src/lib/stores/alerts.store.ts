@@ -14,13 +14,29 @@ function createAlertsStore() {
         remove: (alertId: string) => update(alerts => alerts.filter(a => a._id !== alertId)),
         // Update a conversation
         updateOne: (alertId: string, data: Partial<TAlert>) => update(alerts => 
-            alerts.map(a => a._id === alertId ? { ...a, ...data } : a)
+            alerts.map(a => {
+                if (a._id === alertId) {
+                    // Only update if the new version is higher or if versions are undefined
+                    const existingVersion = a.__v ?? 0;
+                    const newVersion = data.__v ?? 0;
+                    if (newVersion >= existingVersion) {
+                        return { ...a, ...data };
+                    }
+                    return a;
+                }
+                return a;
+            })
         ),
         upsert: (alert: TAlert) => {
             update(alerts => {
                 const index = alerts.findIndex(a => a._id === alert._id);
                 if (index !== -1) {
-                    alerts[index] = { ...alerts[index], ...alert };
+                    // Only update if the new version is higher or if versions are undefined
+                    const existingVersion = alerts[index].__v ?? 0;
+                    const newVersion = alert.__v ?? 0;
+                    if (newVersion >= existingVersion) {
+                        alerts[index] = { ...alerts[index], ...alert };
+                    }
                 } else {
                     alerts.unshift(alert);
                 }

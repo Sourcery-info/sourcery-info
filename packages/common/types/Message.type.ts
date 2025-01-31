@@ -14,4 +14,5 @@ export type Message = {
     updated_at?: Date;
     error?: boolean;
     failedQuery?: string;
+    __v?: number;
 }

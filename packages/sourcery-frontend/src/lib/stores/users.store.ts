@@ -14,13 +14,29 @@ function createUsersStore() {
         remove: (userId: string) => update(users => users.filter(u => u._id !== userId)),
         // Update a user
         updateOne: (userId: string, data: Partial<User>) => update(users => 
-            users.map(u => u._id === userId ? { ...u, ...data } : u)
+            users.map(u => {
+                if (u._id === userId) {
+                    // Only update if the new version is higher or if versions are undefined
+                    const existingVersion = u.__v ?? 0;
+                    const newVersion = data.__v ?? 0;
+                    if (newVersion >= existingVersion) {
+                        return { ...u, ...data };
+                    }
+                    return u;
+                }
+                return u;
+            })
         ),
         upsert: (user: User) => {
             update(users => {
                 const index = users.findIndex(u => u._id === user._id);
                 if (index !== -1) {
-                    users[index] = { ...users[index], ...user };
+                    // Only update if the new version is higher or if versions are undefined
+                    const existingVersion = users[index].__v ?? 0;
+                    const newVersion = user.__v ?? 0;
+                    if (newVersion >= existingVersion) {
+                        users[index] = { ...users[index], ...user };
+                    }
                 } else {
                     users.push(user);
                 }

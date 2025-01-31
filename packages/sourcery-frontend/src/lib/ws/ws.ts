@@ -3,8 +3,8 @@ import { entitiesStore } from '$lib/stores/entities.store';
 import { filesStore } from '$lib/stores/files.store';
 import { conversationsStore } from '$lib/stores/conversations.store';
 import { conversationStore } from '$lib/stores/conversation.store';
-import { connect, subscribe } from '@sourcery/ws/src/client.js';
 import { usersStore } from '$lib/stores/users.store';
+import { connect, subscribe } from '@sourcery/ws/src/client.js';
 import type { User } from '@sourcery/common/types/User.type';
 
 interface Project {

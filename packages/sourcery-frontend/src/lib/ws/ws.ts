@@ -1,10 +1,10 @@
-import { alertsStore } from '$lib/stores/alertsStore';
-import { entitiesStore } from '$lib/stores/entities';
-import { filesStore } from '$lib/stores/files';
-import { conversationsStore } from '$lib/stores/conversations';
-import { conversationStore } from '$lib/stores/conversationStore';
+import { alertsStore } from '$lib/stores/alerts.store';
+import { entitiesStore } from '$lib/stores/entities.store';
+import { filesStore } from '$lib/stores/files.store';
+import { conversationsStore } from '$lib/stores/conversations.store';
+import { conversationStore } from '$lib/stores/conversation.store';
 import { connect, subscribe } from '@sourcery/ws/src/client.js';
-import { usersStore } from '$lib/stores/usersStore';
+import { usersStore } from '$lib/stores/users.store';
 import type { User } from '@sourcery/common/types/User.type';
 
 interface Project {

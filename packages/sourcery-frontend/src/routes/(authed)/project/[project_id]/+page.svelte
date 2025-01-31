@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { filesStore } from '$lib/stores/files';
+	import { filesStore } from '$lib/stores/files.store';
 	import { goto } from '$app/navigation';
 	import Dialog from '$lib/ui/dialog.svelte';
 	import HamburgerMenu from '$lib/ui/hamburger-menu.svelte';

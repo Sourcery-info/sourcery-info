@@ -4,7 +4,7 @@
 	import SuccessAlert from '$lib/ui/success-alert.svelte';
 	import { enhance } from '$app/forms';
 	import type { ActionResult } from '@sveltejs/kit';
-	import { filesStore } from '$lib/stores/files';
+	import { filesStore } from '$lib/stores/files.store';
 
 	export let form;
 	export let data;

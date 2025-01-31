@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { usersStore } from '$lib/stores/usersStore';
+	import { usersStore } from '$lib/stores/users.store';
 	import type { User } from '@sourcery/common/types/User.type';
 	import type { UserTermsAcceptance } from '@sourcery/common/types/TermsAndConditions.type';
 

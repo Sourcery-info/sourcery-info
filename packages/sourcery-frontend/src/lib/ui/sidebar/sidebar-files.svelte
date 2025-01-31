@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { filesStore } from '$lib/stores/files';
+	import { filesStore } from '$lib/stores/files.store';
 	import { FileStatus } from '@sourcery/common/types/SourceryFile.type';
 	import plusIcon from '$lib/assets/icons/plus.svg?raw';
 	import spinnerIcon from '$lib/assets/icons/spinner.svg?raw';

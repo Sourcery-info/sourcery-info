@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
-	import { alertsStore } from '$lib/stores/alertsStore';
-	import { usersStore } from '$lib/stores/usersStore';
+	import { alertsStore } from '$lib/stores/alerts.store';
+	import { usersStore } from '$lib/stores/users.store';
 	import { onMount } from 'svelte';
 	import AdminSidebar from '$lib/ui/sidebar/admin-sidebar.svelte';
 	import ProfileDropdown from '$lib/ui/profile-dropdown.svelte';

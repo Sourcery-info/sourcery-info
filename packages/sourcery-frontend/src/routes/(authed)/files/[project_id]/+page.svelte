@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { filesStore } from '$lib/stores/files';
+	import { filesStore } from '$lib/stores/files.store';
 	import { onMount, onDestroy } from 'svelte';
 	import { enhance } from '$app/forms';
 

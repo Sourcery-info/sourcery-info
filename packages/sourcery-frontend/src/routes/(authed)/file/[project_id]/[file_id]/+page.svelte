@@ -11,7 +11,7 @@
 	import Chunks from './chunks.svelte';
 	import Dialog from '$lib/ui/dialog.svelte';
 	import HamburgerMenu from '$lib/ui/hamburger-menu.svelte';
-	import { filesStore } from '$lib/stores/files';
+	import { filesStore } from '$lib/stores/files.store';
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	export let data;

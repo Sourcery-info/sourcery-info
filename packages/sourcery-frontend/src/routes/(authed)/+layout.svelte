@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
-	import { filesStore } from '$lib/stores/files';
-	import { projectsStore } from '$lib/stores/projects';
-	import { entitiesStore } from '$lib/stores/entities';
-	import { conversationsStore } from '$lib/stores/conversations';
-	import { alertsStore } from '$lib/stores/alertsStore';
+	import { filesStore } from '$lib/stores/files.store';
+	import { projectsStore } from '$lib/stores/projects.store';
+	import { entitiesStore } from '$lib/stores/entities.store';
+	import { conversationsStore } from '$lib/stores/conversations.store';
+	import { alertsStore } from '$lib/stores/alerts.store';
 	import { onMount } from 'svelte';
 	import Sidebar from '$lib/ui/sidebar/sidebar.svelte';
 	import ProfileDropdown from '$lib/ui/profile-dropdown.svelte';
 	import AlertsDropdown from '$lib/ui/alerts-dropdown.svelte';
 	import Search from '$lib/ui/sidebar/search.svelte';
 	import { initializeWebSocket } from '$lib/ws/ws';
-	import { theme } from '$lib/stores/theme';
+	import { theme } from '$lib/stores/theme.store';
 	import { page } from '$app/stores';
 	import { enhance } from '$app/forms';
 	import SuccessAlert from '$lib/ui/success-alert.svelte';

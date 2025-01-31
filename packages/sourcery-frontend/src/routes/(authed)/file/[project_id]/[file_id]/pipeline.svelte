@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { filesStore } from '$lib/stores/files';
+	import { filesStore } from '$lib/stores/files.store';
 	import { stage_names } from '@sourcery/pipeline/src/file_workflows';
 	export let data: any;
 

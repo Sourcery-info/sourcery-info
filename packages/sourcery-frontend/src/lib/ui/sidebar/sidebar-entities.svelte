@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { entitiesStore } from '$lib/stores/entities';
+	import { entitiesStore } from '$lib/stores/entities.store';
 	import personIcon from '$lib/assets/icons/person.svg?raw';
 	import organizationIcon from '$lib/assets/icons/organization.svg?raw';
 	import locationIcon from '$lib/assets/icons/location.svg?raw';

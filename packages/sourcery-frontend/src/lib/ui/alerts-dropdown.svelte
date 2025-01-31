@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
-	import { alertsStore } from '$lib/stores/alertsStore';
+	import { alertsStore } from '$lib/stores/alerts.store';
 
 	export let isAlertsMenuOpen = false;
 

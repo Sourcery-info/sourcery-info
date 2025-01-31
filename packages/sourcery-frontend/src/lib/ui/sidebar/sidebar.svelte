@@ -1,8 +1,8 @@
 <script lang="ts">
 	// @ts-nocheck
 	/** @type {import('./$types').PageData} */
-	import { projectsStore } from '$lib/stores/projects';
-	import { filesStore } from '$lib/stores/files';
+	import { projectsStore } from '$lib/stores/projects.store';
+	import { filesStore } from '$lib/stores/files.store';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 

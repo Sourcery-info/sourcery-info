@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Entity } from '@sourcery/common/types/Entities.type';
-	import { entitiesStore } from '$lib/stores/entities';
+	import { entitiesStore } from '$lib/stores/entities.store';
 	import EntityCard from '$lib/ui/entity-card.svelte';
 
 	export let data;

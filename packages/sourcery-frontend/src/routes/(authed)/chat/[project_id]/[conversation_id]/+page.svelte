@@ -2,8 +2,8 @@
 	import type { Conversation as ConversationType } from '@sourcery/common/types/Conversation.type.js';
 	import type { Project as ProjectType } from '@sourcery/common/types/Project.type.js';
 	import ChatMessage from '$lib/ui/chat-message.svelte';
-	import { conversationStore } from '$lib/stores/conversationStore';
-	import { conversationsStore } from '$lib/stores/conversations';
+	import { conversationStore } from '$lib/stores/conversation.store';
+	import { conversationsStore } from '$lib/stores/conversations.store';
 
 	export let data: {
 		conversation: ConversationType;

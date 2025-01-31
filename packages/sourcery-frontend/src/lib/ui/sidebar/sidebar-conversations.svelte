@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { conversationsStore } from '$lib/stores/conversations';
+	import { conversationsStore } from '$lib/stores/conversations.store';
 	import plusIcon from '$lib/assets/icons/plus.svg?raw';
 	import chatIcon from '$lib/assets/icons/chat.svg?raw';
 

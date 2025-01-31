@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { conversationsStore } from '$lib/stores/conversations';
+	import { conversationsStore } from '$lib/stores/conversations.store';
 </script>
 
 <div class="min-h bg-white dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">

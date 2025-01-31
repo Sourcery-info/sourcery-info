@@ -116,7 +116,7 @@
 
 	function checkIfScrolledToBottom(element: HTMLDivElement) {
 		const isAtBottom =
-			Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
+			Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 5;
 		if (isAtBottom) {
 			hasScrolledToBottom = true;
 		}

@@ -5,4 +5,5 @@ export interface PrivacyPolicy {
     active: boolean;
     created_at: Date;
     updated_at: Date;
+    __v?: number; // Document version
 }

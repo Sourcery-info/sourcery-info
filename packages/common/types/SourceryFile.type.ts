@@ -105,4 +105,5 @@ export type SourceryFile = {
     updated_at: Date | null;
     checked?: boolean;
     stage_logs?: StageLog[];
+    __v?: number;
 }

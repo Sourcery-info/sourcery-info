@@ -58,6 +58,9 @@ const ConversationSchema = new Schema<Conversation & Document>({
         default: Date.now,
         index: true
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 ConversationSchema.pre('save', function(this: Conversation & Document, next) {

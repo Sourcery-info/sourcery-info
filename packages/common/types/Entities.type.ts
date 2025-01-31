@@ -12,4 +12,5 @@ export interface Entity {
     aliases?: string[];
     created_at?: Date;
     updated_at?: Date;
+    __v?: number; // Document version
 }

@@ -49,6 +49,9 @@ const FileSchema = new Schema<SourceryFile & Document>({
         default: Date.now,
         index: true
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 FileSchema.pre('save', function(this: SourceryFile & Document, next) {

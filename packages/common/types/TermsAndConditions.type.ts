@@ -5,6 +5,7 @@ export type TermsAndConditions = {
     active: boolean;
     created_at: Date;
     updated_at: Date;
+    __v?: number; // Document version
 }
 
 export type UserTermsAcceptance = {
@@ -15,4 +16,5 @@ export type UserTermsAcceptance = {
     ip_address: string;
     user_agent: string;
     accepted_at: Date;
+    __v?: number; // Document version
 } 

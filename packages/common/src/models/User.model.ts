@@ -49,6 +49,9 @@ const UserSchema = new Schema<User & Document>({
         type: Boolean,
         default: false
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 UserSchema.pre('save', function(next) {

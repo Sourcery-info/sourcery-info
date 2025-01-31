@@ -28,6 +28,9 @@ const ChunkSchema = new Schema<TChunk & Document>({
         default: Date.now,
         index: true
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 ChunkSchema.pre('save', function(this: TChunk & Document, next) {

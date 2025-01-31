@@ -9,4 +9,5 @@ export type TAlert = {
     type: TAlertType;
     created_at?: Date;
     updated_at?: Date;
+    __v?: number; // Document version
 }

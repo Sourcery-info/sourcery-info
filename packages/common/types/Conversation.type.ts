@@ -8,4 +8,5 @@ export type Conversation = {
     messages?: Message[];
     created_at?: Date;
     updated_at?: Date;
+    __v?: number; // Document version
 }

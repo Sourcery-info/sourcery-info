@@ -16,4 +16,5 @@ export type TChunk = {
     updated_at?: Date;
     tokens?: number;
     entities?: Entity[];
+    __v?: number; // Document version
 }

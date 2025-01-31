@@ -26,6 +26,9 @@ const ConfigSchema = new Schema<Config & Document>({
         default: Date.now,
         index: true
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 ConfigSchema.pre('save', function(next) {

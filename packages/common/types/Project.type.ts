@@ -20,4 +20,5 @@ export type Project = {
     security: string;
     conversations?: string[];
     files?: SourceryFile[];
+    __v?: number; // Document version
 }

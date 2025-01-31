@@ -31,6 +31,9 @@ const PrivacyPolicySchema = new Schema<PrivacyPolicy & Document>({
         type: Date,
         default: Date.now
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 PrivacyPolicySchema.pre('save', function(next) {

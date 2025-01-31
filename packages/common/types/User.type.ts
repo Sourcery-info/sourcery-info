@@ -1,4 +1,4 @@
- export type User = {
+export type User = {
     _id: string;
     user_id?: string;
     email: string;
@@ -11,6 +11,7 @@
     approved: boolean;
     admin: boolean;
     settings?: UserSettings;
+    __v?: number; // Document version
 }
 
 export type UserSettings = {

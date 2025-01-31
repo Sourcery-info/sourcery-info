@@ -35,6 +35,9 @@ const AlertSchema = new Schema<TAlert & Document>({
         default: Date.now,
         index: true
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 AlertSchema.pre('save', function(next) {

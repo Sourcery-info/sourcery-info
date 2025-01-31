@@ -31,6 +31,9 @@ const TermsAndConditionsSchema = new Schema<TermsAndConditions & Document>({
         type: Date,
         default: Date.now
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
 const UserTermsAcceptanceSchema = new Schema<UserTermsAcceptance & Document>({
@@ -56,6 +59,9 @@ const UserTermsAcceptanceSchema = new Schema<UserTermsAcceptance & Document>({
         type: Date,
         default: Date.now
     }
+}, {
+    versionKey: '__v',
+    timestamps: { createdAt: 'accepted_at' }
 });
 
 // Ensure a user can only accept a specific version once

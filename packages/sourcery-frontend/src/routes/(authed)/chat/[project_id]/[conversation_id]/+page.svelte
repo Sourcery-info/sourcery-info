@@ -16,7 +16,7 @@
 	let thinking = false;
 	let lastQuery = '';
 	let inputElement: HTMLInputElement;
-
+	let messagesContainer: HTMLDivElement;
 	$: if (inputElement && input !== inputElement.value) {
 		input = inputElement.value;
 	}
@@ -25,6 +25,20 @@
 		input = question;
 		const event = new SubmitEvent('submit');
 		await handleSubmit(event);
+	}
+
+	async function scrollToBottom() {
+		if (messagesContainer) {
+			// Scroll last message into view
+			// const lastMessage = messagesContainer.lastElementChild;
+			// if (lastMessage) {
+			messagesContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
+			// }
+		}
+	}
+
+	$: if ($conversationStore?.messages?.length) {
+		scrollToBottom();
 	}
 
 	async function handleSubmit(event: SubmitEvent) {
@@ -82,7 +96,11 @@
 
 <div class="flex flex-col bg-white dark:bg-gray-900">
 	<!-- Chat messages -->
-	<div class="flex-1 overflow-y-auto p-6 space-y-4 mb-[76px]">
+	<div
+		id="messages-container"
+		bind:this={messagesContainer}
+		class="flex-1 overflow-y-auto p-6 space-y-4 mb-[76px]"
+	>
 		{#if !$conversationStore?.messages?.length}
 			<div class="flex justify-center items-center h-full flex-col space-y-6">
 				<p class="text-gray-600 dark:text-gray-400 text-lg">
@@ -188,3 +206,22 @@
 		</form>
 	</div>
 </div>
+
+<style>
+	/* #messages-container {
+		display: flex;
+		flex-direction: column;
+	}
+
+	#messages-container > *:first-child {
+		margin-top: auto;
+	}
+
+	#messages-container > *:last-child {
+		margin-bottom: auto;
+	} */
+
+	#messages-container > *:last-child {
+		margin-bottom: 100px;
+	}
+</style>

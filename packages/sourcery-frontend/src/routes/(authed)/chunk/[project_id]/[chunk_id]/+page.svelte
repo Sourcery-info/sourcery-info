@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { marked } from 'marked';
+	import { baseUrl } from 'marked-base-url';
+
 	let { data } = $props();
 
+	const marked_base_url = `${data.origin}/file/${data.project_id}/${data.chunk?.file_id}/img/`;
+	marked.use(baseUrl(marked_base_url));
 	let html = $derived(data.chunk?.content ? marked(data.chunk.content) : '');
 	let showChildren = $state(false);
 

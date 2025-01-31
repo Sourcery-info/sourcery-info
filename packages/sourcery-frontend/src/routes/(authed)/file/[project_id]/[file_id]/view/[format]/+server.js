@@ -5,6 +5,7 @@ import fs from "fs";
 import { error } from '@sveltejs/kit';
 import { getFile } from "$lib/classes/files";
 import { marked } from 'marked';
+import { baseUrl } from "marked-base-url";
 import { readFile } from "fs/promises";
 import { FileModel } from "@sourcery/common/src/models/File.model";
 import { getEntitiesByFile } from "$lib/classes/entities";
@@ -78,6 +79,7 @@ export async function GET({ params }) {
             break;
         case 'md':
             const md = fs.readFileSync(`${PROJECT_DIR}/${project_id}/files/${file_id}/md/${file.filename}.md`, 'utf8');
+            marked.use(baseUrl(`${process.env.ORIGIN}/file/${project_id}/${file_id}/img/`));
             const html = marked(md); // Convert markdown to HTML
             response = {
                 headers: {

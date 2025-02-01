@@ -26,7 +26,7 @@ export function mapDBProject(project: ProjectType): ProjectType {
         shared_with: project.shared_with,
         created_at: project.created_at,
         updated_at: project.updated_at,
-        owner: project.owner.toString(),
+        owner: project.owner?.toString() || null,
         vector_model: project.vector_model,
         chat_model: project.chat_model,
         tags: project.tags,

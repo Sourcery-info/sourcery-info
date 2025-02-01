@@ -23,8 +23,8 @@ export const AIModels: TAIModel[] = [
         "default": true
     },
     {
-        "name": "Llama3.2 7b",
-        "value": "llama3.2:7b",
+        "name": "Llama3.2 3b",
+        "value": "llama3.2:3b",
         "type": "chat",
         "default": true
     },
@@ -33,26 +33,26 @@ export const AIModels: TAIModel[] = [
         "value": "deepseek-r1:8b",
         "type": "chat"
     },
-    {
-        "name": "Deepseek R1 7b",
-        "value": "deepseek-r1:7b",
-        "type": "chat"
-    },
-    {
-        "name": "Deepseek R1 14b",
-        "value": "deepseek-r1:14b",
-        "type": "chat"
-    },
-    {
-        "name": "Llama3.2 Vision 7b",
-        "value": "llama3.2-vision:7b",
-        "type": "mulitmodal"
-    },
-    {
-        "name": "Llama3.2 Uncensored 3b",
-        "value": "artifish/llama3.2-uncensored:3b",
-        "type": "chat"
-    },
+    // {
+    //     "name": "Deepseek R1 7b",
+    //     "value": "deepseek-r1:7b",
+    //     "type": "chat"
+    // },
+    // {
+    //     "name": "Deepseek R1 14b",
+    //     "value": "deepseek-r1:14b",
+    //     "type": "chat"
+    // },
+    // {
+    //     "name": "Llama3.2 Vision 7b",
+    //     "value": "llama3.2-vision:7b",
+    //     "type": "mulitmodal"
+    // },
+    // {
+    //     "name": "Llama3.2 Uncensored 3b",
+    //     "value": "artifish/llama3.2-uncensored:3b",
+    //     "type": "chat"
+    // },
     {
         "name": "BGE Reranker v2 M3",
         "value": "linux6200/bge-reranker-v2-m3",

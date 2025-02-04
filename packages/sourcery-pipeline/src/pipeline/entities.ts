@@ -49,6 +49,9 @@ export class EntitiesPipeline extends PipelineBase {
     }
 
     async consolidateEntities(entities: Entity[]): Promise<Entity[]> {
+        // Filter out DATE entities
+        entities = entities.filter(entity => entity.type !== "DATE");
+        
         // First pass - consolidate entities with the same value
         const consolidated_entities_1: Entity[] = [];
         for (const entity of entities) {

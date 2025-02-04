@@ -37,7 +37,7 @@ httpServer.get("/", async () => {
 const rag_prompt_template = (context, question, message_id, conversation) => [
     {
         role: "system",
-        content: "You are named Sourcery, an AI that assists investigative journalists, able to find the most interesting facts and important information buried in boring documents. You will be given multiple chunks of information from different documents. Each chunk contains a filename, the context, and the relevant content. Using the information contained in the chunks, give a comprehensive answer to the question. Respond only to the question asked. The response should be concise and relevant to the question. Provide the filename of the source document when relevant. Quote the text from the document when relevant. Give as a complete answer as possible. If the answer cannot be deduced from the context, politely decline to give an answer. Answer in Markdown format."
+        content: "You are named Sourcery, an AI that assists investigative journalists, able to find the most interesting facts and important information buried in boring documents. You will be given multiple chunks of information from different documents and entities. Each chunk contains a filename, the context, and the relevant content. Each entity contains a type, value, and description. Using all this information, give a comprehensive answer to the question. Respond only to the question asked. The response should be concise and relevant to the question. Provide the filename of the source document when relevant. Quote the text from the document when relevant. When discussing entities, mention their type and description if relevant. Give as a complete answer as possible. If the answer cannot be deduced from the context, politely decline to give an answer. Answer in Markdown format."
     },
     ...conversation.messages.filter(m => m._id !== message_id).map(m => ({ role: m.role, content: m.content })),
     {
@@ -90,12 +90,18 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
             }
         }
 
-        const qdrant_results = await qdrant.search(project_name, query);
+        // Search both collections in parallel
+        const [chunk_results, entity_results] = await Promise.all([
+            qdrant.search(project_name, query),
+            qdrant.search(`${project_name}_entities`, query)
+        ]);
+
         componentTimings.qdrant_search = endTimer(`${timerId}_qdrant_search`, {
-            result_count: qdrant_results?.length
+            chunk_count: chunk_results?.length,
+            entity_count: entity_results?.length
         }, ['chat', 'rag', 'search']);
 
-        if (!qdrant_results) {
+        if (!chunk_results && !entity_results) {
             logger.warn({
                 msg: 'No results found for query',
                 project_name,
@@ -107,18 +113,41 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
 
         startTimer(`${timerId}_chunk_retrieval`);
         const results = [];
-        for (let result of qdrant_results) {
-            const chunk = await getChunkByQdrantID(result.id);
-            if (chunk) {
-                results.push(chunk);
+
+        // Process chunks
+        if (chunk_results) {
+            for (let result of chunk_results) {
+                const chunk = await getChunkByQdrantID(result.id);
+                if (chunk) {
+                    results.push({
+                        type: 'chunk',
+                        document: `<filename>${chunk.file_id.original_name}</filename>\n<id>${chunk.id}</id>\n<context>${chunk.context || ""}</context>\n<content>${chunk.content}</content>`,
+                        score: result.score
+                    });
+                }
             }
         }
+
+        // Process entities
+        if (entity_results) {
+            for (let result of entity_results) {
+                const entity = result.data;
+                if (entity) {
+                    results.push({
+                        type: 'entity',
+                        document: `<filename>Entity</filename>\n<id>${entity.id}</id>\n<type>${entity.type}</type>\n<value>${entity.value}</value>\n<description>${entity.description || ""}</description>`,
+                        score: result.score
+                    });
+                }
+            }
+        }
+
         componentTimings.chunk_retrieval = endTimer(`${timerId}_chunk_retrieval`, {
-            chunks_retrieved: results.length
+            total_results: results.length
         }, ['chat', 'rag', 'chunks']);
 
         startTimer(`${timerId}_reranking`);
-        const contexts = results.map(result => `<filename>${result.file_id.original_name}</filename>\n<id>${result.id}</id>\n<context>${result.context || ""}</context>\n<content>${result.content}</content>`);
+        const contexts = results.map(result => result.document);
         const reranked = await rerank(question, contexts, RERANK_TOP_K);
         componentTimings.reranking = endTimer(`${timerId}_reranking`, {
             input_chunks: contexts.length,

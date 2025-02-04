@@ -9,6 +9,7 @@ export interface Entity {
     type: string;
     value: string;
     description?: string;
+    vector?: number[];
     aliases?: string[];
     created_at?: Date;
     updated_at?: Date;

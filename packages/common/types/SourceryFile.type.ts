@@ -19,6 +19,7 @@ export enum FileStage {
     ENTITY_EXTRACTION = 'entity_extraction',
     CHUNKING = 'chunking',
     VECTORISING = 'vectorising',
+    VECTORISING_ENTITIES = 'vectorising_entities',
     INDEXING = 'indexing',
     PROCESSED = 'processed',
     SAVING = 'saving',

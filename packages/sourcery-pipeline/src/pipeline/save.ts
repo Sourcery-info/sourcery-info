@@ -37,7 +37,6 @@ export class SavePipeline extends PipelineBase {
             const children = chunk.children?.map(child => child.id);
             return { ...chunk, children };
         });
-        // const local_file = { filename: file.filename, original_name: file.original_name, filetype: file.filetype, created_at: file.created_at, updated_at: file.updated_at, file_id: file._id };
         let x = 0;
         let points: any[] = [];
         for (const chunk of [...chunks]) {
@@ -66,6 +65,113 @@ export class SavePipeline extends PipelineBase {
             if (x === [...chunks].length) {
                 await this.client.addRecords(collection, points);
             }
+        }
+    }
+
+    async save_entities_to_qdrant(collection: string, entities: Entity[], file: SourceryFile) {
+        try {
+            console.log(`Starting save_entities_to_qdrant for file ${file.filename}`);
+            console.log(`Found ${entities.length} entities to process`);
+
+            // Get the project's vector model and dimensions
+            const project = await ProjectModel.findById(file.project);
+            console.log(`Using project ${project?._id}, vector model: ${project?.vector_model}`);
+            
+            const vectorModel = project?.vector_model || AIModels.find(model => model.type === 'embed' && model.default)?.value;
+            const dimensions = AIModels.find(model => model.value === vectorModel)?.dimensions || 768;
+            console.log(`Vector dimensions: ${dimensions}`);
+
+            // Create entities collection if it doesn't exist
+            const entities_collection = `${collection}_entities`;
+            console.log(`Creating/ensuring collection ${entities_collection}`);
+            try {
+                await this.client.createCollection(entities_collection, dimensions);
+            } catch (err) {
+                console.error('Error creating collection:', err);
+                throw err;
+            }
+            
+            // Delete existing entities for this file
+            console.log(`Deleting existing entities for file ${this.file.filename}`);
+            try {
+                await this.client.deleteFile(entities_collection, this.file.filename);
+            } catch (err) {
+                console.error('Error deleting existing entities:', err);
+                // Don't throw here, continue with insert
+            }
+
+            let x = 0;
+            let points: any[] = [];
+            let skipped = 0;
+            for (const entity of entities) {
+                try {
+                    if (!entity.vector) {
+                        console.warn(`Entity ${entity.value} (${entity.type}) has no vector, skipping`);
+                        skipped++;
+                        continue;
+                    }
+
+                    if (!entity.id || !entity._id) {
+                        console.warn(`Entity ${entity.value} missing id or _id, skipping`);
+                        skipped++;
+                        continue;
+                    }
+
+                    const entity_data = {
+                        _id: entity._id,
+                        id: entity.id,
+                        type: entity.type,
+                        value: entity.value,
+                        description: entity.description,
+                        file_id: file._id,
+                        project_id: file.project.toString(),
+                        created_at: entity.created_at || file.created_at,
+                        updated_at: entity.updated_at || file.updated_at,
+                    }
+
+                    console.log(`Processing entity ${entity.id}: ${entity.type} - ${entity.value}`);
+                    
+                    points.push({
+                        id: entity.id,  // Use UUID for Qdrant
+                        vectors: entity.vector,
+                        data: entity_data,
+                    });
+
+                    x++;
+                    if (x % 100 === 0) {
+                        console.log(`Saving batch of ${points.length} entities`);
+                        try {
+                            await this.client.addRecords(entities_collection, points);
+                            console.log(`Successfully saved batch to Qdrant`);
+                        } catch (err) {
+                            console.error('Error saving batch to Qdrant:', err);
+                            throw err;
+                        }
+                        points = [];
+                        console.log(`Saved ${Math.round(x / entities.length * 100)}% of entities to Qdrant`);
+                    }
+                } catch (err) {
+                    console.error(`Error processing entity ${entity.value}:`, err);
+                    throw err;
+                }
+            }
+
+            if (points.length > 0) {
+                console.log(`Saving final batch of ${points.length} entities`);
+                try {
+                    console.log(points);
+                    await this.client.addRecords(entities_collection, points);
+                    console.log(`Successfully saved final batch to Qdrant`);
+                } catch (err) {
+                    console.error('Error saving final batch to Qdrant:', err);
+                    throw err;
+                }
+            }
+
+            console.log(`Completed save_entities_to_qdrant: Processed ${x} entities, skipped ${skipped} entities`);
+        } catch (err) {
+            console.error('Error in save_entities_to_qdrant:', err);
+            throw err;
         }
     }
 
@@ -102,40 +208,102 @@ export class SavePipeline extends PipelineBase {
     }
 
     async save_to_entities(entities: Entity[], file: SourceryFile) {
-        const chunks = await ChunkModel.find({ file_id: file._id });
-        for (const entity of entities) {
-            const matching_chunks = chunks.filter(chunk => entity.chunk_ids.includes(chunk.id));
-            if (matching_chunks.length === 0) {
-                continue;
+        try {
+            console.log(`Starting save_to_entities for file ${file.filename}`);
+            console.log(`Found ${entities.length} entities to process`);
+            
+            const chunks = await ChunkModel.find({ file_id: file._id });
+            console.log(`Found ${chunks.length} chunks for file`);
+
+            let saved = 0;
+            let skipped = 0;
+            for (const entity of entities) {
+                try {
+                    const matching_chunks = chunks.filter(chunk => entity.chunk_ids.includes(chunk.id));
+                    if (matching_chunks.length === 0) {
+                        console.warn(`No matching chunks found for entity ${entity.value}, skipping`);
+                        skipped++;
+                        continue;
+                    }
+
+                    console.log(`Processing entity: ${entity.type} - ${entity.value}`);
+                    console.log(`Found ${matching_chunks.length} matching chunks`);
+
+                    const entity_data = {
+                        project_id: file.project.toString(),
+                        type: entity.type,
+                        value: entity.value,
+                        description: entity.description,
+                        vector: entity.vector,
+                        chunk_ids: matching_chunks.map(chunk => chunk._id)
+                    }
+                    await upsertEntity(entity_data);
+                    saved++;
+                } catch (err) {
+                    console.error(`Error processing entity ${entity.value}:`, err);
+                    throw err;
+                }
             }
-            const entity_data = {
-                project_id: file.project.toString(),
-                type: entity.type,
-                value: entity.value,
-                description: entity.description,
-                chunk_ids: matching_chunks.map(chunk => chunk._id)
-            }
-            await upsertEntity(entity_data);
+            console.log(`Completed save_to_entities: Saved ${saved} entities, skipped ${skipped} entities`);
+        } catch (err) {
+            console.error('Error in save_to_entities:', err);
+            throw err;
         }
     }
     
     async process() {
-        const collection = this.file.project;
-        const chunkFile = SavePipeline.stage_paths.vectorising.files[0];
-        const inputPath = path.join(this.filepath, "vectorising", chunkFile);
-        const data = await readFile(inputPath, "utf8");
-        const root: TChunk = JSON.parse(data);
-        const chunks = ChunkingPipeline.flattenChunks(root);
-        const entityFile = SavePipeline.stage_paths.entities.files[0];
-        const entityPath = path.join(this.filepath, "entities", entityFile);
-        const entities = await readFile(entityPath, "utf8");
-        const entities_data = JSON.parse(entities);
-        await Promise.all([
-            this.save_to_qdrant(collection.toString(), chunks, this.file),
-            this.save_to_mongo(chunks, this.file),
-        ]);
-        await this.save_to_entities(entities_data, this.file);
-        return this.file;
+        try {
+            console.log('Starting SavePipeline process');
+            const collection = this.file.project;
+            
+            // Read chunks
+            console.log('Reading chunks file');
+            const chunkFile = SavePipeline.stage_paths.vectorising.files[0];
+            const inputPath = path.join(this.filepath, "vectorising", chunkFile);
+            const data = await readFile(inputPath, "utf8");
+            const root: TChunk = JSON.parse(data);
+            const chunks = ChunkingPipeline.flattenChunks(root);
+            console.log(`Found ${chunks.length} chunks to process`);
+
+            // Read entities
+            console.log('Reading entities file');
+            const entityFile = SavePipeline.stage_paths.entities.files[0];
+            const entityPath = path.join(this.filepath, "entities", entityFile);
+            const entities = await readFile(entityPath, "utf8");
+            const entities_data = JSON.parse(entities);
+            console.log(`Found ${entities_data.length} entities to process`);
+
+            // Save everything in parallel
+            console.log('Starting parallel save operations');
+            await Promise.all([
+                this.save_to_qdrant(collection.toString(), chunks, this.file)
+                    .catch(err => {
+                        console.error('Error in save_to_qdrant:', err);
+                        throw err;
+                    }),
+                this.save_entities_to_qdrant(collection.toString(), entities_data, this.file)
+                    .catch(err => {
+                        console.error('Error in save_entities_to_qdrant:', err);
+                        throw err;
+                    }),
+                this.save_to_mongo(chunks, this.file)
+                    .catch(err => {
+                        console.error('Error in save_to_mongo:', err);
+                        throw err;
+                    }),
+                this.save_to_entities(entities_data, this.file)
+                    .catch(err => {
+                        console.error('Error in save_to_entities:', err);
+                        throw err;
+                    }),
+            ]);
+
+            console.log('Successfully completed all save operations');
+            return this.file;
+        } catch (err) {
+            console.error('Error in SavePipeline process:', err);
+            throw err;
+        }
     }
 }
 // 6777e4d72635e0d9a998fe62

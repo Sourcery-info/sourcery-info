@@ -5,7 +5,7 @@ import { Validate } from "./pipeline/validate";
 import { ExtractText } from "./pipeline/extract_text";
 import { ChunkingPipeline } from "./pipeline/chunk";
 import { ContextualChunkPipeline } from "./pipeline/contextual-chunk";
-import { VectorizePipeline } from "./pipeline/vectorize";
+import { VectorizeChunksPipeline, VectorizeEntitiesPipeline } from "./pipeline/vectorize";
 import { DoclingPipeline } from "./pipeline/docling";
 import { SavePipeline } from "./pipeline/save";
 import { DonePipeline } from "./pipeline/done";
@@ -74,7 +74,10 @@ async function handleFile(file: SourceryFile) {
             stage_instance = new ContextualChunkPipeline(file);
             break;
         case FileStage.VECTORISING:
-            stage_instance = new VectorizePipeline(file);
+            stage_instance = new VectorizeChunksPipeline(file);
+            break;
+        case FileStage.VECTORISING_ENTITIES:
+            stage_instance = new VectorizeEntitiesPipeline(file);
             break;
         case FileStage.SAVING:
             stage_instance = new SavePipeline(file);

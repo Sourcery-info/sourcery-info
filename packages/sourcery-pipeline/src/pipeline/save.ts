@@ -1,16 +1,16 @@
 import { Qdrant } from "@sourcery/sourcery-db/src/qdrant";
 import { PipelineBase } from "./base"
 import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type.ts"
-import { readFile, writeFile } from "fs/promises";
+import { readFile } from "fs/promises";
 import { ChunkingPipeline } from "./chunk";
 import path from "path";
 import type { TChunk } from "@sourcery/common/types/Chunks.type";
 import { ChunkModel } from "@sourcery/common/src/models/Chunk.model";
 import { FileModel } from "@sourcery/common/src/models/File.model";
-import { EntityModel } from "@sourcery/common/src/models/Entity.model";
 import { Entity } from "@sourcery/common/types/Entities.type";
 import { AIModels } from "@sourcery/common/src/ai-models";
 import { ProjectModel } from "@sourcery/common/src/models/Project.model";
+import { upsertEntity } from "@sourcery/frontend/src/lib/classes/entities";
 
 export class SavePipeline extends PipelineBase {
     private client: Qdrant;
@@ -109,13 +109,13 @@ export class SavePipeline extends PipelineBase {
                 continue;
             }
             const entity_data = {
-                project_id: file.project,
+                project_id: file.project.toString(),
                 type: entity.type,
                 value: entity.value,
                 description: entity.description,
                 chunk_ids: matching_chunks.map(chunk => chunk._id)
             }
-            await EntityModel.updateOne({ project_id: file.project, type: entity.type, value: entity.value }, { $set: entity_data }, { upsert: true });
+            await upsertEntity(entity_data);
         }
     }
     

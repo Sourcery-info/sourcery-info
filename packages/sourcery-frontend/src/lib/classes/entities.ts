@@ -1,5 +1,4 @@
 import { EntityModel } from '@sourcery/common/src/models/Entity.model';
-import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { Entity } from '@sourcery/common/types/Entities.type';
 import { SourceryPub } from '@sourcery/queue/src/pub.js';
 import mongoose from 'mongoose';
@@ -104,6 +103,31 @@ export async function updateEntity(entity: Entity): Promise<Entity> {
     }
     pubEntity(updatedEntity);
     return mapDBEntity(updatedEntity);
+}
+
+export async function upsertEntity(entity: Entity): Promise<Entity> {
+    const { _id, ...entityData } = entity;
+    if (entityData.project_id) {
+        entityData.project_id = new mongoose.Types.ObjectId(entityData.project_id);
+    }
+    const filter: any = {};
+    if (_id) {
+        filter._id = new mongoose.Types.ObjectId(_id);
+    } else {
+        filter.project_id = entityData.project_id;
+        filter.type = entityData.type;
+        filter.value = entityData.value;
+    }
+    if (entityData.chunk_ids?.[0]) {
+        entityData.chunk_ids = [new mongoose.Types.ObjectId(entityData.chunk_ids[0])];
+    }
+    const upsertedEntity = await EntityModel.findOneAndUpdate(filter, entityData, { upsert: true, new: true });
+    if (!upsertedEntity) {
+        console.error('Error upserting entity', entity);
+        throw new Error('Error upserting entity');
+    }
+    pubEntity(upsertedEntity);
+    return mapDBEntity(upsertedEntity);
 }
 
 export async function deleteEntity(entity_id: string): Promise<void> {

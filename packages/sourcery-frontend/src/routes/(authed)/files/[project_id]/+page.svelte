@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { filesStore } from '$lib/stores/files.store';
-	import { onMount, onDestroy } from 'svelte';
 	import { enhance } from '$app/forms';
 
 	export let data;
@@ -21,55 +20,37 @@
 			}
 		}
 	}
-
-	onMount(async () => {
-		console.log('mounted');
-		// await connect(Number(data.props.websocket_port));
-		// try {
-		// 	await subscribe(`${data.props.project_id}-file`, (msg) => {
-		// 		if (msg.file) {
-		// 			filesStore.updateFile(msg.file._id, msg.file);
-		// 		}
-		// 	});
-		// } catch (error) {
-		// 	console.error(error);
-		// }
-	});
-
-	onDestroy(() => {
-		try {
-			// unsubscribe('files');
-		} catch (error) {
-			console.error(error);
-		}
-	});
 </script>
 
 <div class="p-4">
 	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
 		<!-- Upload Files Card -->
-		<div class="rounded-lg bg-white/5 shadow-sm ring-1 ring-white/10">
-			<div class="border-b border-white/10 px-4 py-3">
-				<h3 class="text-base font-semibold text-white">Upload Files</h3>
+		<div
+			class="rounded-lg bg-white dark:bg-white/5 shadow-lg shadow-gray-200/50 dark:shadow-black/50 ring-1 ring-gray-900/5 dark:ring-white/10"
+		>
+			<div class="border-b border-gray-900/10 dark:border-white/10 px-4 py-3">
+				<h3 class="text-base font-semibold text-gray-900 dark:text-white">Upload Files</h3>
 			</div>
 			<div class="p-4">
 				<form method="POST" use:enhance enctype="multipart/form-data">
 					<div class="space-y-4">
 						<div>
-							<label for="files" class="block text-sm font-medium text-white">File</label>
+							<label for="files" class="block text-sm font-medium text-gray-900 dark:text-white"
+								>File</label
+							>
 							<input
 								multiple={true}
 								type="file"
 								name="files"
 								id="files"
 								required
-								class="mt-2 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+								class="mt-2 block w-full rounded-md border border-gray-900/10 dark:border-white/10 bg-white dark:bg-white/5 px-3 py-2 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm placeholder:text-gray-500"
 							/>
 						</div>
 						<button
 							type="submit"
 							formaction="?/upload"
-							class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+							class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
 						>
 							Save
 						</button>
@@ -79,9 +60,11 @@
 		</div>
 		{#if data.user?.admin}
 			<!-- Database Card -->
-			<div class="rounded-lg bg-white/5 shadow-sm ring-1 ring-white/10">
-				<div class="border-b border-white/10 px-4 py-3">
-					<h3 class="text-base font-semibold text-white">Database</h3>
+			<div
+				class="rounded-lg bg-white dark:bg-white/5 shadow-lg shadow-gray-200/50 dark:shadow-black/50 ring-1 ring-gray-900/5 dark:ring-white/10"
+			>
+				<div class="border-b border-gray-900/10 dark:border-white/10 px-4 py-3">
+					<h3 class="text-base font-semibold text-gray-900 dark:text-white">Database</h3>
 				</div>
 				<div class="p-4">
 					<div>
@@ -107,7 +90,7 @@
 							>
 						{/if}
 
-						<ul class="mt-4 space-y-2 text-sm text-gray-300">
+						<ul class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
 							<li>Vectors: {data.props.db_info?.vectors_count}</li>
 							<li>Indexed Vectors: {data.props.db_info?.indexed_vectors_count}</li>
 							<li>Points: {data.props.db_info?.points_count}</li>
@@ -115,12 +98,12 @@
 						</ul>
 					</div>
 				</div>
-				<div class="border-t border-white/10 px-4 py-3">
+				<div class="border-t border-gray-900/10 dark:border-white/10 px-4 py-3">
 					<form method="POST" use:enhance>
 						<button
 							type="submit"
 							formaction="?/deleteCollection"
-							class="rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+							class="rounded-md bg-red-600 dark:bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 dark:hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
 						>
 							Delete Collection
 						</button>
@@ -132,15 +115,19 @@
 		<!-- Files List Card -->
 		<div class="sm:col-span-2">
 			<form method="POST" use:enhance>
-				<div class="rounded-lg bg-white/5 shadow-sm ring-1 ring-white/10">
-					<div class="flex items-center justify-between border-b border-white/10 px-4 py-3">
+				<div
+					class="rounded-lg bg-white dark:bg-white/5 shadow-lg shadow-gray-200/50 dark:shadow-black/50 ring-1 ring-gray-900/5 dark:ring-white/10"
+				>
+					<div
+						class="flex items-center justify-between border-b border-gray-900/10 dark:border-white/10 px-4 py-3"
+					>
 						<div class="flex items-center space-x-4">
 							<input
 								type="checkbox"
 								on:click={checkAllFiles}
-								class="rounded border-white/10 bg-white/5 text-indigo-500 focus:ring-indigo-500"
+								class="rounded border-gray-900/10 dark:border-white/10 bg-white dark:bg-white/5 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500"
 							/>
-							<h3 class="text-base font-semibold text-white">
+							<h3 class="text-base font-semibold text-gray-900 dark:text-white">
 								Files ({$filesStore.length} files)
 							</h3>
 						</div>
@@ -148,20 +135,20 @@
 							<button
 								type="submit"
 								formaction="?/reindexFiles"
-								class="rounded-md bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+								class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
 							>
 								Reindex
 							</button>
 							<button
 								type="submit"
 								formaction="?/deleteFiles"
-								class="rounded-md bg-red-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
+								class="rounded-md bg-red-600 dark:bg-red-500 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 dark:hover:bg-red-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500"
 							>
 								Delete
 							</button>
 						</div>
 					</div>
-					<ul class="divide-y divide-white/10">
+					<ul class="divide-y divide-gray-900/10 dark:divide-white/10">
 						{#each $filesStore as file}
 							<li class="flex items-center justify-between px-4 py-3">
 								<div class="flex items-center space-x-3">
@@ -170,12 +157,12 @@
 										value={file._id}
 										type="checkbox"
 										checked={file.checked}
-										class="rounded border-white/10 bg-white/5 text-indigo-500 focus:ring-indigo-500"
+										class="rounded border-gray-900/10 dark:border-white/10 bg-white dark:bg-white/5 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500"
 									/>
-									<span class="text-sm text-white">{file.original_name}</span>
+									<span class="text-sm text-gray-900 dark:text-white">{file.original_name}</span>
 								</div>
 								<span
-									class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/20"
+									class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-600 dark:text-gray-400 ring-1 ring-inset ring-gray-400/20"
 								>
 									{file.stage}
 								</span>

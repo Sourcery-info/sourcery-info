@@ -69,3 +69,22 @@ export async function getChunksByLevel(file_id: string, level: number): Promise<
     }).sort({ title: 1 });
     return chunks.map(mapDBChunk);
 }
+
+export async function deleteChunk(chunk_id: string): Promise<void> {
+    const chunk = await ChunkModel.findByIdAndDelete(chunk_id);
+    if (!chunk) {
+        return;
+    }
+    pub.addJob(`${chunk.file_id}:chunk-deleted`, { chunk: chunk });
+}
+
+export async function deleteChunksByFile(file_id: string): Promise<void> {
+    const chunks = await ChunkModel.find({ file_id: new mongoose.Types.ObjectId(file_id) });
+    if (!chunks) {
+        return;
+    }
+    for (const chunk of chunks) {
+        await deleteChunk(chunk._id);
+        pub.addJob(`${chunk.file_id}:chunk-deleted`, { chunk: chunk });
+    }
+}

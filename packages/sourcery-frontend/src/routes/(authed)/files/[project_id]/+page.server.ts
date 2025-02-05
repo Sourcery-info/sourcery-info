@@ -1,14 +1,10 @@
 /** @type {import('./$types').PageServerLoad} */
-import { deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 import { error } from '@sveltejs/kit';
 import { updateFile, deleteFile, getFile, getFiles, reindexFile, uploadFile } from '$lib/classes/files';
-import { FileStage } from '@sourcery/common/types/SourceryFile.type';
-import { SourceryPub } from '@sourcery/queue/src/pub';
 import { logger } from '@sourcery/common/src/logger';
 
 const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
-const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export async function load({ params }) {
 	const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
@@ -68,8 +64,6 @@ export const actions = {
 	deleteFiles: async ({ request, params }: { request: Request, params: { project_id: string } }) => {
 		const formData = await request.formData();
 		for (const uid of formData.values()) {
-			await qdrant.deleteFile(params.project_id, uid.toString());
-			await deleteFileUtils(params.project_id, uid.toString());
 			await deleteFile(uid.toString());
 		}
 		return {

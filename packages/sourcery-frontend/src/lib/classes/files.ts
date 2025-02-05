@@ -1,5 +1,5 @@
 import { FileStatus, FileStage, FileTypes } from '@sourcery/common/types/SourceryFile.type';
-import { deleteFile as deleteFileUtils } from '$lib/utils/files';
+import { deleteFile as deleteFileUtils } from '@sourcery/frontend/src/lib/utils/files';
 import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { SourceryFile } from '@sourcery/common/types/SourceryFile.type.js';
 import { SourceryPub } from '@sourcery/queue/src/pub';
@@ -176,6 +176,7 @@ export async function uploadFile(request: Request, params: any, locals: any) {
             file: data,
             message: "File uploaded"
         });
+        console.log(`file-${stage}-${file_record._id}`);
         await pub.addJob(`file-${stage}-${file_record._id}`, data);
         res_data.push(data);
     }

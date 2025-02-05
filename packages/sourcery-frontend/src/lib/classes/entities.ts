@@ -178,6 +178,17 @@ export async function getEntitiesByFile(project_id: string, file_id: string): Pr
     return entities.map(mapDBEntity);
 }
 
+export async function deleteEntitiesByFile(file_id: string): Promise<void> {
+    const entities = await EntityModel.find({ file_ids: new mongoose.Types.ObjectId(file_id) });
+    if (!entities) {
+        throw new Error('Entities not found');
+    }
+    for (const entity of entities) {
+        await EntityModel.findByIdAndDelete(entity._id);
+        pub.addJob(`${entity.project_id}:entity-deleted`, { entity: entity });
+    }
+}
+
 export async function searchEntities(project_id: string, query: string): Promise<Entity[]> {
     if (!query.trim()) {
         return [];

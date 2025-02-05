@@ -25,9 +25,7 @@
 		});
 
 		if (res.ok) {
-			filesStore.update((files) =>
-				files.map((f) => (f._id === file._id ? { ...f, status: newStatus } : f))
-			);
+			filesStore.upsert({ ...file, status: newStatus });
 		}
 	}
 
@@ -47,7 +45,9 @@
 
 		if (res.ok) {
 			const res_json = await res.json();
-			filesStore.update((files) => [...files, ...res_json.files]);
+			for (const file of res_json.files) {
+				filesStore.upsert(file);
+			}
 		}
 		if (event.target) {
 			(event.target as HTMLInputElement).value = '';

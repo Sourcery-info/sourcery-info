@@ -25,33 +25,32 @@ export async function initializeWebSocket(origin: string, token: string, user: U
 
         await subscribe(`${user.user_id}:entity`, (message) => {
             if (!message.entity?._id) return;
-            // if (message.entity.project !== project?._id) return;
             entitiesStore.upsert(message.entity);
         });
 
+        await subscribe(`${user.user_id}:entity-deleted`, (message) => {
+            if (!message.entity?._id) return;
+            entitiesStore.remove(message.entity._id);
+        });
+
         await subscribe(`${user.user_id}:file`, (message) => {
-            if (!message.file?._id) return;
-            // if (message.file.project !== project?._id) return;
             console.log('message', message);
+            if (!message.file?._id) return;
             filesStore.upsert(message.file);
         });
 
         await subscribe(`${user.user_id}:file-deleted`, (message) => {
             if (!message.id) return;
-            // if (message.file.project !== project?._id) return;
-            console.log('message', message);
             filesStore.remove(message.id);
         });
 
         await subscribe(`${user.user_id}:conversation`, (message) => {
             if (!message.conversation?._id) return;
             if (!message.conversation?.messages?.length) return;
-            // if (message.conversation.project !== project?._id) return;
             conversationsStore.upsert(message.conversation);
-
-            // Update single conversation store if it matches the current conversation
             conversationStore.update((current) => {
                 if (current?._id === message.conversation._id) {
+                    // console.log('message.conversation', message.conversation);
                     return message.conversation;
                 }
                 return current;

@@ -5,6 +5,7 @@ import type { SourceryFile } from "@sourcery/common/types/SourceryFile.type";
 import fs from "fs/promises";
 import { setTimeout } from "timers/promises";
 import { isValidImage } from "@sourcery/common/src/utils";
+import { retry } from "@sourcery/common/src/retry";
 const ollama = new Ollama({
     host: process.env.OLLAMA_URL || "http://localhost:9100",
 });
@@ -51,7 +52,9 @@ export class LLAMAMMPipeline extends PipelineBase {
                     console.error(`No image data for ${image}`);
                     continue;
                 }
-                const img_base64 = await ollama.encodeImage(img_data);
+                const img_base64 = await retry(() => ollama.encodeImage(img_data), {
+                    identifier: `encode_image_${image}`
+                });
                 let content = "";
                 // if (pages.length > 0) {
                 //     content = `OCR this image. Return the text in Markdown format. Here is the previous pages content for context: <previous_pages>${pages.join("\n\n")}</previous_pages>`;
@@ -99,49 +102,33 @@ Here is an easyocr version of the page:
                         images: [img_base64]
                     }
                 ]
-                let response;
-                let retries = OLLAMA_RETRIES;
-                let json_response;
-                while (retries > 0) {
-                    // Pause half a second before retrying
-                    await setTimeout(500);
-                    try {
-                        const timeoutPromise = setTimeout(OLLAMA_TIMEOUT, 'timeout');
-                        response = await Promise.race([
-                            ollama.generate({
-                                model: 'llama3.2-vision',
-                                prompt: content,
-                                images: [img_base64],
-                                format: 'json',
-                                // keep_alive: 0,
-                                options: {
-                                    temperature: 0.0,
-                                }
-                            }),
-                            timeoutPromise.then(() => {
-                                ollama.abort();
-                                throw new Error('Ollama request timed out');
-                            })
-                        ]);
-                        // Check if the response is valid JSON
-                        json_response = JSON.parse(response.response);
-                        if (json_response.error) {
-                            throw new Error(`Ollama returned an error: ${json_response.error}`);
-                        }
+                
+                const response = await retry(async () => {
+                    const timeoutPromise = setTimeout(OLLAMA_TIMEOUT, 'timeout');
+                    return await Promise.race([
+                        ollama.generate({
+                            model: 'llama3.2-vision',
+                            prompt: content,
+                            images: [img_base64],
+                            format: 'json',
+                            options: {
+                                temperature: 0.0,
+                            }
+                        }),
+                        timeoutPromise.then(() => {
+                            ollama.abort();
+                            throw new Error('Ollama request timed out');
+                        })
+                    ]);
+                }, {
+                    identifier: `process_image_${image}`,
+                    maxRetries: OLLAMA_RETRIES
+                });
 
-                        break; // Success, exit retry loop
-                    } catch (error: any) {
-                        retries--;
-                        if (retries === 0) {
-                            throw new Error(`Failed to process image after ${OLLAMA_RETRIES} attempts: ${error.message}`);
-                        }
-                        console.warn(`Attempt failed, ${retries} retries remaining. Error: ${error.message}`);
-                        // await setTimeout(1000); // Wait 1 second before retrying
-                    }
-                }
-
-                if (!response) { 
-                    throw new Error(`No response from ollama for ${image}`);
+                // Check if the response is valid JSON
+                const json_response = JSON.parse(response.response);
+                if (json_response.error) {
+                    throw new Error(`Ollama returned an error: ${json_response.error}`);
                 }
                 pages.push(json_response);
                 // Write the description to a file

@@ -5,6 +5,7 @@ import path from "path";
 import { Ollama } from "ollama";
 import { ensure_model } from "@sourcery/common/src/ollama";
 import { setTimeout } from "timers/promises";
+import { retry } from "@sourcery/common/src/retry";
 
 const ollama = new Ollama({
     host: process.env.OLLAMA_URL || "http://localhost:9100",
@@ -30,13 +31,13 @@ export class FilenamePipeline extends PipelineBase {
     }
 
     private async suggestFilename(imagePath: string): Promise<FilenameResult> {
-        let retries = OLLAMA_RETRIES;
-        
         const img_data = await fs.readFile(imagePath);
         if (!img_data) {
             throw new Error(`No image data for ${imagePath}`);
         }
-        const img_base64 = await ollama.encodeImage(img_data);
+        const img_base64 = await retry(() => ollama.encodeImage(img_data), {
+            identifier: `encode_image_${path.basename(imagePath)}`
+        });
 
         const prompt = `Look at this image and suggest a filename for the document it represents.
 
@@ -63,54 +64,46 @@ Example response:
 }
 `;
 
-        while (retries > 0) {
-            try {
-                const timeoutPromise = setTimeout(OLLAMA_TIMEOUT, 'timeout');
-                const response = await Promise.race([
-                    ollama.chat({
-                        model: MODEL,
-                        messages: [{
-                            role: 'user',
-                            content: prompt,
-                            images: [img_base64]
-                        }],
-                        format: "json",
-                        options: {
-                            temperature: 0.1,
-                        }
-                    }),
-                    timeoutPromise.then(() => {
-                        ollama.abort();
-                        throw new Error('Ollama request timed out');
-                    })
-                ]);
-
-                try {
-                    const result = JSON.parse(response.message.content);
-                    if (!result.suggestedFilename || !result.humanFriendlyName || 
-                        !result.summary || !result.confidence || !result.reasoning) {
-                        throw new Error('Invalid response format');
+        const response = await retry(async () => {
+            const timeoutPromise = setTimeout(OLLAMA_TIMEOUT, 'timeout');
+            return await Promise.race([
+                ollama.chat({
+                    model: MODEL,
+                    messages: [{
+                        role: 'user',
+                        content: prompt,
+                        images: [img_base64]
+                    }],
+                    format: "json",
+                    options: {
+                        temperature: 0.1,
                     }
-                    return {
-                        timestamp: new Date().toISOString(),
-                        source: path.basename(imagePath),
-                        ...result
-                    };
-                } catch (parseError) {
-                    console.warn('Failed to parse JSON response:', response.message.content);
-                    throw parseError;
-                }
-            } catch (error: any) {
-                retries--;
-                if (retries === 0) {
-                    throw new Error(`Failed to suggest filename after ${OLLAMA_RETRIES} attempts: ${error.message}`);
-                }
-                console.warn(`Attempt failed, ${retries} retries remaining. Error: ${error.message}`);
-                await setTimeout(1000);
+                }),
+                timeoutPromise.then(() => {
+                    ollama.abort();
+                    throw new Error('Ollama request timed out');
+                })
+            ]);
+        }, {
+            identifier: `filename_suggestion_${path.basename(imagePath)}`,
+            maxRetries: OLLAMA_RETRIES
+        });
+
+        try {
+            const result = JSON.parse(response.message.content);
+            if (!result.suggestedFilename || !result.humanFriendlyName || 
+                !result.summary || !result.confidence || !result.reasoning) {
+                throw new Error('Invalid response format');
             }
+            return {
+                timestamp: new Date().toISOString(),
+                source: path.basename(imagePath),
+                ...result
+            };
+        } catch (parseError) {
+            console.warn('Failed to parse JSON response:', response.message.content);
+            throw parseError;
         }
-        
-        throw new Error('Failed to suggest filename');
     }
 
     async process() {

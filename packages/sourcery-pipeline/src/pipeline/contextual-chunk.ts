@@ -7,6 +7,7 @@ import type { TChunk } from "@sourcery/common/types/Chunks.type";
 import path from "node:path";
 import { ChunkingPipeline } from "./chunk";
 import { ensure_model } from "@sourcery/common/src/ollama";
+import { retry } from "@sourcery/common/src/retry";
 
 const model = "llama3.2:latest";
 
@@ -45,10 +46,12 @@ ${chunk.content}
 Please give a short succinct context to situate this chunk within the overall document for the purposes of improving search retrieval of the chunk.
 Answer only with the succinct context and nothing else.`;
 
-            const response = await ollama.generate({
+            const response = await retry(() => ollama.generate({
                 model: model,
                 prompt: prompt,
                 stream: false
+            }), {
+                identifier: `contextual_chunk_${i}`
             });
 
             // Add the contextual information to the chunk

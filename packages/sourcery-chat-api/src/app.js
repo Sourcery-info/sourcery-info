@@ -13,6 +13,7 @@ import { rerank } from "@sourcery/common/src/reranker";
 import { ensure_model } from "@sourcery/common/src/ollama";
 import { FileStatus } from "@sourcery/common/types/SourceryFile.type";
 import { logger, startTimer, endTimer, logError } from "@sourcery/common/src/logger";
+import { retry } from "@sourcery/common/src/retry";
 dotenv.config();
 
 export const httpServer = restify.createServer({
@@ -72,7 +73,9 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
 
     try {
         await ensure_model(vector_model);
-        const vector = await ollama.embeddings({ model: vector_model, prompt: question });
+        const vector = await retry(() => ollama.embeddings({ model: vector_model, prompt: question }), {
+            identifier: 'ollama_embeddings'
+        });
         componentTimings.embedding = endTimer(`${timerId}_embedding`, { model: vector_model }, ['chat', 'rag', 'embedding']);
 
         startTimer(`${timerId}_qdrant_search`);
@@ -148,7 +151,9 @@ const get_rag_context = async (project_name, files, question, top_k = TOP_K, vec
 
         startTimer(`${timerId}_reranking`);
         const contexts = results.map(result => result.document);
-        const reranked = await rerank(question, contexts, RERANK_TOP_K);
+        const reranked = await retry(() => rerank(question, contexts, RERANK_TOP_K), {
+            identifier: 'rerank'
+        });
         componentTimings.reranking = endTimer(`${timerId}_reranking`, {
             input_chunks: contexts.length,
             output_chunks: reranked.ranked_documents.length
@@ -286,11 +291,13 @@ httpServer.post("/chat/:project_id", async (req, res) => {
 
         startTimer(`${requestId}_chat`);
         const messages = rag_prompt_template(context, input, message_id, conversation);
-        const chatResponse = await ollama.chat({
+        const chatResponse = await retry(() => ollama.chat({
             model,
             messages,
             stream: false,
             options: { temperature }
+        }), {
+            identifier: 'ollama_chat'
         }).catch(err => {
             logError(err, { model, requestId }, ['chat', 'model', 'error']);
             throw new restifyErrors.InternalServerError("Error processing chat");

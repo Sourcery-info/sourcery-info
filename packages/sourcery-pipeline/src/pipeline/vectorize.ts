@@ -11,6 +11,7 @@ import { ensure_model } from "@sourcery/common/src/ollama";
 import { getProject } from "@sourcery/frontend/src/lib/classes/projects";
 import mongoose from 'mongoose';
 import { randomUUID } from 'crypto';
+import { retry } from "@sourcery/common/src/retry";
 
 export class VectorizeChunksPipeline extends PipelineBase {
     private vector_model: string;
@@ -49,7 +50,9 @@ export class VectorizeChunksPipeline extends PipelineBase {
                 model: this.vector_model,
                 keep_alive: 1,
             };
-            const vector = await ollama.embeddings(embeddingRequest);
+            const vector = await retry(() => ollama.embeddings(embeddingRequest), {
+                identifier: `chunk_embedding_${i}`
+            });
             chunk.vector = vector.embedding;
             console.log(`Processed chunk ${i + 1} of ${allChunks.length}`);
         }
@@ -101,7 +104,9 @@ export class VectorizeEntitiesPipeline extends PipelineBase {
                 model: this.vector_model,
                 keep_alive: 1,
             };
-            const vector = await ollama.embeddings(embeddingRequest);
+            const vector = await retry(() => ollama.embeddings(embeddingRequest), {
+                identifier: `entity_embedding_${i}`
+            });
             entity.vector = vector.embedding;
             console.log(`Processed entity ${i + 1} of ${entities.length}`);
         }

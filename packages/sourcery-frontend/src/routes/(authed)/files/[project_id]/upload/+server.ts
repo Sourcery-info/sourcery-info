@@ -1,12 +1,6 @@
 /** @type {import('./$types').RequestHandler} */
-import { updateFile, createFile } from '$lib/classes/files';
 import { uploadFile } from '$lib/classes/files';
-import { getProject } from '$lib/classes/projects';
-import { FileTypes, FileStatus, FileStage } from '@sourcery/common/types/SourceryFile.type';
 import { error } from '@sveltejs/kit';
-import { SourceryPub } from '@sourcery/queue/src/pub';
-
-const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 
 export async function POST({ request, params, locals }) {
     let res_data = [];

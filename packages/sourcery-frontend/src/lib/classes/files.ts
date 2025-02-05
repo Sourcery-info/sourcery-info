@@ -1,4 +1,5 @@
 import { FileStatus, FileStage, FileTypes } from '@sourcery/common/types/SourceryFile.type';
+import { deleteFile as deleteFileUtils } from '$lib/utils/files';
 import { FileModel } from '@sourcery/common/src/models/File.model';
 import type { SourceryFile } from '@sourcery/common/types/SourceryFile.type.js';
 import { SourceryPub } from '@sourcery/queue/src/pub';
@@ -8,9 +9,12 @@ import mongoose from 'mongoose';
 import { getProject } from './projects';
 import { error } from '@sveltejs/kit';
 import { logger } from '@sourcery/common/src/logger';
+import { deleteEntitiesByFile } from './entities';
+import { deleteChunksByFile } from './chunks';
+import { Qdrant } from '@sourcery/sourcery-db/src/qdrant';
 const pub = new SourceryPub(`file-${FileStage.UNPROCESSED}`);
 const ws_pub = new SourceryPub(`sourcery.info-ws`);
-
+const qdrant = new Qdrant({url: process.env.QDRANT_URL || "http://localhost:6333",});
 export function mapDBFile(file: SourceryFile): SourceryFile {
     return {
         _id: file._id?.toString(),
@@ -68,6 +72,17 @@ export async function updateFile(file: SourceryFile): Promise<SourceryFile | nul
 
 export async function deleteFile(file_id: string): Promise<boolean> {
     const deletedFile = await FileModel.findByIdAndDelete(file_id);
+    if (!deletedFile) {
+        return false;
+    }
+    const project_id = deletedFile?.project.toString();
+    if (!project_id) {
+        return false;
+    }
+    await deleteEntitiesByFile(file_id);
+    await deleteChunksByFile(file_id);
+    await deleteFileUtils(project_id, file_id);
+    await qdrant.deleteFile(project_id, file_id);
     ws_pub.addJob(`${deletedFile?.user_id}:file-deleted`, {
         id: deletedFile?._id,
         file: deletedFile,

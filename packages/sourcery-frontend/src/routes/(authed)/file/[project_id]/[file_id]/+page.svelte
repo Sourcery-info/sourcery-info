@@ -148,49 +148,53 @@
 	});
 </script>
 
-<div class="p-4 bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
-	<div class="flex justify-between items-center mb-6 gap-8">
+<div class="flex flex-col bg-white dark:bg-gray-900">
+	<!-- Header -->
+	<div class="flex justify-between items-center p-4 bg-white dark:bg-gray-900 shadow-md">
 		<h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
 			{data.props.file.original_name}
 		</h3>
 		<HamburgerMenu {menuItems} />
 	</div>
 
-	<div class="border-b border-gray-200 dark:border-gray-700">
-		<div class="sm:flex sm:items-baseline">
-			<div class="mt-4 sm:mt-0">
-				<nav class="-mb-px flex space-x-8">
-					{#each tabs as tab}
-						<a
-							href="#{tab.id}"
-							on:click|preventDefault={() => setActiveTab(tab.id)}
-							class="whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium transition-colors
-								{activeTab === tab.id
-								? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
-								: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'}"
-							aria-current={activeTab === tab.id ? 'page' : undefined}
-						>
-							{tab.name}
-						</a>
-					{/each}
-				</nav>
+	<!-- Main content area -->
+	<div class="flex-1 overflow-y-auto p-4">
+		<div class="border-b border-gray-200 dark:border-gray-700">
+			<div class="sm:flex sm:items-baseline">
+				<div class="mt-4 sm:mt-0">
+					<nav class="-mb-px flex space-x-8">
+						{#each tabs as tab}
+							<a
+								href="#"
+								on:click|preventDefault={() => setActiveTab(tab.id)}
+								class="whitespace-nowrap border-b-2 px-1 pb-4 text-sm font-medium transition-colors
+									{activeTab === tab.id
+									? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+									: 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300'}"
+								aria-current={activeTab === tab.id ? 'page' : undefined}
+							>
+								{tab.name}
+							</a>
+						{/each}
+					</nav>
+				</div>
 			</div>
 		</div>
-	</div>
 
-	<!-- Tab content -->
-	<div class="mt-4">
-		{#if activeTab === 'original'}
-			<Original {data} />
-		{:else if activeTab === 'text'}
-			<Text {data} />
-		{:else if activeTab === 'entities'}
-			<Entities {data} />
-		{:else if activeTab === 'chunks'}
-			<Chunks {data} />
-		{:else if activeTab === 'pipeline'}
-			<Pipeline {data} />
-		{/if}
+		<!-- Tab content -->
+		<div class="mt-4">
+			{#if activeTab === 'original'}
+				<Original {data} />
+			{:else if activeTab === 'text'}
+				<Text {data} />
+			{:else if activeTab === 'entities'}
+				<Entities {data} />
+			{:else if activeTab === 'chunks'}
+				<Chunks {data} />
+			{:else if activeTab === 'pipeline'}
+				<Pipeline {data} />
+			{/if}
+		</div>
 	</div>
 </div>
 
@@ -228,5 +232,22 @@
 
 	.animate-spin {
 		animation: spin 1s linear forwards;
+	}
+
+	/* Hide scrollbars for webkit browsers */
+	::-webkit-scrollbar {
+		width: 0;
+		height: 0;
+	}
+
+	/* Hide scrollbars for other browsers */
+	* {
+		-ms-overflow-style: none; /* IE and Edge */
+		scrollbar-width: none; /* Firefox */
+	}
+
+	/* Ensure scrollbars appear when needed */
+	.scrollable {
+		overflow: auto;
 	}
 </style>

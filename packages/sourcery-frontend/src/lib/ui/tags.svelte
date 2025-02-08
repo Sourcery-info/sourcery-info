@@ -31,22 +31,24 @@
 
 <div>
 	{#if label}
-		<label for={name} class="block text-sm font-medium leading-6 text-white">{label}</label>
+		<label for={name} class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
+			>{label}</label
+		>
 	{/if}
 	<div class="mt-2">
 		<div
-			class="flex flex-wrap gap-2 p-2 rounded-md bg-white/5 outline outline-1 -outline-offset-1 outline-white/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 {error
+			class="flex flex-wrap gap-2 p-2 rounded-md bg-gray-50 dark:bg-white/5 outline outline-1 -outline-offset-1 outline-gray-300 dark:outline-white/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500 {error
 				? 'outline-red-500'
 				: ''}"
 		>
 			{#each tagArray as tag, index}
 				<div
-					class="flex items-center gap-x-1 bg-indigo-500/20 text-indigo-200 px-2 py-0.5 rounded-md text-sm"
+					class="flex items-center gap-x-1 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-200 px-2 py-0.5 rounded-md text-sm"
 				>
 					{tag}
 					<button
 						type="button"
-						class="text-indigo-200 hover:text-white"
+						class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-200 dark:hover:text-white"
 						on:click={() => removeTag(index)}
 						aria-label="Remove tag {tag}"
 					>
@@ -64,7 +66,7 @@
 				bind:value={tagInput}
 				on:keydown={addTag}
 				{placeholder}
-				class="flex-1 min-w-20 bg-transparent text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6"
+				class="flex-1 min-w-20 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6"
 			/>
 		</div>
 		<input type="hidden" {name} {value} />

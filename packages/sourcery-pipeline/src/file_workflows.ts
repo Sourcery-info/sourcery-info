@@ -13,6 +13,18 @@ export const fileTypeWorkflows: Record<string, { stages: string[] }> = {
             FileStage.DONE
         ]
     },
+    "docx": {
+        "stages": [
+            FileStage.MAMMOTH,
+            FileStage.CHUNKING,
+            FileStage.CONTEXTUAL_CHUNKING,
+            FileStage.ENTITIES,
+            FileStage.VECTORISING_ENTITIES,
+            FileStage.VECTORISING,
+            FileStage.SAVING,
+            FileStage.DONE
+        ]
+    },
     "text": {
         "stages": [
             FileStage.VIRUS_SCANNING,
@@ -34,6 +46,7 @@ export const fileTypeWorkflows: Record<string, { stages: string[] }> = {
 export const stages = [
     "unprocessed",
     "pdf_to_image",
+    "mammoth",
     "easyocr",
     "marker_pdf",
     "validating",
@@ -54,6 +67,7 @@ export const stages = [
 
 export const stage_names = {
     [FileStage.UNPROCESSED]: "Starting",
+    [FileStage.MAMMOTH]: "Extracting Docx",
     [FileStage.MARKER_PDF]: "OCR",
     [FileStage.CHUNKING]: "Chunking",
     [FileStage.CONTEXTUAL_CHUNKING]: "Adding Context",

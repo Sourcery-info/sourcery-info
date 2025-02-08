@@ -14,6 +14,7 @@ import { EasyOCRPipeline } from "./pipeline/easyocr";
 import { MarkerPDFPipeline } from "./pipeline/marker-pdf";
 import { UnprocessedPipeline } from "./pipeline/unprocessed";
 import { ErrorPipeline } from "./pipeline/error";
+import { MammothPipeline } from "./pipeline/mammoth";
 import { connectDB } from '@sourcery/frontend/src/lib/server/db';
 import { stages } from "./file_workflows";
 import { FileStage, FileStatus } from "@sourcery/common/types/SourceryFile.type";
@@ -25,6 +26,7 @@ import { FilenamePipeline } from "./pipeline/filename";
 import { SourceryPub } from "@sourcery/queue/src/pub";
 import { createAlert } from "@sourcery/frontend/src/lib/classes/alerts";
 import { logger } from "@sourcery/common/src/logger";
+import { FileModel } from "@sourcery/common/src/models/File.model";
 
 dotenv.config();
 
@@ -109,6 +111,9 @@ async function handleFile(file: SourceryFile) {
         case FileStage.MARKER_PDF:
             stage_instance = new MarkerPDFPipeline(file);
             break;
+        case FileStage.MAMMOTH:
+            stage_instance = new MammothPipeline(file);
+            break;
         default:
             console.error(`No file workflow found for stage ${stage}`);
             file.status = FileStatus.ERROR;
@@ -169,11 +174,32 @@ async function handleFile(file: SourceryFile) {
     return true;
 }
 
+async function checkStalledFiles() {
+    logger.info({ msg: 'Checking for stalled files...', tags: ['file', 'info'] });
+    const stalledFiles = await FileModel.find({
+        status: FileStatus.PROCESSING,
+        stage: { $ne: FileStage.DONE }
+    });
+
+    logger.info({ msg: `Found ${stalledFiles.length} stalled files`, tags: ['file', 'info'] });
+    
+    for (const file of stalledFiles) {
+        logger.info({ msg: `Restarting stalled file ${file._id} at stage ${file.stage}`, file_id: file._id, tags: ['file', 'info'] });
+        file.status = FileStatus.PENDING;
+        await updateFile(file);
+        send_ws_message(file, `Restarting stalled pipeline at stage ${file.stage}`);
+        await handleFile(file);
+    }
+}
+
 async function main() {
     if (!process.env.MONGO_URL) {
         throw new Error("Environment variable MONGO_URL not set");
     }
     await connectDB(process.env.MONGO_URL);
+    
+    // Check for stalled files on startup
+    await checkStalledFiles();
     
     // Connect to WebSocket server and wait for connection
     try {

@@ -9,6 +9,7 @@ import { baseUrl } from "marked-base-url";
 import { readFile } from "fs/promises";
 import { FileModel } from "@sourcery/common/src/models/File.model";
 import { getEntitiesByFile } from "$lib/classes/entities";
+import mammoth from "mammoth";
 
 const CONTENT_TYPES = {
     pdf: 'application/pdf',
@@ -41,6 +42,15 @@ const CONTENT_TYPES = {
 };
 
 async function format_original(filename, filetype) {
+    if (filetype === 'docx') {
+        const result = await mammoth.convertToHtml({ path: filename });
+        return {
+            headers: {
+                'content-type': 'text/html',
+            },
+            body: result.value,
+        };
+    }
     const contents = fs.readFileSync(filename);
     const content_type = CONTENT_TYPES[filetype] || 'application/octet-stream';
     return {

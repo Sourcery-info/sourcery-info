@@ -18,6 +18,7 @@
 <div class="p-6">
 	<div
 		class="prose dark:prose-invert max-w-none bg-gray-50 dark:bg-gray-800 rounded-lg p-8 shadow-sm overflow-y-auto max-h-[calc(100vh-8rem)] prose-headings:text-gray-900 dark:prose-headings:text-gray-100 prose-headings:font-semibold prose-headings:text-lg prose-headings:leading-tight"
+		style="max-height: calc(100vh - 300px); overflow-y: auto;"
 	>
 		{@html html}
 	</div>

@@ -33,6 +33,7 @@ export enum FileStage {
     FILENAME = 'filename',
     MARKER_PDF = 'marker_pdf',
     CONTEXTUAL_CHUNKING = 'contextual-chunk',
+    MAMMOTH = 'mammoth',
 }
 
 export enum FileTypes {

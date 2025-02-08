@@ -3,11 +3,17 @@
 	import { AIModels } from '@sourcery/common/src/ai-models';
 
 	export let form;
+	export let initialData = {
+		chat_model: '',
+		vector_model: '',
+		temperature: 0.5
+	};
 
-	export let chat_model;
-	export let vector_model;
 	export let allow_vector_model_change = true;
-	export let temperature;
+
+	let chat_model = '';
+	let vector_model = '';
+	let temperature = 0.5;
 
 	const chatModels = AIModels.filter((model) => model.type === 'chat');
 	const vectorModels = AIModels.filter((model) => model.type === 'embed');
@@ -16,11 +22,11 @@
 	const temperatureMin = 0;
 	const temperatureMax = 1.0;
 
-	$: if (!chat_model) {
-		chat_model = chatModels.find((model) => model.default)?.value;
-	}
-	$: if (!vector_model) {
-		vector_model = vectorModels.find((model) => model.default)?.value;
+	$: {
+		const data = form?.data ?? initialData;
+		chat_model = data?.chat_model ?? chatModels.find((model) => model.default)?.value;
+		vector_model = data?.vector_model ?? vectorModels.find((model) => model.default)?.value;
+		temperature = data?.temperature ?? 0.5;
 	}
 </script>
 

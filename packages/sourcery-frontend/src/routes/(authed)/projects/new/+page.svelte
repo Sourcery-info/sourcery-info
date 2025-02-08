@@ -3,10 +3,24 @@
 	/** @type {import('./$types').PageData} */
 	import Projectsettings from '$lib/ui/projectsettings.svelte';
 	import ModelSettings from '$lib/ui/modelsettings.svelte';
-	import { enhance } from '$app/forms';
+	import { enhance, applyAction } from '$app/forms';
 	import { AIModels } from '@sourcery/common/src/ai-models';
+	import Alert from '$lib/ui/alert.svelte';
 
 	export let form;
+	let error = '';
+
+	let name = form?.data?.name ?? '';
+	let description = form?.data?.description ?? '';
+	let tags = form?.data?.tags ?? '';
+	let notes = form?.data?.notes ?? '';
+
+	function handleEnhance() {
+		return async ({ result }) => {
+			// Apply the form action result which will automatically update the form prop
+			await applyAction(result);
+		};
+	}
 
 	let chat_model =
 		AIModels.find((model) => model.type === 'chat' && model.default)?.value ||
@@ -15,18 +29,31 @@
 		AIModels.find((model) => model.type === 'embed' && model.default)?.value ||
 		AIModels.find((model) => model.type === 'embed')?.value;
 	let temperature = 0.1;
-	let security = 'secure';
 </script>
 
 <div>
 	<div class="text-base/7 font-semibold text-gray-900 dark:text-white">New Project</div>
+	{#if error}
+		<div class="mt-4">
+			<Alert variant="error" title="Error" dismissible>
+				{error}
+			</Alert>
+		</div>
+	{/if}
 	<div class="mt-10">
-		<form method="POST" use:enhance>
+		<form method="POST" use:enhance={handleEnhance}>
 			<div class="flex flex-col gap-4 mb-10">
-				<Projectsettings bind:form {security} />
+				<Projectsettings {form} />
 			</div>
 			<div class="flex flex-col gap-4">
-				<ModelSettings bind:form {chat_model} {vector_model} {temperature} />
+				<ModelSettings
+					bind:form
+					initialData={{
+						chat_model: chat_model,
+						vector_model: vector_model,
+						temperature: temperature
+					}}
+				/>
 			</div>
 			<button
 				type="submit"

@@ -2,12 +2,29 @@
 	import Tags from '$lib/ui/tags.svelte';
 
 	export let form;
-	export let name = '';
-	export let tags: string = '';
-	export let description = '';
-	export let notes = '';
-	export let is_public = false;
-	export let security;
+	export let initialData = {
+		name: '',
+		description: '',
+		tags: '',
+		notes: '',
+		is_public: false,
+		security: 'secure'
+	};
+
+	// Track form values
+	let name = '';
+	let description = '';
+	let notes = '';
+	let tags = '';
+
+	// Update values when form data or initialData changes
+	$: {
+		const data = form?.data ?? initialData;
+		name = data?.name ?? '';
+		description = data?.description ?? '';
+		notes = data?.notes ?? '';
+		tags = data?.tags ?? '';
+	}
 </script>
 
 <div class="space-y-6">
@@ -28,18 +45,18 @@
 			/>
 		</div>
 		{#if form?.errors?.name}
-			<p class="mt-2 text-sm text-red-500">{form.errors.name}</p>
+			<p class="mt-2 text-sm text-red-500">{form.errors.name[0]}</p>
 		{/if}
 	</div>
 
-	<div class="flex gap-x-3">
+	<!-- <div class="flex gap-x-3">
 		<div class="flex h-6 shrink-0 items-center">
 			<div class="group grid size-4 grid-cols-1">
 				<input
 					type="checkbox"
 					id="is_public"
 					name="is_public"
-					bind:checked={is_public}
+					bind:checked={formState.is_public}
 					value="true"
 					class="col-start-1 row-start-1 appearance-none rounded border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 checked:border-indigo-600 checked:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
 				/>
@@ -66,10 +83,10 @@
 				Public projects are visible to everyone. They will be listed on the projects page.
 			</p>
 		</div>
-	</div>
+	</div> -->
 
 	<Tags bind:value={tags} error={!!form?.errors?.tags}>
-		<p slot="error" class="mt-2 text-sm text-red-500">{form?.errors?.tags || ''}</p>
+		<p slot="error" class="mt-2 text-sm text-red-500">{form?.errors?.tags?.[0] || ''}</p>
 	</Tags>
 
 	<div>
@@ -90,7 +107,7 @@
 			></textarea>
 		</div>
 		{#if form?.errors?.description}
-			<p class="mt-2 text-sm text-red-500">{form.errors.description}</p>
+			<p class="mt-2 text-sm text-red-500">{form.errors.description[0]}</p>
 		{/if}
 	</div>
 
@@ -111,11 +128,11 @@
 			></textarea>
 		</div>
 		{#if form?.errors?.notes}
-			<p class="mt-2 text-sm text-red-500">{form.errors.notes}</p>
+			<p class="mt-2 text-sm text-red-500">{form.errors.notes[0]}</p>
 		{/if}
 	</div>
 
-	<div>
+	<!-- <div>
 		<label for="security" class="block text-sm/6 font-medium text-gray-900 dark:text-white"
 			>Security</label
 		>
@@ -125,7 +142,7 @@
 					id="security-secure"
 					name="security"
 					type="radio"
-					bind:group={security}
+					bind:group={formState.security}
 					value="secure"
 					class="relative size-4 appearance-none rounded-full border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-indigo-600 dark:before:bg-indigo-500 checked:border-indigo-600 checked:bg-white dark:checked:border-indigo-500 dark:checked:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 [&:not(:checked)]:before:hidden"
 				/>
@@ -139,7 +156,7 @@
 					id="security-insecure"
 					name="security"
 					type="radio"
-					bind:group={security}
+					bind:group={formState.security}
 					value="insecure"
 					class="relative size-4 appearance-none rounded-full border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-indigo-600 dark:before:bg-indigo-500 checked:border-indigo-600 checked:bg-white dark:checked:border-indigo-500 dark:checked:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 [&:not(:checked)]:before:hidden"
 				/>
@@ -153,5 +170,5 @@
 		{#if form?.errors?.security}
 			<p class="mt-2 text-sm text-red-500">{form.errors.security}</p>
 		{/if}
-	</div>
+	</div> -->
 </div>

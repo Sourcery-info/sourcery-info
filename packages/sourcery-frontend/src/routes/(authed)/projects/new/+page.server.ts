@@ -26,15 +26,13 @@ export const actions = {
             notes: zfd.text(z.string().optional()),
             vector_model: zfd.text(z.string()),
             chat_model: zfd.text(z.string()),
-            security: zfd.text(z.string()),
+            security: zfd.text(z.string().optional()),
+            is_public: zfd.checkbox().optional(),
             temperature: zfd.numeric(z.number().min(0).max(1)),
         });
         const validation = await validate(formData, newProjectScheme);
         if (validation.errors) {
             return fail(400, validation);
-        }
-        if (!locals?.session?.user_id) {
-            return fail(400, { errors: [error(400, "User not logged in")] });
         }
         const data = {
             ...validation.data,

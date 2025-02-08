@@ -2,13 +2,14 @@
 /** @type {import('./$types').Actions} */
 
 import { getProject, updateProject } from '$lib/classes/projects';
-import { fail, redirect } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import { zfd } from 'zod-form-data';
 import { z } from 'zod';
 import { validate } from '$lib/validate';
 import { Settings } from '$lib/classes/settings';
 import type { SourcerySettings } from '$lib/types/SourcerySettings.type';
 import { logger } from '@sourcery/common/src/logger';
+import { checkUniqueName } from '$lib/classes/projects';
 
 export async function load({ locals, params }) {
     if (!locals?.session?.user_id) {
@@ -29,32 +30,44 @@ export async function load({ locals, params }) {
 export const actions = {
     default: async ({ request, params, locals }) => {
         if (!locals?.session?.user_id) {
-            return fail(401, { message: 'Unauthorized' });
+            return fail(401, { 
+                errors: { server: ['You must be logged in to update project settings'] }
+            });
         }
         const formData = await request.formData();
+        const user_id = locals?.session?.user_id;
+        if (!user_id) {
+            return fail(400, { errors: [error(400, "User not logged in")] });
+        }
         const _id = params.project_id;
         const settingsSchema = zfd.formData({
-            name: zfd.text(z.string().trim().min(3).max(50)),
+            name: zfd.text(z.string().trim().min(3).max(50).refine(async (name) => await checkUniqueName(name, user_id, _id), { message: "Project name already exists" })),
             tags: zfd.text(z.string().optional()),
             description: zfd.text(z.string().optional()),
             notes: zfd.text(z.string().optional()),
-            is_public: zfd.checkbox({ trueValue: "true" }),
+            is_public: zfd.checkbox({ trueValue: "true" }).optional(),
             vector_model: zfd.text(z.string().optional()),
             chat_model: zfd.text(z.string()),
             temperature: zfd.numeric(z.number().min(0).max(1).transform(val => val === 0 ? 0 : val || 0.1)),
-            security: zfd.text(z.enum(["secure", "insecure"])), // It would be nice if the values were derived from the SourcerySecurity enum
+            security: zfd.text(z.enum(["secure", "insecure"])).optional(),
         });
         const validation = await validate(formData, settingsSchema);
         if (validation.errors) {
-            logger.error({ msg: "Validation errors", errors: validation.errors, tags: ['project', 'error'] });
             return fail(400, validation);
         }
         try {
-            updateProject(Object.assign(validation.data, { _id, updated_at: new Date() }));
-            return { success: true };
+            await updateProject(Object.assign(validation.data, { _id, updated_at: new Date() }));
+            return {
+                form: {
+                    data: validation.data
+                }
+            };
         } catch (err) {
             logger.error({ msg: "Error updating project", error: err, tags: ['project', 'error'] });
-            return fail(400, { errors: [err], data: validation.data });
+            return fail(400, { 
+                errors: { server: ['Failed to update project settings'] },
+                data: validation.data 
+            });
         }
     }
 }

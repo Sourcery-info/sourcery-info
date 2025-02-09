@@ -56,7 +56,7 @@
 
 <svelte:window on:click={handleClickOutside} />
 
-<div class="min-h-screen bg-gray-900">
+<div class="min-h-screen bg-white dark:bg-gray-900">
 	<!-- Mobile menu -->
 	{#if isMobileMenuOpen}
 		<div
@@ -65,7 +65,7 @@
 			aria-modal="true"
 			transition:fade={{ duration: 300 }}
 		>
-			<div class="fixed inset-0 bg-gray-900/80" aria-hidden="true"></div>
+			<div class="fixed inset-0 bg-gray-100/80 dark:bg-gray-900/80" aria-hidden="true"></div>
 			<div class="fixed inset-0 flex">
 				<div
 					class="relative mr-16 flex w-full max-w-xs flex-1"
@@ -78,7 +78,7 @@
 						<button type="button" class="-m-2.5 p-2.5" on:click={toggleMobileMenu}>
 							<span class="sr-only">Close sidebar</span>
 							<svg
-								class="size-6 text-white"
+								class="size-6 text-black dark:text-white"
 								fill="none"
 								viewBox="0 0 24 24"
 								stroke-width="1.5"
@@ -105,12 +105,12 @@
 	<!-- Main content -->
 	<div class="lg:pl-72">
 		<div
-			class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8"
+			class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8"
 		>
 			<!-- Mobile menu button -->
 			<button
 				type="button"
-				class="-m-2.5 p-2.5 text-gray-700 lg:hidden"
+				class="-m-2.5 p-2.5 text-black dark:text-white lg:hidden"
 				on:click={toggleMobileMenu}
 			>
 				<span class="sr-only">Open sidebar</span>
@@ -132,13 +132,16 @@
 			</button>
 			<div class="flex flex-grow gap-x-4 self-stretch lg:gap-x-6"></div>
 			<!-- Separator -->
-			<div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
+			<div class="h-6 w-px bg-gray-100/10 dark:bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
 
 			<div class="flex flex-shrink gap-x-4 self-stretch lg:gap-x-6">
 				<div class="flex items-center gap-x-4 lg:gap-x-6">
 					<AlertsDropdown bind:isAlertsMenuOpen />
 					<!-- Separator -->
-					<div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10" aria-hidden="true"></div>
+					<div
+						class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-100/10 dark:lg:bg-gray-900/10"
+						aria-hidden="true"
+					></div>
 					<!-- Profile dropdown -->
 					<ProfileDropdown user={data.user} bind:isUserMenuOpen />
 				</div>

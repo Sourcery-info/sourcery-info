@@ -16,6 +16,9 @@ function createConversationStore() {
         // Add a new message to the conversation
         addMessage: (message: Message) => update(conversation => {
             if (!conversation) return null;
+            // Check for duplicate messages by ID or content
+            const isDuplicate = conversation.messages?.some(msg => msg._id === message._id || msg.content === message.content);
+            if (isDuplicate) return conversation;
             return {
                 ...conversation,
                 messages: [...(conversation.messages || []), message]

@@ -7,7 +7,6 @@
 	import type { ActionResult } from '@sveltejs/kit';
 	import { filesStore } from '$lib/stores/files.store';
 	import type { Project } from '@sourcery/common/types/Project.type';
-	import { onMount } from 'svelte';
 
 	export let form;
 	export let data: { project: Project };

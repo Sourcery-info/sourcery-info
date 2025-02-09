@@ -12,6 +12,7 @@ export type User = {
     admin: boolean;
     settings?: UserSettings;
     __v?: number; // Document version
+    membership_id?: string;
 }
 
 export type UserSettings = {

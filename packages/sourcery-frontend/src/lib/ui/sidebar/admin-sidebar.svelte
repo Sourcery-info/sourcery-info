@@ -4,7 +4,7 @@
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 
-	import logo from '$lib/assets/Sourcery Logo.png';
+	import logoSvg from '$lib/assets/Sourcery.svg?raw';
 	import personIcon from '$lib/assets/icons/person.svg?raw';
 	import settingsIcon from '$lib/assets/icons/settings.svg?raw';
 	import lightningIcon from '$lib/assets/icons/lightning.svg?raw';
@@ -17,20 +17,26 @@
 </script>
 
 <div class="relative h-full">
-	<div class="flex h-full flex-col bg-gray-900 px-6">
+	<div class="flex h-full flex-col bg-white dark:bg-gray-900 px-6">
 		<div class="flex h-16 flex-shrink-0 items-center gap-x-3 mb-4">
 			<a href="/" onclick={handleItemClick}>
-				<img class="h-8 w-auto" src={logo} alt="Sourcery.info Logo" />
+				<div class="h-6">
+					<div
+						class="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:fill-current text-gray-900 dark:text-white"
+					>
+						{@html logoSvg}
+					</div>
+				</div>
 			</a>
 			<div class="relative flex-1">
 				<a
 					href="/"
-					class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-100 hover:text-white"
+					class="flex w-full items-center justify-between gap-x-1 text-base font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400"
 				>
 					Sourcery.info
 				</a>
 				<div
-					class="inline-flex items-center rounded-full bg-gray-700/50 px-2 py-0.5 text-xs font-medium text-gray-300 ring-1 ring-inset ring-gray-500/75"
+					class="inline-flex items-center rounded-full bg-gray-200/50 dark:bg-gray-800/50 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-400/75"
 				>
 					Admin
 				</div>
@@ -41,15 +47,23 @@
 				<a
 					href="/admin/users/list"
 					onclick={handleItemClick}
-					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
 				>
 					{@html personIcon}
 					<span>Users</span>
 				</a>
 				<a
+					href="/admin/memberships"
+					onclick={handleItemClick}
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
+				>
+					{@html lightningIcon}
+					<span>Memberships</span>
+				</a>
+				<a
 					href="/admin/projects/list"
 					onclick={handleItemClick}
-					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
 				>
 					{@html folderIcon}
 					<span>Projects</span>
@@ -57,7 +71,7 @@
 				<a
 					href="/admin/terms"
 					onclick={handleItemClick}
-					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
 				>
 					{@html fileIcon}
 					<span>Terms & Conditions</span>
@@ -65,7 +79,7 @@
 				<a
 					href="/admin/privacy"
 					onclick={handleItemClick}
-					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
 				>
 					{@html fileIcon}
 					<span>Privacy Policy</span>
@@ -73,7 +87,7 @@
 				<a
 					href="/admin/config"
 					onclick={handleItemClick}
-					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
 				>
 					{@html settingsIcon}
 					<span>Configuration</span>
@@ -81,7 +95,7 @@
 				<a
 					href="/settings"
 					onclick={handleItemClick}
-					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white"
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
 				>
 					{@html lightningIcon}
 					<span>AI Settings</span>

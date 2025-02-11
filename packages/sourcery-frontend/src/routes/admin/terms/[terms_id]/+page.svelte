@@ -69,7 +69,7 @@
 							name="version"
 							value={version}
 							readonly
-							class="block w-full rounded-lg bg-gray-100 dark:bg-gray-700 px-4 py-2.5 text-gray-900 dark:text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 cursor-not-allowed sm:text-sm sm:leading-6"
+							class="block w-full rounded-lg border-0 bg-white dark:bg-white/5 px-4 py-2.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-200 cursor-not-allowed sm:text-sm sm:leading-6"
 						/>
 						<div class="mt-2 flex items-center justify-between">
 							<p class="text-sm text-gray-500 dark:text-gray-400">
@@ -112,8 +112,8 @@
 									rows="20"
 									required
 									bind:value={terms.content}
-									class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-gray-900 dark:text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6"
-									class:outline-red-500={form?.errors?.content}
+									class="block w-full rounded-lg border-0 bg-white dark:bg-white/5 px-4 py-2.5 text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-white/10 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-white/10 sm:text-sm sm:leading-6"
+									class:ring-red-500={form?.errors?.content}
 								></textarea>
 								{#if form?.errors?.content}
 									<p class="mt-2 text-sm text-red-600 dark:text-red-500">
@@ -142,7 +142,7 @@
 							type="checkbox"
 							value={1}
 							bind:checked={terms.active}
-							class="h-4 w-4 rounded bg-white/5 text-indigo-600 focus:ring-indigo-600 dark:focus:ring-indigo-500"
+							class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 dark:border-gray-600 dark:bg-gray-700 dark:checked:bg-indigo-500 dark:focus:ring-indigo-500"
 						/>
 					</div>
 					<div class="ml-3 text-sm leading-6">

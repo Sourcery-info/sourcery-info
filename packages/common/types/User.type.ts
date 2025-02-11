@@ -1,3 +1,5 @@
+import type { Membership } from './Membership.type';
+
 export type User = {
     _id: string;
     user_id?: string;
@@ -11,8 +13,9 @@ export type User = {
     approved: boolean;
     admin: boolean;
     settings?: UserSettings;
+    membership_id?: Array<string>;
+    memberships?: Array<Membership>;
     __v?: number; // Document version
-    membership_id?: string;
 }
 
 export type UserSettings = {

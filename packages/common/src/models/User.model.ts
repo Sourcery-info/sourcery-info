@@ -33,6 +33,10 @@ const UserSchema = new Schema<User & Document>({
         required: true 
     },
     settings: UserSettingsSchema,
+    membership_id: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Membership'
+    }],
     created_at: { 
         type: Date, 
         default: Date.now 

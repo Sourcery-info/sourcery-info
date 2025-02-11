@@ -1,16 +1,21 @@
 /** @type {import('./$types').PageServerLoad} */
 
 import { getUser, updateUser, checkUniqueUsername, checkUniqueEmail } from '$lib/classes/users';
+import { getAllMemberships } from '$lib/classes/memberships';
 import { fail } from '@sveltejs/kit';
 import { zfd } from "zod-form-data";
 import { z } from 'zod';
 import { validate } from '$lib/validate';
 import { MailService } from '$lib/utils/mail';
 
-export async function load({ locals, params }) {
-    const user = await getUser(params.user_id);
+export async function load({ params }) {
+    const [user, memberships] = await Promise.all([
+        getUser(params.user_id),
+        getAllMemberships()
+    ]);
     return {
-        user
+        user,
+        memberships
     };
 };
 
@@ -23,6 +28,7 @@ export const actions = {
             email: zfd.text(z.string().email().max(100).refine(async (email) => await checkUniqueEmail(email, params.user_id), { message: "Email already exists" })),
             approved: zfd.checkbox({trueValue: "1"}),
             admin: zfd.checkbox({trueValue: "1"}),
+            membership_id: zfd.repeatable(z.array(zfd.text())),
         });
         const validation = await validate(formData, userScheme);
         if (validation.errors) {
@@ -37,6 +43,7 @@ export const actions = {
             const user = {
                 _id: params.user_id,
                 username: validation.data.user_username,
+                membership_id: validation.data.membership_id || [],
                 ...validation.data
             }
             await updateUser(user);
@@ -76,7 +83,8 @@ export const actions = {
                     name: validation.data.name,
                     email: validation.data.email,
                     approved: validation.data.approved,
-                    admin: validation.data.admin
+                    admin: validation.data.admin,
+                    membership_id: validation.data.membership_id || []
                 }
             };
         } catch (err) {

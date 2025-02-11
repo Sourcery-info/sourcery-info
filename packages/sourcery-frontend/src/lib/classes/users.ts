@@ -1,5 +1,6 @@
 import { UserModel } from '@sourcery/common/src/models/User.model';
 import type { User } from '@sourcery/common/types/User.type';
+import type { Membership } from '@sourcery/common/types/Membership.type';
 import { SourceryPub } from '@sourcery/queue/src/pub.js';
 const pub = new SourceryPub(`sourcery.info-ws`);
 import { hashPassword, checkPassword } from "$lib/utils/crypto";
@@ -12,7 +13,7 @@ async function pubUser(user: User): Promise<void> {
     pub.addJob(`${user_db._id}:user`, { user: user_db });
 }
 
-function mapDBUser(user: User): User {
+function mapDBUser(user: User & { memberships?: Array<Membership | string> }): User {
     return {
         _id: user._id?.toString(),
         email: user.email,
@@ -23,6 +24,7 @@ function mapDBUser(user: User): User {
         updated_at: user.updated_at,
         approved: user.approved,
         admin: user.admin,
+        membership_id: user.membership_id?.map(m => m.toString()),
     }
 }
 

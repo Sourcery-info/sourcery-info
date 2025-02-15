@@ -12,6 +12,9 @@ export type User = {
     updated_at: Date;
     approved: boolean;
     admin: boolean;
+    two_factor_enabled: boolean;
+    two_factor_secret?: string;
+    two_factor_backup_codes?: string[];
     settings?: UserSettings;
     membership_id?: Array<string>;
     memberships?: Array<Membership>;

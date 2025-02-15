@@ -25,6 +25,9 @@ function mapDBUser(user: User & { memberships?: Array<Membership | string> }): U
         approved: user.approved,
         admin: user.admin,
         membership_id: user.membership_id?.map(m => m.toString()),
+        two_factor_enabled: user.two_factor_enabled,
+        two_factor_secret: user.two_factor_secret,
+        two_factor_backup_codes: user.two_factor_backup_codes
     }
 }
 

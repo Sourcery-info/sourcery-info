@@ -17,6 +17,7 @@ export async function getUsers(): Promise<SourceryAccount[]> {
         last_login: user.settings?.last_login || null,
         avatar: user.settings?.avatar,
         otp: user.settings?.otp || '',
+        two_factor_enabled: user.two_factor_enabled || false,
     }));
 }
 
@@ -36,7 +37,8 @@ export async function getUser(user_id: string): Promise<SourceryAccount | null> 
         date_created: user.created_at.toISOString(),
         last_login: user.settings?.last_login || null,
         avatar: user.settings?.avatar,
-        otp: user.settings?.otp || ''
+        otp: user.settings?.otp || '',
+        two_factor_enabled: user.two_factor_enabled || false,
     };
 }
 

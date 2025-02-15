@@ -10,9 +10,10 @@ export const load: PageServerLoad = async ({ locals }) => {
     if (!locals.user) {
         throw error(401, 'Unauthorized');
     }
-
+    const user = await getUser(locals.user.user_id);
+    console.log(user);
     return {
-        user: locals.user
+        user: user
     };
 };
 

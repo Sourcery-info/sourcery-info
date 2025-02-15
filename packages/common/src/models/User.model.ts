@@ -52,7 +52,13 @@ const UserSchema = new Schema<User & Document>({
     admin: {
         type: Boolean,
         default: false
-    }
+    },
+    two_factor_enabled: {
+        type: Boolean,
+        default: false
+    },
+    two_factor_secret: String,
+    two_factor_backup_codes: [String]
 }, {
     versionKey: '__v',
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }

@@ -6,8 +6,13 @@
 	import { _ } from 'svelte-i18n';
 	import { appVersionStore } from '$lib/i18n/config';
 	import VersionSwitcher from '$lib/ui/version-switcher.svelte';
+	import { goto } from '$app/navigation';
 
 	export let form: LoginFormData;
+
+	$: if (form?.state === '2fa_required') {
+		goto(`/2fa-login/verify?userId=${form.userId}`);
+	}
 </script>
 
 <VersionSwitcher />

@@ -15,6 +15,7 @@ export type SourceryAccount = {
     date_created: string | null;
     last_login: string | null;
     avatar: string | null;
+    two_factor_enabled: boolean;
 }
 
 export type SourcerySettings = {

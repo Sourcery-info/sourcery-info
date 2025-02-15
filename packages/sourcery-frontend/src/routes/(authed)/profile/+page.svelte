@@ -3,7 +3,7 @@
 	import type { ActionResult } from '@sveltejs/kit';
 	import ThemeToggle from '$lib/ui/theme-toggle.svelte';
 	import SuccessAlert from '$lib/ui/success-alert.svelte';
-
+	import TwoFactorSettings from '$lib/components/TwoFactorSettings.svelte';
 	interface FormErrors {
 		username?: string;
 		email?: string;
@@ -106,6 +106,15 @@
 				{/if}
 			</div>
 
+			<div>
+				<label for="theme" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
+					>Theme</label
+				>
+				<div class="mt-2">
+					<ThemeToggle />
+				</div>
+			</div>
+
 			<hr class="border-gray-200 dark:border-gray-700" />
 
 			<div>
@@ -166,15 +175,6 @@
 				{/if}
 			</div>
 
-			<div>
-				<label for="theme" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
-					>Theme</label
-				>
-				<div class="mt-2">
-					<ThemeToggle />
-				</div>
-			</div>
-
 			{#if form?.errors?.form}
 				<p class="text-sm text-red-500">{form.errors.form}</p>
 			{/if}
@@ -188,6 +188,20 @@
 				</button>
 			</div>
 		</form>
+		<hr class="border-gray-200 dark:border-gray-700 mt-10 mb-10" />
+
+		<div>
+			<label
+				for="twoFactor"
+				class="block text-sm font-medium leading-6 text-gray-900 dark:text-white"
+				>Two-Factor Authentication</label
+			>
+			<div class="mt-2">
+				{#if data.user}
+					<TwoFactorSettings user={data.user} />
+				{/if}
+			</div>
+		</div>
 	</div>
 </div>
 

@@ -143,9 +143,9 @@
 			<ModelSettings
 				{form}
 				initialData={{
-					chat_model: project.chat_model,
-					vector_model: project.vector_model,
-					temperature: project.temperature
+					chat_model: project.chat_model ?? '',
+					vector_model: project.vector_model ?? '',
+					temperature: project.temperature ?? 0.1
 				}}
 			/>
 

@@ -15,4 +15,5 @@ export type LoginFormData = {
     };
     state?: string;
     message?: string;
+    userId?: string;
 };

@@ -22,12 +22,14 @@ export class MailService {
     private config: MailConfig;
     private templates: Map<string, HandlebarsTemplateDelegate> = new Map();
 
-    constructor(config: MailConfig) {
+    constructor(config: Partial<MailConfig> = {}) {
         this.config = {
             ...config,
+            host: config.host || '127.0.0.1',
             port: config.port || 587,
             secure: config.secure ?? false,
-            defaultFrom: config.defaultFrom || config.auth.user,
+            auth: config.auth || { user: '', pass: '' },
+            defaultFrom: config.defaultFrom || config.auth?.user || '',
             templatesDir: config.templatesDir || path.join(process.cwd(), 'src/lib/email/templates')
         };
     }

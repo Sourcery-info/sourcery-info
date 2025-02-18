@@ -5,12 +5,15 @@
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { appVersionStore } from '$lib/i18n/config';
-	import VersionSwitcher from '$lib/ui/version-switcher.svelte';
+	import type { PageData } from './$types';
 
+	export let data: PageData;
 	export let form: LoginFormData;
-</script>
 
-<VersionSwitcher />
+	let email = data.inviteCode?.email || '';
+	let inviteCode = data.inviteCode?.code || '';
+	let emailReadOnly = !!data.inviteCode;
+</script>
 
 <div
 	class="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 flex items-center justify-center px-6 py-12"
@@ -57,7 +60,6 @@
 										id="username"
 										name="username"
 										type="text"
-										value={form?.data?.username ?? ''}
 										required
 										class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6"
 									/>
@@ -76,9 +78,7 @@
 										id="name"
 										name="name"
 										type="text"
-										value={form?.data?.name ?? ''}
 										required
-										placeholder="John Smith"
 										class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6"
 									/>
 								</div>
@@ -96,10 +96,12 @@
 										id="email"
 										name="email"
 										type="email"
-										value={form?.data?.email ?? ''}
 										required
-										placeholder="you@example.com"
-										class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6"
+										bind:value={email}
+										readonly={emailReadOnly}
+										class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6 {emailReadOnly
+											? 'opacity-50 cursor-not-allowed'
+											: ''}"
 									/>
 								</div>
 								{#if form?.errors?.email}
@@ -116,7 +118,6 @@
 										id="password"
 										name="password"
 										type="password"
-										value={form?.data?.password ?? ''}
 										required
 										class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6"
 									/>
@@ -135,7 +136,6 @@
 										id="confirmPassword"
 										name="confirmPassword"
 										type="password"
-										value={form?.data?.confirmPassword ?? ''}
 										required
 										class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6"
 									/>
@@ -144,6 +144,28 @@
 									<p class="mt-2 text-sm text-red-400">{form.errors.confirmPassword}</p>
 								{/if}
 							</div>
+
+							{#if !data.inviteCode}
+								<div>
+									<label for="inviteCode" class="block text-sm font-medium leading-6 text-white"
+										>{$_('create_account.invite_code_label')}</label
+									>
+									<div class="mt-2">
+										<input
+											id="inviteCode"
+											name="inviteCode"
+											type="text"
+											bind:value={inviteCode}
+											class="block w-full rounded-lg bg-white/5 px-4 py-2.5 text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 transition-colors duration-200 hover:bg-white/10 sm:text-sm sm:leading-6"
+										/>
+									</div>
+									{#if form?.errors?.inviteCode}
+										<p class="mt-2 text-sm text-red-400">{form.errors.inviteCode}</p>
+									{/if}
+								</div>
+							{:else}
+								<input type="hidden" name="inviteCode" value={inviteCode} />
+							{/if}
 						</div>
 
 						<button

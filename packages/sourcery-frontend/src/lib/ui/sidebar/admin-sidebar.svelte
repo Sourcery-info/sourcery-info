@@ -10,6 +10,7 @@
 	import lightningIcon from '$lib/assets/icons/lightning.svg?raw';
 	import folderIcon from '$lib/assets/icons/folder.svg?raw';
 	import fileIcon from '$lib/assets/icons/file.svg?raw';
+	import mailIcon from '$lib/assets/icons/mail.svg?raw';
 
 	function handleItemClick() {
 		dispatch('menuItemClick');
@@ -59,6 +60,14 @@
 				>
 					{@html lightningIcon}
 					<span>Memberships</span>
+				</a>
+				<a
+					href="/admin/invites"
+					onclick={handleItemClick}
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400"
+				>
+					{@html mailIcon}
+					<span>Invite Codes</span>
 				</a>
 				<a
 					href="/admin/projects/list"

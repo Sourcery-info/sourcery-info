@@ -4,12 +4,24 @@ import { zfd } from "zod-form-data";
 import { z } from 'zod';
 import { validate } from '$lib/validate';
 import { getUsers, createUser, checkUniqueUsername, checkUniqueEmail } from '$lib/classes/users';
-import type { SourceryAccount } from '$lib/types/SourcerySettings.type';
-import { getConfig } from '$lib/classes/config';
 import { MailService } from '$lib/utils/mail';
 import type { User } from '@sourcery/common/types/User.type';
+import { getInviteCodeByCode, updateInviteCode } from '$lib/classes/invite_codes';
 
-export async function load() {
+export async function load({ url }) {
+    const code = url.searchParams.get('code');
+    if (code) {
+        const inviteCode = await getInviteCodeByCode(code);
+        if (!inviteCode || inviteCode.used || new Date(inviteCode.expires_at) < new Date()) {
+            throw error(400, 'Invalid or expired invite code');
+        }
+        return {
+            inviteCode: {
+                code: inviteCode.code,
+                email: inviteCode.email
+            }
+        };
+    }
     return {};
 };
 
@@ -18,13 +30,17 @@ export const actions = {
         const formData = await request.formData();
         const usernames = (await getUsers()).map(user => user.username);
         const is_first_user = (!usernames || usernames.length === 0);
+        const inviteCode = formData.get('inviteCode');
+
         const newAccountScheme = zfd.formData({
             username: zfd.text(z.string().min(3).max(50).refine((username) => checkUniqueUsername(username), { message: "Username already exists" })),
             name: zfd.text(z.string().min(2).max(100)),
             email: zfd.text(z.string().email({ message: "Invalid email address" }).refine((email) => checkUniqueEmail(email), { message: "Email already exists" })),
             password: zfd.text(z.string().min(8)),
-            confirmPassword: zfd.text(z.string().min(8))
+            confirmPassword: zfd.text(z.string().min(8)),
+            inviteCode: zfd.text(z.string().optional())
         });
+
         const validation = await validate(formData, newAccountScheme);
         if (validation.errors) {
             return fail(400, { 
@@ -32,6 +48,7 @@ export const actions = {
                 data: Object.fromEntries(formData)
             });
         }
+
         // Check passwords match
         if (formData.get('password') !== formData.get('confirmPassword')) {
             return fail(400, { 
@@ -39,19 +56,51 @@ export const actions = {
                 data: Object.fromEntries(formData)
             });
         }
+
         try {
+            let isApproved = is_first_user;
+            let membershipId = undefined;
+
+            // Check invite code if provided
+            if (inviteCode) {
+                const invite = await getInviteCodeByCode(inviteCode.toString());
+                if (!invite || invite.used || new Date(invite.expires_at) < new Date()) {
+                    return fail(400, { 
+                        errors: { inviteCode: 'Invalid or expired invite code' }, 
+                        data: Object.fromEntries(formData)
+                    });
+                }
+                if (invite.email !== validation.data.email) {
+                    return fail(400, { 
+                        errors: { email: 'Email does not match invite code' }, 
+                        data: Object.fromEntries(formData)
+                    });
+                }
+                isApproved = true;
+                membershipId = invite.membership_id;
+
+                // Mark invite code as used
+                invite.used = true;
+                invite.used_at = new Date();
+                await updateInviteCode(invite);
+            }
+
             const account: Omit<User, "_id" | "password_hash" | "created_at" | "updated_at"> = {
                 username: validation.data.username,
                 password: validation.data.password,
                 admin: is_first_user,
-                approved: is_first_user,
+                approved: isApproved,
                 name: validation.data.name,
-                email: validation.data.email
+                email: validation.data.email,
+                membership_id: membershipId ? [membershipId] : [],
+                two_factor_enabled: false,
+                two_factor_secret: undefined,
+                two_factor_backup_codes: []
             }
             const user = await createUser(account);
 
             // Check if SMTP is configured and send email to admin
-            if (locals.config.smtp_host && locals.config.smtp_user && locals.config.smtp_password && locals.config.admin_email) {
+            if (!isApproved && locals.config.smtp_host && locals.config.smtp_user && locals.config.smtp_password && locals.config.admin_email) {
                 const mailService = new MailService({
                     host: locals.config.smtp_host,
                     port: parseInt(locals.config.smtp_port || '587'),
@@ -75,8 +124,8 @@ export const actions = {
                         userName: account.name,
                         username: account.username,
                         userEmail: account.email,
-                        isApproved: is_first_user,
-                        adminUrl: !is_first_user ? adminUrl : undefined
+                        isApproved,
+                        adminUrl: !isApproved ? adminUrl : undefined
                     }
                 );
             }

@@ -38,7 +38,9 @@
         "login": {
             "prompt": "Already have an account?",
             "link_text": "Sign in"
-        }
+        },
+        "invite_code_label": "Invite Code",
+        "invite_code_placeholder": "Enter your invite code"
     },
     "awaiting_authorization": {
         "title": "Awaiting Authorization",

@@ -10,7 +10,11 @@
 	let { selected_project, onclick } = $props();
 
 	const MAX_ENTITIES = 8;
-	let visibleEntities = $derived($entitiesStore.slice(0, MAX_ENTITIES));
+	let visibleEntities = $derived(
+		$entitiesStore
+			.slice(0, MAX_ENTITIES)
+			.filter((entity) => entity.project_id === selected_project._id)
+	);
 	let hasMoreEntities = $derived($entitiesStore.length > MAX_ENTITIES);
 </script>
 

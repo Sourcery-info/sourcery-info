@@ -41,10 +41,13 @@
 	const tabs = [
 		{ id: 'original', name: 'Original' },
 		{ id: 'text', name: 'Text' },
-		{ id: 'entities', name: 'Entities' },
-		{ id: 'chunks', name: 'Chunks' },
-		{ id: 'pipeline', name: 'Pipeline' }
+		{ id: 'entities', name: 'Entities' }
 	];
+
+	if (data.user.user_id === data.project.owner) {
+		tabs.push({ id: 'pipeline', name: 'Pipeline' });
+		tabs.push({ id: 'chunks', name: 'Chunks' });
+	}
 
 	// Initialize activeTab from URL hash if it exists
 	let activeTab = 'original';
@@ -146,6 +149,8 @@
 			window.removeEventListener('click', handleClickOutside);
 		}
 	});
+
+	$: is_owner = data.project.owner === data.user?.user_id;
 </script>
 
 <div class="flex flex-col bg-white dark:bg-gray-900">
@@ -154,7 +159,9 @@
 		<h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
 			{data.props.file.original_name}
 		</h3>
-		<HamburgerMenu {menuItems} />
+		{#if is_owner}
+			<HamburgerMenu {menuItems} />
+		{/if}
 	</div>
 
 	<!-- Main content area -->

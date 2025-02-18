@@ -14,7 +14,7 @@
 	import SidebarEntities from './sidebar-entities.svelte';
 	import SidebarConversations from './sidebar-conversations.svelte';
 
-	let { selected_project } = $props();
+	let { selected_project, user } = $props();
 
 	let showProjectDropdown = $state(false);
 	let dropdownRef = $state(null);
@@ -134,14 +134,14 @@
 				</li>
 				{#if selected_project}
 					<li>
-						<SidebarFiles {selected_project} onclick={handleItemClick} />
+						<SidebarFiles {selected_project} {user} onclick={handleItemClick} />
 					</li>
 					{#if $filesStore.length > 0}
 						<li>
-							<SidebarEntities {selected_project} onclick={handleItemClick} />
+							<SidebarConversations {selected_project} {user} onclick={handleItemClick} />
 						</li>
 						<li>
-							<SidebarConversations {selected_project} onclick={handleItemClick} />
+							<SidebarEntities {selected_project} {user} onclick={handleItemClick} />
 						</li>
 					{/if}
 				{:else}

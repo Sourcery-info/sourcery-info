@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { conversationsStore } from '$lib/stores/conversations.store';
+	import { page } from '$app/state';
+
+	$: is_owner = page.data.project.owner === page.data.user?.user_id;
+	$: conversations = $conversationsStore
+		.filter((conversation) => conversation.project_id === page.data.project._id)
+		.filter((conversation) => conversation.user_id === page.data.user?.user_id);
 </script>
 
 <div class="min-h bg-white dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
@@ -7,7 +13,7 @@
 		<h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">All Conversations</h1>
 
 		<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-			{#each $conversationsStore as conversation}
+			{#each conversations as conversation}
 				<a
 					href="/chat/{conversation.project_id}/{conversation._id}"
 					class="block p-6 bg-gray-50 dark:bg-gray-800 rounded-lg ring-1 ring-gray-200 dark:ring-white/10 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

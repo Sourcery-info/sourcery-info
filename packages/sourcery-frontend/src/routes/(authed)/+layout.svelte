@@ -203,7 +203,11 @@
 					transition:fly={{ x: -100, duration: 300 }}
 				>
 					<div class="flex h-full w-full flex-col overflow-y-auto">
-						<Sidebar selected_project={data.project} on:menuItemClick={handleSidebarClick} />
+						<Sidebar
+							selected_project={data.project}
+							user={data.user}
+							on:menuItemClick={handleSidebarClick}
+						/>
 					</div>
 					<div class="absolute left-full top-0 flex w-16 justify-center pt-5">
 						<button type="button" class="-m-2.5 p-2.5" on:click={toggleMobileMenu}>
@@ -229,7 +233,7 @@
 	<!-- Desktop sidebar -->
 	<div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
 		<div class="flex h-full flex-col overflow-y-auto">
-			<Sidebar selected_project={data.project} on:menuItemClick={() => {}} />
+			<Sidebar selected_project={data.project} user={data.user} on:menuItemClick={() => {}} />
 		</div>
 	</div>
 

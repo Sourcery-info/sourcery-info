@@ -4,10 +4,15 @@
 	import plusIcon from '$lib/assets/icons/plus.svg?raw';
 	import chatIcon from '$lib/assets/icons/chat.svg?raw';
 
-	let { selected_project, onclick } = $props();
+	let { selected_project, onclick, user } = $props();
 
 	const MAX_CONVERSATIONS = 8;
-	let visibleConversations = $derived($conversationsStore.slice(0, MAX_CONVERSATIONS));
+	let visibleConversations = $derived(
+		$conversationsStore
+			.slice(0, MAX_CONVERSATIONS)
+			.filter((conversation) => conversation.project_id === selected_project._id)
+			.filter((conversation) => conversation.user_id === user?.user_id)
+	);
 	let hasMoreConversations = $derived($conversationsStore.length > MAX_CONVERSATIONS);
 </script>
 

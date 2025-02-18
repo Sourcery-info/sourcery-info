@@ -83,6 +83,8 @@
 			(event.target as HTMLInputElement).value = '';
 		}
 	}
+
+	$: is_owner = data.project.owner === data.user?.user_id;
 </script>
 
 <div class="min-h-full bg-white dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
@@ -102,7 +104,9 @@
 						Public
 					</span>
 				{/if}
-				<HamburgerMenu {menuItems} />
+				{#if is_owner}
+					<HamburgerMenu {menuItems} />
+				{/if}
 			</div>
 		</div>
 

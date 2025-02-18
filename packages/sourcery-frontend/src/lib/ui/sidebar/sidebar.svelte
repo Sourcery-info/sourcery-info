@@ -50,6 +50,8 @@
 			darkModeMediaQuery.removeEventListener('change', handleDarkModeChange);
 		};
 	});
+
+	let is_owner = $derived(selected_project.owner === user?.user_id);
 </script>
 
 <div class="relative h-full">
@@ -159,17 +161,19 @@
 				{/if}
 			</ul>
 		</nav>
-		<div
-			class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pt-4 pb-4"
-		>
-			<a
-				href={selected_project ? `/project/${selected_project._id}/settings` : '/settings'}
-				onclick={handleItemClick}
-				class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+		{#if is_owner}
+			<div
+				class="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 pt-4 pb-4"
 			>
-				{@html settingsIcon}
-				Settings
-			</a>
-		</div>
+				<a
+					href={selected_project ? `/project/${selected_project._id}/settings` : '/settings'}
+					onclick={handleItemClick}
+					class="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+				>
+					{@html settingsIcon}
+					Settings
+				</a>
+			</div>
+		{/if}
 	</div>
 </div>

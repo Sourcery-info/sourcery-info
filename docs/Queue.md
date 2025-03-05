@@ -2,11 +2,11 @@
 
 ## Overview
 
-The queue is a simple Redis queue that is used to process files. It is designed to be a simple and scalable solution for processing files.
+The queue is BullMQ on Redis that to process files in a pipeline. It is designed to be a simple and scalable solution for processing files.
 
 ## Queue Structure
 
-We use Redis (KeyDB) and BullMQ for the queue. The queue functions are available in the `@sourcery/queue` package.
+We use Redis and BullMQ for the queue. The queue functions are available in the `@sourcery/queue` package.
 
 There is a `SourceryPub` and a `SourcerySub` object. 
 - The `SourceryPub` is used to add jobs to the queue. It is located at `@sourcery/queue/src/pub.ts`.

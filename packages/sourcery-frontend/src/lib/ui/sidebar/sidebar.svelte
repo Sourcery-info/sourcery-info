@@ -51,7 +51,7 @@
 		};
 	});
 
-	let is_owner = $derived(selected_project.owner === user?.user_id);
+	let is_owner = $derived(selected_project?.owner === user?.user_id);
 </script>
 
 <div class="relative h-full">

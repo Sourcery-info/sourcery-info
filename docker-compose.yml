@@ -37,14 +37,23 @@ services:
       - ${OLLAMA_PORT:-11435}:11434
     volumes:
       - ./data/ollama:/root/.ollama
+      - ./scripts:/scripts
     environment:
       - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-1}
       - OLLAMA_KEEP_ALIVE=${OLLAMA_KEEP_ALIVE:-5}
+      - CUDA_VISIBLE_DEVICES=${OLLAMA_VISIBLE_DEVICES:-0}
     healthcheck:
-      test: ollama --version || exit 1
+      test: curl -f http://localhost:11434/api/version || exit 1
       interval: 30s
       timeout: 3s
       retries: 5
+      start_period: 10s
+    entrypoint: >
+      sh -c "ollama serve &
+             sleep 10 &&
+             chmod +x /scripts/pull-models.sh &&
+             /scripts/pull-models.sh &&
+             wait"
     privileged: true
     deploy:
       resources:
@@ -55,10 +64,14 @@ services:
               capabilities: ["${NVIDIA_CAPABILITIES:-gpu}"]
   
   sourcery-reranking:
-    image: jasony/document-reranking-api:latest
+    image: jasony/document-ranking-api:latest
     restart: always
     container_name: sourcery-reranking
     privileged: true
+    environment:
+      - CUDA_VISIBLE_DEVICES=${RERANKING_VISIBLE_DEVICES:-0}
+    ports:
+      - ${RERANKING_PORT:-8000}:8000
     deploy:
       resources:
         reservations:
@@ -90,6 +103,7 @@ services:
       - REDIS_PORT=6379
       - MONGO_URL=mongodb://sourcery-mongodb:27017
       - WEBSOCKET_PORT=9001
+      - RERANKING_URL=http://sourcery-reranking:8000
     privileged: true
     deploy:
       resources:

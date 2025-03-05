@@ -1,6 +1,6 @@
 {
   "name": "sourcery",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": "true",
   "description": "Interview your documents",
   "main": "index.js",
@@ -25,7 +25,25 @@
     "sourcery-ocr": "cd packages/sourcery-ocr && npm run start"
   },
   "keywords": [
-    "AI"
+    "AI",
+    "document analysis",
+    "document intelligence",
+    "document search",
+    "document retrieval",
+    "document summarization",
+    "document classification",
+    "RAG",
+    "Retrieval-Augmented Generation",
+    "local RAG",
+    "local AI",
+    "local document analysis",
+    "local document intelligence",
+    "Investigative Journalism",
+    "OSINT",
+    "Open Source Intelligence",
+    "Sourcery",
+    "Sourcery.info",
+    "Sourcery AI"
   ],
   "author": "Jason Norwood-Young <jason@10layer.com>",
   "license": "MIT",

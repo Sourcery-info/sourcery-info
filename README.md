@@ -61,6 +61,22 @@ MONGODB_PORT=27017          # MongoDB port
 MAILHOG_PORT=8026           # MailHog web UI port
 ```
 
+#### Selective Service Configuration
+
+You can control which services are started using environment variables or Docker Compose profiles:
+
+```
+# Service enablement controls (set to anything other than "default" to disable)
+ENABLE_QDRANT=default       # Enable/disable Qdrant vector database
+ENABLE_KEYDB=default        # Enable/disable KeyDB/Redis cache
+ENABLE_OLLAMA=default       # Enable/disable Ollama LLM service
+ENABLE_RERANKING=default    # Enable/disable document reranking service
+ENABLE_SOURCERY=default     # Enable/disable main Sourcery application
+ENABLE_MONGODB=default      # Enable/disable MongoDB database
+ENABLE_NER=default          # Enable/disable Named Entity Recognition service
+ENABLE_MAILHOG=default      # Enable/disable MailHog email testing service
+```
+
 ### Starting Sourcery
 
 Start all services using Docker Compose:
@@ -68,6 +84,26 @@ Start all services using Docker Compose:
 ```bash
 docker compose up -d
 ```
+
+To start only specific services using environment variables:
+
+```bash
+# Method 1: Set environment variables to disable specific services
+ENABLE_MAILHOG=disabled ENABLE_NER=disabled docker compose up -d
+
+# Method 2: Use profiles to start functional groups
+docker compose --profile database up -d  # Start all database services
+docker compose --profile ai up -d        # Start all AI-related services
+```
+
+Available profiles:
+- `database`: Starts database services (qdrant, keydb, mongodb)
+- `ai`: Starts AI services (ollama, reranking, ner)
+- `app`: Starts the main Sourcery application
+- `utility`: Starts utility services like MailHog
+- `vector`: Starts vector database (qdrant)
+- `cache`: Starts caching service (keydb)
+- `llm`: Starts language model service (ollama)
 
 To build the containers before starting (required for the first run or after updates):
 

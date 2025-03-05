@@ -3,7 +3,6 @@ services:
     image: qdrant/qdrant:latest
     restart: always
     container_name: sourcery-qdrant
-    profiles: ["${ENABLE_QDRANT:-default}", "database", "vector"]
     healthcheck:
       test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333' || exit 1"]
       interval: 30s
@@ -16,12 +15,10 @@ services:
     volumes:
       - ./data/qdrant_data:/qdrant/storage
 
-  sourcery-keydb:
-    # image: eqalpha/keydb:latest
+  sourcery-redis:
     image: redis:latest
     restart: always
-    container_name: sourcery-keydb
-    profiles: ["${ENABLE_KEYDB:-default}", "database", "cache"]
+    container_name: sourcery-redis
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 10s
@@ -30,13 +27,12 @@ services:
     ports:
       - ${REDIS_PORT:-6379}:6379
     volumes:
-      - ./data/keydb_data:/data
+        - ./data/redis:/data
 
   sourcery-ollama:
     image: ollama/ollama:latest
     restart: always
     container_name: sourcery-ollama
-    profiles: ["${ENABLE_OLLAMA:-default}", "ai", "llm"]
     ports:
       - ${OLLAMA_PORT:-11435}:11434
     volumes:
@@ -62,7 +58,6 @@ services:
     image: jasony/document-reranking-api:latest
     restart: always
     container_name: sourcery-reranking
-    profiles: ["${ENABLE_RERANKING:-default}", "ai"]
     privileged: true
     deploy:
       resources:
@@ -78,7 +73,6 @@ services:
     tty: true
     restart: always
     container_name: sourcery
-    profiles: ["${ENABLE_SOURCERY:-default}", "app"]
     ports:
       - ${SOURCERY_PORT:-9000}:9000
       - ${SOURCERY_WEBSOCKET_PORT:-9001}:9001
@@ -92,7 +86,7 @@ services:
       - PROJECT_DIR=/var/lib/sourcery/projects
       - OLLAMA_URL=http://sourcery-ollama:11434
       - QDRANT_URL=http://sourcery-qdrant:6333
-      - REDIS_HOST=sourcery-keydb
+      - REDIS_HOST=sourcery-redis
       - REDIS_PORT=6379
       - MONGO_URL=mongodb://sourcery-mongodb:27017
       - WEBSOCKET_PORT=9001
@@ -109,7 +103,6 @@ services:
     image: mongo:latest
     restart: always
     container_name: sourcery-mongodb
-    profiles: ["${ENABLE_MONGODB:-default}", "database"]
     ports:
       - ${MONGODB_PORT:-27017}:27017
     volumes:
@@ -119,13 +112,11 @@ services:
     image: jasony/sourcery-ner-api:latest
     restart: always
     container_name: sourcery-ner
-    profiles: ["${ENABLE_NER:-default}", "ai"]
 
   sourcery-mailhog:
     image: mailhog/mailhog:latest
     restart: always
     container_name: sourcery-mailhog
-    profiles: ["${ENABLE_MAILHOG:-default}", "utility"]
     ports:
       # - 1025:1025
       - ${MAILHOG_PORT:-8026}:8025

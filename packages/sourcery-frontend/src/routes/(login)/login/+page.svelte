@@ -5,7 +5,6 @@
 	import { fade } from 'svelte/transition';
 	import { _ } from 'svelte-i18n';
 	import { appVersionStore } from '$lib/i18n/config';
-	import VersionSwitcher from '$lib/ui/version-switcher.svelte';
 	import { goto } from '$app/navigation';
 
 	export let form: LoginFormData;
@@ -14,8 +13,6 @@
 		goto(`/2fa-login/verify?userId=${form.userId}`);
 	}
 </script>
-
-<VersionSwitcher />
 
 <div
 	class="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 flex items-center justify-center px-6 py-12"

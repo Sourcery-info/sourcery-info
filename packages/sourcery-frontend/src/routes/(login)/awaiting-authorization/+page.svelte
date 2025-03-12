@@ -5,7 +5,6 @@
 	import { onMount } from 'svelte';
 	import { _ } from 'svelte-i18n';
 	import { appVersionStore } from '$lib/i18n/config';
-	import VersionSwitcher from '$lib/ui/version-switcher.svelte';
 
 	onMount(async () => {
 		checkState();
@@ -21,8 +20,6 @@
 		}
 	}
 </script>
-
-<VersionSwitcher />
 
 <div
 	class="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-gray-900 flex items-center justify-center px-6 py-12"

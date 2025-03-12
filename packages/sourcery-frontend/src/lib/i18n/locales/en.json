@@ -20,7 +20,9 @@
     },
     "create_account": {
         "title": "Create your account",
+        "title_first_user": "Set up your admin account 🚀",
         "tagline": "Join the future of document analysis",
+        "tagline_first_user": "Get ready to use Sourcery",
         "description": {
             "private": "Sourcery empowers journalists to unlock insights and tell compelling stories. Explore your document cache using natural language, all within a secure environment - perfect for investigative journalism and sensitive research.",
             "cloud": "Sourcery empowers journalists to unlock insights and tell compelling stories. Explore your document cache using natural language, perfect for investigative journalism and research."

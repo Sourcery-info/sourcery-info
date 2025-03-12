@@ -13,6 +13,7 @@
 	let email = data.inviteCode?.email || '';
 	let inviteCode = data.inviteCode?.code || '';
 	let emailReadOnly = !!data.inviteCode;
+	let is_first_user = data.is_first_user;
 </script>
 
 <div
@@ -32,7 +33,11 @@
 						<p
 							class="text-2xl text-indigo-400 font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent"
 						>
-							{$_('create_account.tagline')}
+							{#if is_first_user}
+								{$_('create_account.tagline_first_user')}
+							{:else}
+								{$_('create_account.tagline')}
+							{/if}
 						</p>
 						<p class="text-gray-300 leading-relaxed">
 							{$_(`create_account.description.${$appVersionStore}`)}
@@ -46,7 +51,11 @@
 				<!-- Right side - Create Account Form -->
 				<div class="lg:pl-12">
 					<h2 class="text-2xl font-bold leading-9 tracking-tight text-white mb-8">
-						{$_('create_account.title')}
+						{#if is_first_user}
+							{$_('create_account.title_first_user')}
+						{:else}
+							{$_('create_account.title')}
+						{/if}
 					</h2>
 
 					<form class="space-y-6" method="POST" use:enhance>
@@ -145,7 +154,7 @@
 								{/if}
 							</div>
 
-							{#if !data.inviteCode}
+							{#if !data.inviteCode && !is_first_user}
 								<div>
 									<label for="inviteCode" class="block text-sm font-medium leading-6 text-white"
 										>{$_('create_account.invite_code_label')}</label
@@ -176,15 +185,17 @@
 						</button>
 					</form>
 
-					<p class="mt-8 text-center text-sm text-gray-400">
-						{$_('create_account.login.prompt')}
-						<a
-							href="/login"
-							class="font-semibold text-indigo-400 hover:text-indigo-300 hover:underline transition-colors duration-200"
-						>
-							{$_('create_account.login.link_text')}
-						</a>
-					</p>
+					{#if !is_first_user}
+						<p class="mt-8 text-center text-sm text-gray-400">
+							{$_('create_account.login.prompt')}
+							<a
+								href="/login"
+								class="font-semibold text-indigo-400 hover:text-indigo-300 hover:underline transition-colors duration-200"
+							>
+								{$_('create_account.login.link_text')}
+							</a>
+						</p>
+					{/if}
 				</div>
 			</div>
 		</div>

@@ -5,7 +5,7 @@ import { getUser, getUserCount } from '$lib/server/user';
 // @ts-ignore
 import { MONGO_URL } from '$env/static/private';
 import { connectDB } from '$lib/server/db';
-import { alertMessages, createAlertUrl } from '$lib/alerts';
+import { createAlertUrl } from '$lib/alerts';
 import { getConfigs } from '$lib/classes/config';
 import { logger, loggerMiddleware } from '@sourcery/common/src/logger';
 import type { Handle } from '@sveltejs/kit';
@@ -21,7 +21,6 @@ export const handle: Handle = async ({ event, resolve }) => {
     // Start with logging middleware
     const wrappedResolve = async (event: any) => {
         const route = event.route.id;
-
         // Parse alert from URL if present
         const configs = await getConfigs();
         event.locals.config = {};

@@ -3,13 +3,14 @@ import { fail, redirect, error } from '@sveltejs/kit';
 import { zfd } from "zod-form-data";
 import { z } from 'zod';
 import { validate } from '$lib/validate';
-import { getUsers, createUser, checkUniqueUsername, checkUniqueEmail } from '$lib/classes/users';
+import { getUsers, createUser, checkUniqueUsername, checkUniqueEmail, getUserCount } from '$lib/classes/users';
 import { MailService } from '$lib/utils/mail';
 import type { User } from '@sourcery/common/types/User.type';
 import { getInviteCodeByCode, updateInviteCode } from '$lib/classes/invite_codes';
 
 export async function load({ url }) {
     const code = url.searchParams.get('code');
+    const is_first_user = await getUserCount() === 0;
     if (code) {
         const inviteCode = await getInviteCodeByCode(code);
         if (!inviteCode || inviteCode.used || new Date(inviteCode.expires_at) < new Date()) {
@@ -22,7 +23,9 @@ export async function load({ url }) {
             }
         };
     }
-    return {};
+    return {
+        is_first_user
+    };
 };
 
 export const actions = {

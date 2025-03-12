@@ -21,7 +21,7 @@ export class Settings {
         this.settings = SETTINGS_DEFAULTS;
     }
     
-    async _get_config() {
+    async all() {
         const user = await UserModel.findById(this.user_id);
         if (!user) throw new Error("User not found");
         
@@ -51,7 +51,7 @@ export class Settings {
     }
 
     async get(field: string | null = null) {
-        this.settings = await this._get_config();
+        this.settings = await this.all();
         if (field) {
             if (!(field in this.settings)) {
                 return null;

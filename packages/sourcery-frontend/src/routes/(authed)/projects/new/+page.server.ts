@@ -7,9 +7,17 @@ import { zfd } from "zod-form-data";
 import { z } from 'zod';
 import { validate } from '$lib/validate';
 import { checkUniqueName } from '$lib/classes/projects';
+import { Settings } from '$lib/classes/settings';
 
-export async function load() {
-    return {};
+export const load = async ({ locals }) => {
+    if (!locals?.session?.user_id) {
+        return fail(401, { message: 'Unauthorized' });
+    }
+    const settings = new Settings(locals?.session?.user_id);
+    const default_settings = await settings.all();
+    return {
+        settings: default_settings
+    };
 };
 
 export const actions = {

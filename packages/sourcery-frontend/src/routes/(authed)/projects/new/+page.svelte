@@ -8,6 +8,7 @@
 	import Alert from '$lib/ui/alert.svelte';
 
 	export let form;
+	export let data;
 	let error = '';
 
 	let name = form?.data?.name ?? '';
@@ -23,12 +24,14 @@
 	}
 
 	let chat_model =
+		data.settings?.chat_model ||
 		AIModels.find((model) => model.type === 'chat' && model.default)?.value ||
 		AIModels.find((model) => model.type === 'chat')?.value;
 	let vector_model =
+		data.settings?.vector_model ||
 		AIModels.find((model) => model.type === 'embed' && model.default)?.value ||
 		AIModels.find((model) => model.type === 'embed')?.value;
-	let temperature = 0.1;
+	let temperature = data.settings?.temperature ?? 0.1;
 </script>
 
 <div>

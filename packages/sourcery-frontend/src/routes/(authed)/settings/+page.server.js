@@ -39,8 +39,13 @@ export const actions = {
             return fail(400, validation);
         }
         try {
-            settings.set(validation.data);
-            return { success: true };
+            await settings.set(validation.data);
+            // Get the updated settings to return to the client
+            const updatedSettings = await settings.get();
+            return {
+                success: true,
+                settings: updatedSettings
+            };
         } catch (err) {
             return fail(400, { errors: [err], data: validation.data });
         }

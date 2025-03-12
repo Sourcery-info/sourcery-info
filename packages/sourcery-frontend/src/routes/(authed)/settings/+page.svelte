@@ -1,13 +1,15 @@
-<script>
+<script lang="ts">
 	// @ts-nocheck
 	import ModelSettings from '$lib/ui/modelsettings.svelte';
 	import SuccessAlert from '$lib/ui/success-alert.svelte';
 	import { enhance } from '$app/forms';
 
 	export let form;
-	export let data;
+	export let data: { props: { settings: Settings } };
 
 	let showSuccess = false;
+
+	$: settings = data.props.settings;
 
 	function handleSubmit() {
 		return async ({ result, update }) => {
@@ -27,11 +29,13 @@
 	</p>
 	<form method="POST" use:enhance={handleSubmit} class="mt-10">
 		<ModelSettings
-			bind:form
-			bind:chat_model={data.props.settings.chat_model}
-			bind:vector_model={data.props.settings.vector_model}
-			bind:temperature={data.props.settings.temperature}
-			bind:security={data.props.settings.security}
+			{form}
+			initialData={{
+				chat_model: settings.chat_model,
+				vector_model: settings.vector_model,
+				temperature: settings.temperature
+			}}
+			allow_vector_model_change={true}
 		/>
 		<button
 			type="submit"

@@ -1,3 +1,5 @@
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
 # Sourcery.info
 
 Sourcery.info empowers journalists to unlock insights and tell compelling stories through document analysis with complete privacy. It allows you to "interview" your source documents using natural language, uncovering connections and finding answers to questions you didn't know to ask - all without ever sending your data outside your system.
@@ -131,3 +133,34 @@ If you encounter issues:
    docker compose down
    docker compose up -d
    ```
+
+## License
+
+Sourcery is available under dual licensing:
+
+### Open Source License
+Sourcery is released under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). This means:
+
+- You can freely download, use, and modify the software
+- If you modify Sourcery and share it with others or run it as a network service, you must:
+  - Make your modifications available under the AGPL-3.0-or-later
+  - Share the source code with users who interact with the service
+  - Maintain all copyright and license notices
+
+### Commercial License
+For organizations that cannot comply with AGPL-3.0-or-later terms, commercial licensing options are available:
+
+- **Enterprise License**: For on-premises deployment
+- **SaaS License**: For cloud/hosted deployments
+- **Custom Solutions**: For specialized implementations
+
+Commercial licenses include:
+- Ability to use and modify Sourcery without AGPL obligations
+- Priority support
+- Additional enterprise features
+- Custom development options
+
+For commercial licensing inquiries, please contact: jason@10layer.com
+
+---
+Copyright (C) 2024 Jason Norwood-Young. All rights reserved.

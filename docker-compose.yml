@@ -92,7 +92,6 @@ services:
     volumes:
       - ./data/projects:/var/lib/sourcery/projects
       - ./packages:/app/packages
-      - ./data/models:/models
     env_file:
       - .env
     environment:
